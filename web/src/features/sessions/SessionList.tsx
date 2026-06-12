@@ -3,6 +3,7 @@ import { Spinner } from "../../components/Spinner.tsx";
 import { useNavigate } from "react-router-dom";
 import { useUiStore } from "../../lib/store.ts";
 import { useSessions, useCreateSession, useRenameSession, useDeleteSession } from "./api.ts";
+import { useCourseStore } from "../courses/store.ts";
 import { ConfirmButton } from "../../components/ConfirmButton.tsx";
 import { toast } from "../../components/toast.ts";
 
@@ -16,7 +17,9 @@ const PencilIcon = (
  * state); the Chat screen reads that and loads the session's history (server state).
  * Each row gets hover actions: inline rename and a two-step delete. */
 export function SessionList() {
-  const { data: sessions, isLoading } = useSessions();
+  // The sidebar scopes to the active course tab (ADR 0004); Home (null) shows all.
+  const activeCourseId = useCourseStore((s) => s.activeCourseId);
+  const { data: sessions, isLoading } = useSessions(activeCourseId);
   const create = useCreateSession();
   const rename = useRenameSession();
   const remove = useDeleteSession();
@@ -28,11 +31,12 @@ export function SessionList() {
   const [editName, setEditName] = useState("");
 
   // Auto-select the first session once loaded so the Chat screen isn't empty.
+  // Only on Home: inside a course the landing pane shows until the user picks a chat.
   useEffect(() => {
-    if (!currentSessionId && sessions && sessions.length > 0) {
+    if (!activeCourseId && !currentSessionId && sessions && sessions.length > 0) {
       setCurrentSession(sessions[0].id);
     }
-  }, [currentSessionId, sessions, setCurrentSession]);
+  }, [activeCourseId, currentSessionId, sessions, setCurrentSession]);
 
   // Selecting a chat always returns to the chat screen (e.g. from the Providers page).
   function select(id: string) {

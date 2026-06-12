@@ -10,6 +10,7 @@ describe("Shell", () => {
     stubFetch([
       ["/api/auth/status", () => jsonResponse({ authenticated: true, username: "ada", is_admin: false })],
       ["/api/sessions", () => jsonResponse([{ id: "s1", name: "First chat", model: "m" }])],
+      ["/api/courses", () => jsonResponse({ courses: [] })],
     ]);
     renderWithProviders(<Shell />);
 
@@ -18,5 +19,7 @@ describe("Shell", () => {
     expect(screen.getByRole("button", { name: "Providers" })).toBeInTheDocument();
     expect(await screen.findByText("ada")).toBeInTheDocument();
     expect(await screen.findByRole("button", { name: "First chat" })).toBeInTheDocument();
+    // The course strip always offers Home (Phase-2 T1).
+    expect(await screen.findByRole("tab", { name: "Home" })).toBeInTheDocument();
   });
 });

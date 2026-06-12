@@ -33,3 +33,13 @@ PUT /api/notes/{note_id}
 DELETE /api/notes/{note_id}
 POST /api/notes/{note_id}/pin
 POST /api/notes/{note_id}/archive
+#
+# Phase-2 T1 (courses — ADR 0004):
+GET /api/courses
+POST /api/courses
+GET /api/courses/{course_id}
+PATCH /api/courses/{course_id}
+POST /api/courses/{course_id}/archive
+POST /api/courses/{course_id}/unarchive
+GET /api/courses/{course_id}/sources
+PUT /api/courses/{course_id}/sources

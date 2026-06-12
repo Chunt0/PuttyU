@@ -1,5 +1,6 @@
 import { Outlet } from "react-router-dom";
 import { useAuthStatus, useLogout } from "../features/auth/api.ts";
+import { CourseTabs } from "../features/courses/CourseTabs.tsx";
 import { SessionList } from "../features/sessions/SessionList.tsx";
 import { Toasts } from "../components/Toasts.tsx";
 import { ThemePicker } from "./ThemePicker.tsx";
@@ -46,6 +47,7 @@ export function Shell() {
         </div>
       </aside>
       <main className="shell-main">
+        <CourseTabs />
         <Outlet />
       </main>
       <WindowLayer />

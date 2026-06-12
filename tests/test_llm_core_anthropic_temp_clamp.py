@@ -1,10 +1,10 @@
 """Regression guard for #1615 — Anthropic temperature must be clamped to [0.0, 1.0].
 
-Anthropic's Messages API rejects temperature > 1.0 with HTTP 400. The shipped
-"Nietzsche" preset uses temperature 1.2 (static/js/presets.js) and the UI slider
-allows up to 2.0 (static/index.html), so _build_anthropic_payload must clamp into
-[0.0, 1.0]. The clamp lives only in the Anthropic builder — OpenAI keeps its
-wider 0.0-2.0 range.
+Anthropic's Messages API rejects temperature > 1.0 with HTTP 400. Presets and
+UI sliders can request temperatures up to 2.0 (the legacy frontend's "Nietzsche"
+preset shipped 1.2), so _build_anthropic_payload must clamp into [0.0, 1.0].
+The clamp lives only in the Anthropic builder — OpenAI keeps its wider 0.0-2.0
+range.
 """
 import os
 

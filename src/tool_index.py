@@ -30,22 +30,12 @@ ALWAYS_AVAILABLE = frozenset({
     "read_file", "write_file", "edit_file",
     "grep", "glob", "ls",  # code-navigation tools (admin-gated by tool_security)
     "api_call",  # For configured integrations (Miniflux, Gitea, Linkding, etc.)
-    # The two genuinely AMBIENT cookbook tools — "what's running" and
-    # "kill it" can be asked any time without prior cookbook context,
-    # and need to survive typos. The other cookbook tools (downloads,
-    # presets, serve, cached, servers) are CONTEXTUAL — they fire via
-    # keyword hints when the user is actually talking about cookbook.
-    # Keeping the always-on set small leaves room in the ~16-tool
-    # budget for manage_tasks / manage_calendar / etc.
-    "list_served_models", "stop_served_model", "tail_serve_output",
-    # Serving is a core agent capability — keep these always available so
-    # the router doesn't lose them on phrasings like "servic" / "fire up" / "boot".
-    "serve_model", "serve_preset", "list_serve_presets",
+    # Read-only serving visibility ("what's running" can be asked any time).
+    # The cookbook WRITE tools (serve/download/stop/presets/adopt) are
+    # de-exposed — serving lifecycle is deferred; their implementations
+    # remain dispatchable but the agent is not offered them.
+    "list_served_models",
     "list_cached_models", "list_cookbook_servers",
-    # Fallback when serve_model's allowlist rejects a cmd or when the
-    # model was launched out-of-band via bash+tmux — without this the
-    # session is invisible to the cookbook UI even though it's running.
-    "adopt_served_model",
     # Generic API loopback — the catch-all when no named tool fits.
     "app_api",
     # Memory is ambient — "remember this" can follow any message regardless
@@ -62,12 +52,10 @@ ALWAYS_AVAILABLE = frozenset({
 # Tools that the Personal Assistant always has access to during scheduled
 # check-ins and proactive tasks, in addition to RAG-selected tools.
 ASSISTANT_ALWAYS_AVAILABLE = frozenset({
-    "list_email_accounts", "list_emails", "read_email", "send_email", "reply_to_email",
-    "bulk_email", "archive_email", "delete_email", "mark_email_read",
     "manage_calendar", "manage_notes", "manage_tasks",
     "manage_memory", "web_search", "read_file",
     "create_document", "update_document",
-    "resolve_contact", "search_chats",
+    "search_chats",
     "api_call",  # For Miniflux/Gitea/Linkding/etc. integrations
     # Core UI control (toggles, open panels, switch model/mode, themes).
     # Always available so vague follow-ups ("now make it playful", "make it
@@ -105,10 +93,6 @@ BUILTIN_TOOL_DESCRIPTIONS: Dict[str, str] = {
     "manage_memory": "Memory management: list, add, edit, delete, or search persistent memories.",
     "manage_skills": "Skill management: add, update, publish, or search reusable skills/presets.",
     "manage_tasks": "Scheduled task management: list, create, edit, delete, pause, resume, or run cron tasks.",
-    "manage_endpoints": "Endpoint management: list, add, delete, enable, or disable model API endpoints.",
-    "manage_mcp": "MCP server management: list, add, delete, reconnect servers, or list available tools.",
-    "manage_webhooks": "Webhook management: list, add, delete, enable, or disable webhooks.",
-    "manage_tokens": "API token management: list, create, or delete API access tokens.",
     "manage_documents": "List, read, delete, or tidy documents in the editor panel. action='list' returns clickable rows (most-recent first) so the user can open any doc by clicking. action='read' (aka view/open/get) with document_id returns the content. action='delete' with document_id removes a doc (only way to delete). Use this for ANY 'show/read/list/open my documents/docs/files/notes' request — never shell or curl.",
     "manage_research": "List, read/open, or delete saved DEEP RESEARCH results from the Library. action='list' returns clickable [query](#research-<id>) rows (most-recent first). action='read' (aka open/view/get) with id returns the report + sources. action='delete' with id removes it. Use this for ANY 'open/read/find/delete my research / that report / the research on X' request. NOTE: this is for EXISTING research; to START new research use trigger_research.",
     "manage_settings": "Change ANY real app setting (the ones the Settings panel writes) so the user never has to open it: TTS voice/provider/speed, STT, search engine + result count, default/teacher/task/utility/vision/image/research models, image quality, reminder channel (browser/email/ntfy), agent timeout/tool-call budget, and more. action=set with key (friendly aliases ok: voice, 'search engine', 'default model', 'teacher model', 'image quality', 'reminder channel'...) + value; get/list/reset too. Also toggles tools on/off (disable_tool/enable_tool/list_tools). Secrets/API keys are read-only. Use for any 'change my…/set my…/use X for…/turn on…' preference request.",
@@ -118,35 +102,13 @@ BUILTIN_TOOL_DESCRIPTIONS: Dict[str, str] = {
     "search_chats": "Search through chat history across all sessions.",
     "ask_user": "Ask the user a multiple-choice question to get a decision or clarification. Use this when the task is genuinely ambiguous and the answer changes what you do next — pick between approaches, confirm an assumption, choose among options — instead of guessing. Provide a clear `question` and 2-6 `options` (each with a short `label`, optional `description`). Calling this ENDS your turn: the user sees clickable buttons and their choice arrives as your next message. Don't use it for things you can decide from context or sensible defaults, or for irreversible-action confirmation if a dedicated flow exists.",
     "update_plan": "Write back to the ACTIVE PLAN while executing an approved plan: mark steps done or revise them. After finishing a step call this with the full checklist and that step marked done; when the user asks to change the plan call it with the revised checklist. Always pass the COMPLETE markdown checklist (`- [ ]` / `- [x]`), not a diff. The user's docked plan window updates live. No effect when there is no active plan.",
-    "ui_control": "Control the UI and toggle tools on/off. Use this to turn off / turn on / disable / enable individual tools and features: shell (bash), search (web), research, browser, documents, incognito. Open panels (documents library, gallery, email inbox, sessions, notes, memories/brain, skills, settings, cookbook) via `open_panel <name>`. Use `open_email_reply <uid> <folder> reply` to open an email reply draft document without sending. Also switches between chat/agent modes, changes the current model, and applies/creates themes.",
-    "list_email_accounts": "List configured email accounts and default status. Use before reading or sending mail when the user mentions Gmail, work mail, custom domain mail, another mailbox, or asks to compare/check multiple inboxes.",
-    "list_emails": "List emails for a folder/account, newest first, including read messages by default. Shows subject, sender, date, UID, account, and AI summary. Check inbox, find emails needing replies. Supports account from list_email_accounts for Gmail/work/custom mailboxes. For last/latest/newest email, use max_results=1 and unread_only=false.",
-    "read_email": "Read the full content of a specific email by UID or Message-ID. View email body, check details. Supports account from list_email_accounts when the UID belongs to a non-default mailbox.",
-    "send_email": "Send a new email via SMTP. Provide recipient, subject, body, and optional account from list_email_accounts. For replying to a thread use reply_to_email instead.",
-    "reply_to_email": "SEND a reply email immediately by UID. Do not use for open/start reply draft requests; use ui_control open_email_reply for those. For follow-up 'reply ...' send requests, use the exact UID and account from latest read_email/list_emails output; never invent UID 1. Threads automatically with In-Reply-To/References, prefixes Re:, marks original as Answered.",
-    "archive_email": "Move an email out of the inbox into the Archive folder. Use after handling messages you want to keep but get out of the way.",
-    "delete_email": "Delete an email — moves to Trash by default, or expunges permanently with permanent=true.",
-    "mark_email_read": "Mark an email as read or unread by toggling the \\Seen flag.",
-    "bulk_email": "Perform one action on many emails at once. Use for delete all those, archive these, mark all read, move spam to junk. Takes explicit UIDs from list_emails or all_unread=true. Always pass account for Gmail/work/custom mailbox results.",
-    "resolve_contact": "Look up a contact's email address by name. Searches CardDAV address book and sent email history. Use when the user says 'message [name]', 'email [name]', or 'send to [name]' without an email address.",
-    "manage_contact": "Create, update, delete, or list CardDAV contacts. Use to save a new contact, change an existing one's email/phone, or remove one. Action=list returns uids needed for update/delete. Use when the user says 'save this contact', 'add [name] to contacts', 'update [name]'s email', 'delete [name] from contacts'. Do not use for user identity facts like 'my name is <name>'; those are memory.",
+    "ui_control": "Control the UI and toggle tools on/off. Use this to turn off / turn on / disable / enable individual tools and features: shell (bash), search (web), research, browser, documents, incognito. Open panels (documents library, sessions, notes, memories/brain, skills, settings, cookbook) via `open_panel <name>`. Also switches between chat/agent modes, changes the current model, and applies/creates themes.",
     "manage_notes": "Create and manage notes and checklists (Google Keep-style). ALWAYS use this for note/todo/checklist/reminder creation — NEVER hit /api/notes via app_api. Accepts natural-language `due_date` like 'tomorrow at 9am' or '11pm today' (parsed in the USER'S timezone). The due_date IS the reminder — it fires a notification at that time, so do NOT also create a calendar event for the same reminder. Set colors, labels, pin, archive. Do NOT use manage_memory for note content.",
     "manage_calendar": "Calendar event management: list, create, update, delete. Each event can carry a tag/category (event_type — work/personal/health/travel/meal/social/admin/other) and importance (low/normal/high/critical). Resolve today/tomorrow using the Current date and time context, then use ISO datetimes in the user's local wall time; supports all-day events. For event reminders/alarms, pass reminder_minutes; this creates the Notes reminder, so do not also call manage_notes for the same reminder.",
-    "download_model": "Download a HuggingFace model to a local or remote server. Specify repo_id (e.g. 'Qwen/Qwen3-8B'), optional server host, and optional include filter for specific files.",
-    "serve_model": "Start serving a model with vLLM, SGLang, llama.cpp, Ollama, or Diffusers. cmd MUST start with the binary directly — e.g. `vllm serve /mnt/HADES/models/Qwen3.5-397B-A17B-AWQ --port 8003 --tensor-parallel-size 8 …`. NEVER prefix with `cd …`, `source …`, or chain with `&&`/`||` — those get rejected by the validator. The venv activation (env_prefix) and CUDA env are added automatically from the target host's saved settings. For image/inpainting/diffusion use python3 scripts/diffusion_server.py --model <repo> --port 8100. After launch, call list_served_models for readiness/errors and retry suggestions. If serve_model fails with 'Invalid characters in cmd', simplify to the bare binary + args.",
     "list_served_models": "List currently running model servers in the Cookbook — shows status (loading, ready, idle, error), model name, port, throughput, and serve failure diagnosis/retry suggestions. Use when the user asks 'what's running', 'show my cookbook', 'which models are up', 'what's serving'.",
-    "stop_served_model": "Stop a running model server in the Cookbook by session ID or model name. Use when the user says 'kill my cookbook', 'stop the model', 'kill the serve', 'shut down vLLM', 'cancel the running model'.",
-    "tail_serve_output": "Read the actual tmux stderr/traceback of a cookbook serve/download task. Use to debug WHY a task is `crashed`/`error` (compute_89 nvcc mismatch, OOM, missing kernels, wrong attention backend, etc.) so you can call serve_model with adjusted flags. Pass session_id from list_served_models; tail defaults to 300, bump if the error references 'see root cause above'.",
-    "list_downloads": "List in-progress HuggingFace model downloads in the Cookbook. Shows model name, phase, percent, session ID. Use for 'what's downloading', 'show my downloads', 'check download progress'.",
-    "cancel_download": "Cancel an in-progress model download by tmux session ID. Use for 'cancel the download', 'stop downloading X', 'kill the download'. Call list_downloads first to get the session_id.",
-    "search_hf_models": "Search HuggingFace for models matching a query (e.g. 'qwen 8B', 'flux', 'llama-3 instruct'). Returns ranked repo IDs with sizes and download counts. Use for 'find a model', 'search huggingface for X', 'what models are there for Y'.",
     "list_cached_models": "List models already cached on disk locally or on a remote host. Accepts friendly Cookbook server names like ajax. Use for 'what models do I have', 'show cached models', 'is X downloaded', 'list my models'. Avoids re-downloading.",
-    "list_serve_presets": "List saved Cookbook serve presets (templates with model+host+port+cmd). Always call this BEFORE serve_model when the user asks to launch a known model — they probably have a preset for it from the UI.",
-    "serve_preset": "Launch a saved Cookbook serve preset by name. Reuses the exact tmux command + host the user already saved. Use for 'run stable diffusion 3.5', 'serve vllm-qwen', 'start the inpaint model' — preset-name matches the user's UI labels.",
-    "adopt_served_model": "Register an existing tmux model server (one started manually or outside the cookbook flow) into Cookbook tracking AND add it as a chat endpoint. Use when the user (or a previous turn) launched something via ssh+tmux and now wants it visible in the UI, stoppable via stop_served_model, and usable in the model picker.",
     "list_cookbook_servers": "List the cookbook's configured servers (remote GPU boxes + local) and which is the current default. Use this BEFORE download_model/serve_model when the user didn't name a host — to decide where to run, or to ask the user which server when ambiguous. Downloads/serves default to the cookbook's selected server, NOT localhost.",
-    "app_api": "Generic loopback to ANY puttyU internal endpoint. Use this when the user wants something the UI can do but there's no named tool for it. Covers calendar, gallery, library/documents, memory, notes, tasks, settings, research, compare, cookbook GPUs/state — every UI button hits some /api/* endpoint and you can hit it too. action='endpoints' with filter=<keyword> lists available endpoints. action='call' takes method+path+body. Hits same routes the UI uses — auth flows free. NOTE: themes are NOT an API endpoint — use the ui_control tool (create_theme / set_theme), not app_api. SESSIONS/CHATS: do NOT use app_api for these — GET /api/sessions returns EMPTY for tool calls (it's owner-filtered and tool calls authenticate as a different identity). EMAIL ACCOUNTS: do NOT use /api/email/accounts via app_api; use list_email_accounts, list_emails, and read_email instead. To list/rename/archive/delete/fork chats use the list_sessions and manage_session tools instead.",
-    "edit_image": "Edit an image in the gallery: upscale (increase resolution), remove background (rembg), inpaint (fill selected area), or harmonize (blend edits). Specify image ID and action.",
+    "app_api": "Generic loopback to ANY puttyU internal endpoint. Use this when the user wants something the UI can do but there's no named tool for it. Covers calendar, gallery, library/documents, memory, notes, tasks, settings, research, compare, cookbook GPUs/state — every UI button hits some /api/* endpoint and you can hit it too. action='endpoints' with filter=<keyword> lists available endpoints. action='call' takes method+path+body. Hits same routes the UI uses — auth flows free. NOTE: themes are NOT an API endpoint — use the ui_control tool (create_theme / set_theme), not app_api. SESSIONS/CHATS: do NOT use app_api for these — GET /api/sessions returns EMPTY for tool calls (it's owner-filtered and tool calls authenticate as a different identity). To list/rename/archive/delete/fork chats use the list_sessions and manage_session tools instead.",
     "trigger_research": "Start a deep research job on any topic — appears in the Deep Research sidebar, streams progress, produces a detailed report. Use for 'research X', 'look into Y', 'do deep research on Z', 'investigate'. NOT a scheduled task — it runs now and surfaces in the sidebar.",
 }
 
@@ -268,7 +230,7 @@ class ToolIndex:
                     name = name_desc[0].strip()
                     desc = name_desc[1].strip()
                     # Include server identity in the indexed text so RAG can
-                    # distinguish "list_emails for server-a" from "list_emails for server-b"
+                    # distinguish "tool for server-a" from "tool for server-b"
                     server_ctx = f" (server: {current_server})" if current_server else ""
                     doc_text = f"Tool: {name}{server_ctx}\n{desc}"
                     docs.append(doc_text)
@@ -323,12 +285,6 @@ class ToolIndex:
 
     # Keyword hints: if the query mentions these words, force-include the tools.
     _KEYWORD_HINTS = {
-        # NOTE: "tell" was removed from this set. It fired on any "tell me ..."
-        # request (e.g. "visit <url> and tell me the title"), force-including the
-        # whole email toolset and crowding out the relevant tools — the model then
-        # believed it had only email tools and refused web/other tasks (#1707).
-        frozenset({"email", "mail", "gmail", "googlemail", "message", "send", "reply", "inbox", "unread"}):
-            {"list_email_accounts", "list_emails", "read_email", "send_email", "reply_to_email", "bulk_email", "delete_email", "archive_email", "mark_email_read", "resolve_contact", "ui_control"},
         frozenset({"calendar", "event", "meeting", "schedule", "appointment"}):
             {"manage_calendar"},
         frozenset({"note", "todo", "reminder", "remind", "checklist", "remember to"}):
@@ -351,12 +307,6 @@ class ToolIndex:
                    "cron", "periodically", "on a schedule", "set up a task",
                    "create a task", "summarize my inbox every", "remind me every"}):
             {"manage_tasks"},
-        frozenset({"contact", "address", "phone", "who is"}):
-            {"resolve_contact", "manage_contact"},
-        frozenset({"save contact", "add contact", "new contact", "update contact",
-                   "edit contact", "delete contact", "remove contact",
-                   "save this person", "add to contacts", "save to contacts"}):
-            {"manage_contact"},
         # "Ask another model" intent → chat_with_model relays to a
         # different model and returns its answer. ask_teacher escalates
         # to the configured teacher. (second_opinion was removed.)
@@ -417,38 +367,28 @@ class ToolIndex:
                    "running models", "running model", "running server",
                    "shut down vllm", "shutdown vllm", "stop vllm",
                    "stop serving", "kill serve", "cancel serve"}):
-            {"list_served_models", "stop_served_model"},
-        # Cookbook serve / launch / preset / server selection
+            {"list_served_models"},
+        # Cookbook serve / server selection — serving lifecycle is deferred;
+        # only the read-only visibility tools remain exposed.
         frozenset({"serve", "launch", "spin up", "start the model", "run the model",
                    "preset", "presets", "which server", "what servers",
                    "gpu box", "cookbook server", "vllm", "on the server", "on the gpu"}):
-            {"serve_preset", "serve_model", "list_serve_presets",
-             "list_cookbook_servers", "list_cached_models"},
-        # Cookbook downloads
-        frozenset({"download", "downloading", "downloads",
-                   "cancel download", "stop download", "kill download",
-                   "what's downloading", "download progress", "pull model", "grab model"}):
-            {"list_downloads", "cancel_download", "download_model",
-             "list_cookbook_servers"},
-        # HuggingFace search + cached model browse
-        frozenset({"huggingface", "hugging face", "hf search",
-                   "find a model", "search models", "search for a model",
-                   "models for", "best model for"}):
-            {"search_hf_models", "list_cached_models"},
+            {"list_cookbook_servers", "list_cached_models", "list_served_models"},
+        # Cached model browse
         frozenset({"cached models", "list models", "my models",
                    "what models do i have", "is it downloaded",
                    "do i have", "already downloaded", "on disk"}):
-            {"list_cached_models", "search_hf_models"},
+            {"list_cached_models"},
         # Tool on/off / panel open intent — user says "turn off shell",
         # "disable search", "open library", "show gallery", etc.
         frozenset({"turn off", "turn on", "disable", "enable",
                    "shell off", "shell on", "search off", "search on",
                    "research off", "research on", "incognito",
                    "switch model", "change model", "set mode", "agent mode", "chat mode",
-                   "open library", "open documents", "open gallery", "open email",
-                   "open inbox", "open settings", "open memories", "open memory",
+                   "open library", "open documents", "open gallery",
+                   "open settings", "open memories", "open memory",
                    "open skills", "open notes", "open chats", "open sessions",
-                   "show library", "show gallery", "show inbox", "show settings",
+                   "show library", "show gallery", "show settings",
                    "show memory", "show memories", "show skills", "show notes",
                    "show chats", "show sessions", "show documents"}):
             {"ui_control"},

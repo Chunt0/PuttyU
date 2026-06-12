@@ -18,9 +18,6 @@ ALLOWED_SCOPES = {
     "todos:write",
     "documents:read",
     "documents:write",
-    "email:read",
-    "email:draft",
-    "email:send",
     "calendar:read",
     "calendar:write",
     "memory:read",
@@ -28,8 +25,6 @@ ALLOWED_SCOPES = {
 }
 TOKEN_PROFILES = {
     "chat": ["chat"],
-    "codex_todos": ["todos:read", "todos:write"],
-    "codex_email_drafts": ["email:read", "email:draft", "documents:read", "documents:write"],
 }
 
 
@@ -64,7 +59,6 @@ def _normalize_scopes(scopes: str | list[str] | None = None, profile: str | None
     ensure_before("documents:write", "documents:read")
     ensure_before("calendar:write", "calendar:read")
     ensure_before("memory:write", "memory:read")
-    ensure_before("email:draft", "email:read")
 
     return normalized or [DEFAULT_SCOPES]
 

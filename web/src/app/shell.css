@@ -720,3 +720,69 @@ label.switch:hover .switch-track { border-color: var(--accent); }
 .login-card input { background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 8px; font: inherit; }
 .login-card button { margin-top: 8px; padding: 9px; }
 .login-error { color: var(--error); font-size: 13px; margin: 0; }
+
+/* course tabs (Phase-2 T1 — F1): Home + active courses + the "+" menu */
+.course-tabs { margin: -8px 0 18px; }
+.course-tabs-strip { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid var(--border); padding-bottom: 0; }
+.course-tab { display: inline-flex; align-items: center; gap: 2px; }
+.course-tab > button, button.course-tab {
+  font: inherit; font-size: 13px; color: var(--muted); background: none; border: none;
+  border-bottom: 2px solid transparent; padding: 7px 10px; cursor: pointer;
+}
+.course-tab > button:hover, button.course-tab:hover { color: var(--text); }
+.course-tab--active > button, button.course-tab--active { color: var(--accent); border-bottom-color: var(--accent); }
+.course-tab-action {
+  font-size: 12px; line-height: 1; color: var(--muted); background: none; border: none;
+  border-radius: 4px; padding: 2px 5px; cursor: pointer;
+}
+.course-tab-action:hover, .course-tab-action.confirm-armed { color: var(--accent); background: var(--panel2); }
+.course-tab--add { font-size: 15px; }
+.course-menu {
+  margin-top: 8px; padding: 12px; width: min(340px, 100%);
+  background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.course-menu-add { display: flex; gap: 6px; }
+.course-menu-add input, .onboarding-form input {
+  flex: 1; background: var(--bg); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 8px; font: inherit; min-width: 0;
+}
+.course-menu-add button, .course-menu-manage button {
+  background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 13px;
+}
+.course-menu-add button:hover, .course-menu-manage button:hover { border-color: var(--accent); }
+.course-menu-manage h3 { margin: 0 0 6px; font-size: 12px; font-weight: 600; color: var(--muted); }
+.course-menu-manage ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.course-menu-manage li { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; }
+.course-menu-empty { margin: 0; font-size: 13px; color: var(--muted); }
+
+/* onboarding (F1 welcome step) */
+.onboarding { max-width: 460px; margin: 12vh auto 0; display: flex; flex-direction: column; gap: 10px; }
+.onboarding h2 { margin: 6px 0 0; color: var(--heading); }
+.onboarding p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.5; }
+.onboarding-form { display: flex; gap: 6px; margin-top: 6px; }
+.onboarding-form button { white-space: nowrap; background: var(--panel2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 6px 12px; cursor: pointer; font-size: 13px; }
+.onboarding-skip { align-self: flex-start; background: none; border: none; color: var(--muted); font-size: 13px; cursor: pointer; padding: 4px 0; }
+.onboarding-skip:hover { color: var(--accent); }
+
+/* course landing pane */
+.course-landing { max-width: 720px; }
+.course-landing-head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+.course-landing-head h2 { margin: 0; color: var(--heading); }
+.course-chip {
+  font-size: 12px; color: var(--muted); border: 1px solid var(--border2);
+  border-radius: 999px; padding: 3px 10px; background: var(--panel);
+}
+.course-landing-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.course-landing-row h3 { margin: 0; font-size: 13px; font-weight: 600; color: var(--muted); }
+.course-landing-row button { background: var(--panel2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; cursor: pointer; font-size: 13px; }
+.course-landing-row button:hover { border-color: var(--accent); }
+.course-landing-empty { color: var(--muted); font-size: 13px; }
+.course-landing-sessions { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.course-landing-sessions button {
+  width: 100%; text-align: left; font: inherit; font-size: 14px; color: var(--text);
+  background: var(--panel); border: 1px solid var(--border); border-radius: 8px;
+  padding: 10px 12px; cursor: pointer;
+}
+.course-landing-sessions button:hover { border-color: var(--accent); }

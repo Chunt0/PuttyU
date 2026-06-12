@@ -152,14 +152,6 @@ _TOOL_NAME_MAP = {
     "suggest_document": "suggest_document",
     "suggest": "suggest_document",
     "review_document": "suggest_document",
-    "manage_endpoints": "manage_endpoints",
-    "endpoints": "manage_endpoints",
-    "manage_mcp": "manage_mcp",
-    "mcp_servers": "manage_mcp",
-    "manage_webhooks": "manage_webhooks",
-    "webhooks": "manage_webhooks",
-    "manage_tokens": "manage_tokens",
-    "tokens": "manage_tokens",
     "manage_documents": "manage_documents",
     "documents": "manage_documents",
     "manage_research": "manage_research",
@@ -251,7 +243,7 @@ def _parse_xml_invoke(inv_match) -> Optional[ToolBlock]:
 
     Delegates content-shaping to function_call_to_tool_block — the SAME
     converter used for native function calls — so the full tool set (every
-    name in TOOL_TAGS, plus email + MCP tools) and the correct per-tool
+    name in TOOL_TAGS, plus MCP tools) and the correct per-tool
     content format are handled in ONE place. The previous version duplicated
     a partial, hand-maintained tool-name map plus a `key: value` serializer:
     any tool missing from that map (e.g. `manage_calendar`) was silently

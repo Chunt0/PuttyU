@@ -3,8 +3,8 @@
 
 Discovers `scripts/puttyu-<name>` siblings and dispatches to them, the
 same way `git` finds `git-foo`. Pure passthrough: any flags after the
-subcommand name are forwarded as-is, so `puttyu mail list --pretty`
-behaves exactly like `puttyu-mail list --pretty`.
+subcommand name are forwarded as-is, so `puttyu notes list --pretty`
+behaves exactly like `puttyu-notes list --pretty`.
 
     puttyu                       # list every subcommand + short help
     puttyu <name>                # run puttyu-<name>

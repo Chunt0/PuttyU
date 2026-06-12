@@ -2,7 +2,34 @@
 
 This is a **fork of an upstream self-hosted AI workspace** (see `ACKNOWLEDGMENTS.md` for
 attribution) being converted into a **tutoring app**. Read this before making changes. Authoritative decisions live in
-`docs/adr/` and `docs/SPEC-phase-1-lean-core.md`.
+`docs/adr/` and `docs/SPEC-phase-1-lean-core.md`. The Phase-2 tutoring UX is
+**FROZEN at v1.0 and under active implementation** (owner delegated all §6 decisions —
+resolved as their proposed options; ADR-0004 course model + ADR-0005 ensemble graph
+accepted; SPEC §7 T0–T6 is the build order; T0/Slice-7 demolition DONE 2026-06-12):
+`docs/SPEC-phase-2-tutoring-ux.md` (—
+courses-as-tabs, library grounding w/ citations, the **ensemble memory graph** [one
+temporal graph per student: verbatim stated observations + LLM-inferred insights, both
+episode-cited, bi-temporal invalidate-never-delete, Graphiti-style semantics on SQLite
+proposed — research refs in its §5], the student-context protocol [every user-context
+LLM call reads the graph through one assembler; focus course dominant, coupled courses
+as bounded periphery], the **model router** [call sites declare a task profile —
+micro/light/standard/deep/vision — never a model name; resolves against configured
+providers (Anthropic API, Ollama) with degradation + observability; extends
+`endpoint_resolver`'s purpose-chain], practice both ways [review queue pushes; the
+**Gym** pulls — graph-calibrated, weakness-first problem sets], and the **dashboard**
+login surface [today's calendar + todos (new small model) + reading recs deep-linking
+PDFs at the page + mini-chat sharing the session with full chat], and **course-material
+uploads** [syllabi/homework/any PDF, owner-scoped beside the library, user tags steering
+retrieval, schedule miner proposing calendar events + todos from syllabus dates —
+confirm-first, idempotent re-upload diffs], plus **webcam document capture** [any upload
+surface; multi-page→one PDF; secure-context hint] and the **canvas workspace** [Pointer
+Events draw surface — mouse/drawing pad/stylus w/ pressure; templates incl. coordinate
+axes; one-click submit-as-image to the tutor; revise/resubmit attempts; PNG + stroke-JSON
+persistence; iPad via browser now, `companion/`-paired later]. v0.9 adds: calibration
+flow, exam simulation + explain-it-back, typed math input, Cmd-K global search, cost
+meter, integrity stance, Gate-7 tutor evals + the untrusted-content invariant (§5), and
+@later seams (mobile PWA, ntfy nudges, backup/export, Anki). **Hard owner rules: no
+fictional persona names ("the user"); VOICE REJECTED — no TTS/STT, the user must read.**)
 
 **Product name: `puttyU`** ("putty university"). The new `web/` frontend is rebranded —
 wordmark `puttyU` + the coral putty-blob mascot, slogan "your patient tutor". Design comes
@@ -37,11 +64,11 @@ reintroduce the old name anywhere except the legal attribution in `LICENSE` and
 - **Keep the Python backend.** It is the strong, tested, ecosystem-anchored asset. Do NOT
   rewrite it to another runtime. (ADR 0001)
 - **Rewrite the frontend** in **TypeScript + React + Vite**, toolchain **Bun**, `strict`
-  on. The old `static/` vanilla-JS frontend (no types/tests/build, scattered state) is
-  being replaced screen by screen and then retired.
+  on. The old `static/` vanilla-JS frontend (no types/tests/build, scattered state) was
+  replaced screen by screen and retired in Slice 7.
 - **TypeScript ONLY — zero JavaScript at the end state.** No new `.js/.jsx/.mjs/.cjs`
-  anywhere (even tooling configs → `.ts`, e.g. `eslint.config.ts`). The only JS left is the
-  legacy `static/` tree (deleted in Slice 7) + a couple of CI files, frozen in
+  anywhere (even tooling configs → `.ts`, e.g. `eslint.config.ts`). The legacy `static/`
+  tree is deleted (Slice 7); the only allowlisted JS left is `.github/scripts/`, frozen in
   `.fitness/js-allowlist.txt` and enforced by **Gate 6e** (`no-javascript.sh`); the goal is
   an empty allowlist. New JS fails CI.
 - **Lean-down is frontend-led (strangler).** A backend feature dies when the new UI stops
@@ -53,10 +80,10 @@ reintroduce the old name anywhere except the legal attribution in `LICENSE` and
   `IS_WINDOWS = False` constant are kept so callers import unchanged). Do NOT reintroduce
   cross-OS branches. **Still-dead non-Linux code remains** (lazy cleanup, like CUT features):
   the deferred Cookbook/serving cluster (`services/hwfit/_detect_windows`/`_detect_apple_silicon`,
-  `cookbook_routes.py`/`fit.py` `if IS_WINDOWS`/Darwin branches) and the legacy `static/` frontend
-  (`IS_MAC`/AltGr) — remove when those features are cut/rebuilt (hwfit/cookbook = DEFER, static =
-  Slice 7). Deleted: `launch-windows.ps1`, `update_windows.bat`, `start-macos.sh`,
-  `build-macos-app.sh`.
+  `cookbook_routes.py`/`fit.py` `if IS_WINDOWS`/Darwin branches) — remove when that feature is
+  cut/rebuilt (hwfit/cookbook = DEFER). The legacy `static/` frontend (incl. its `IS_MAC`/AltGr
+  code) was deleted in Slice 7. Deleted: `launch-windows.ps1`, `update_windows.bat`,
+  `start-macos.sh`, `build-macos-app.sh`.
 
 ## The prime directive: verifiability (ADR 0002)
 
@@ -272,18 +299,50 @@ state from turns, fires an event, persists; scheduler drives spaced repetition).
   that substring-match). Vitest 91/91 (+store/+layer), Playwright 13/13 (+`windows.spec.ts`
   with real mouse drag + snap-dock), tsc/eslint/fitness green.
 
-**ALL KEEP SCREENS NOW EXIST** → Phase-1 parity reached. **Next: Slice 7** (lazy deletion +
-retire legacy): delete CUT feature code in dependency order (**codex before email/documents**;
-**do NOT delete calendar/notes/documents**), guarded by tests; remove `/legacy` + `static/` now
-that KEEP parity (incl. calendar/notes/documents) is confirmed; drop dead DB tables. This is
-where the Ubuntu-only dead OS code in `static/` finally goes too. **Recommend a live
-click-through of all screens against the real backend before the demolition.**
+- **Slice 7 done (2026-06-12)** — CUT features deleted (codex, email, gallery+image-gen CLI,
+  contacts, outbound webhooks, vault, compare, tts/stt, signature, emoji, font, editor drafts,
+  backup, admin_wipe), ~28 CUT tools removed/de-exposed, legacy `static/` retired (Gate-6e
+  allowlist → 1 CI entry), dead DB tables dropped (`email_accounts`, `gallery_albums`,
+  `gallery_images`, `comparisons`, `signatures`, `webhooks`, `editor_drafts` — idempotent
+  `_migrate_drop_cut_feature_tables()` in `core/database.py`; their model classes + dead
+  email/signature migrations deleted too; `Document.source_email_*` columns kept — the
+  ad-hoc pattern has no column-drop precedent), stored-signature stamping excised from
+  `document_routes.py`/`pdf_forms.py`/`pdf_form_doc.py` (PDF form *field* filling +
+  text/check annotation stamping KEEP; signature fields render `_(unsigned)_`), OpenAPI
+  contract regenerated (375 → 249 paths). pytest 2046 passed; Playwright 18/18 (+1
+  intentionally-skipped snapshot-capture spec); vitest 103/103; tsc/eslint/fitness green.
+
+- **Phase-2 T1 done (2026-06-12)** — courses vertical (ADR 0004, F1 minus calibration):
+  `Course` + `course_source` tables in `core/database.py` + nullable `course_id` on
+  sessions/notes/calendar_events (`_migrate_add_course_id_columns`, ad-hoc pattern);
+  **Gate 5 landed** — `owner_scoped(query, Model, user)` in `src/auth_helpers.py`
+  (legacy `(owner == user) | (owner IS NULL)` semantics, no-op for falsy user) used by all
+  course queries + pinned by `tests/test_owner_scoped.py`. `routes/course_routes.py` born
+  typed (250 lines): list/create/get/patch + archive/unarchive (status flip, data retained)
+  + GET/PUT `/sources` (link-table replace; validated against `corpus_source` only when
+  that table exists, else verbatim + `note`) — 8 endpoints on the real OpenAPI seam
+  (`ui-contract-endpoints.txt` 23→31). `POST /api/session` takes `course_id` (validated
+  via `routes/course_helpers.py` — session_routes is at its 6a ceiling), `GET /api/sessions`
+  returns it + filters by `?course_id=`, history response carries it. Frontend:
+  `web/src/features/courses/` (typed hooks; `useCourseStore` persists `puttyu-active-course`,
+  null = Home), course tab strip in the shell (Home + active courses + "+" menu w/ create +
+  manage/unarchive; ConfirmButton archive), F1 onboarding ("What are you studying right
+  now?", free-form, skippable), course landing pane (name + honest "No library sources
+  linked" chip + course chats), sidebar/new-chat scope to the active tab. pytest 2060
+  (+14); vitest 113/113 (+10); Playwright 19 passed +1 skipped (+`courses.spec.ts`; two
+  older specs got `exact: true` — the "+" tab name substring-matched "Add"); tsc/eslint/
+  fitness green.
+
+**ALL KEEP SCREENS EXIST + Slice 7 demolition complete** → Phase 1 is done. Next: Phase-2
+tutoring UX (see `docs/SPEC-phase-2-tutoring-ux.md`).
 
 **Open follow-ups (not yet done):** SPEC backend-prep P-T2 (more response_models) / P-T3
-(disable cut-feature startup pollers) / P-T4 (slim to 35 tools) / P-T5 (`owner_scoped`,
-Gate 5) / P-T6 (split `model_routes.py`/`agent_loop.py` god-files — unblocks typing the
-provider seam); Providers "edit base_url" in place (today: delete+re-add); backend
-auto-append `/v1` for Ollama. Not built: tutor persona, mastery model, video importer.
+(disable cut-feature startup pollers) / P-T4 (slim to 35 tools) / P-T6 (split
+`model_routes.py`/`agent_loop.py` god-files — unblocks typing the provider seam); migrate
+legacy hand-written owner filters to `owner_scoped` (Gate 5 built in Phase-2 T1; a 6-style
+fitness gate for it is still unwritten); Providers "edit base_url" in place (today:
+delete+re-add); backend auto-append `/v1` for Ollama. Not built: tutor persona, mastery
+model, video importer, course calibration (F1, T4).
 
 ## Running / testing
 

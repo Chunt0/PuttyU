@@ -13,17 +13,13 @@ The fix counts genuine recent upload *events*, independent of the current
 batch's file count. save_upload still enforces the per-minute rate limit.
 """
 import io
-import re
 import types
-from pathlib import Path
 
 import pytest
 from fastapi import APIRouter
 
 from src.upload_handler import count_recent_uploads, UploadHandler
 import routes.upload_routes as up
-
-_REPO = Path(__file__).resolve().parent.parent
 
 
 def test_count_recent_uploads_ignores_batch_size():
@@ -129,13 +125,11 @@ async def test_genuine_recent_volume_still_throttled():
 # ── #1346 follow-up: the per-minute rate limit must not reject a single
 # full multi-file batch. The reporter found "5 attachments work, 6 fail":
 # save_upload() counts each file against upload_rate_limit, which was 5 while
-# the composer allows MAX_FILES=10. ──────────────────────────────────────────
+# the legacy composer allowed a 10-file batch (the retired static/ frontend's
+# MAX_FILES; the new web/ composer has no smaller cap). ──────────────────────
 
-def _max_files_from_frontend() -> int:
-    src = (_REPO / "static/js/fileHandler.js").read_text(encoding="utf-8")
-    m = re.search(r"MAX_FILES\s*=\s*(\d+)", src)
-    assert m, "MAX_FILES not found in fileHandler.js"
-    return int(m.group(1))
+# Largest multi-file batch a composer is expected to submit in one attach.
+FRONTEND_BATCH_CAP = 10
 
 
 def test_rate_limit_accommodates_a_full_batch():
@@ -143,7 +137,7 @@ def test_rate_limit_accommodates_a_full_batch():
     # or a single legitimate multi-file attach trips it (issue #1346).
     h = UploadHandler.__new__(UploadHandler)
     UploadHandler.__init__(h, base_dir="/tmp", upload_dir="/tmp/_puttyu_test_uploads_cfg")
-    assert h.upload_rate_limit >= _max_files_from_frontend()
+    assert h.upload_rate_limit >= FRONTEND_BATCH_CAP
 
 
 def test_six_file_batch_is_not_rate_limited(tmp_path):

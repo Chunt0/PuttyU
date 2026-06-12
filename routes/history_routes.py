@@ -115,11 +115,13 @@ def setup_history_routes(session_manager) -> APIRouter:
             finally:
                 db.close()
 
+        from routes.course_helpers import session_course_id
         return {
             "history": history_dict,
             "model": session.model,
             "endpoint_url": session.endpoint_url,
             "name": session.name,
+            "course_id": session_course_id(session_id),  # ADR 0004
         }
 
     @router.post("/api/session/{session_id}/truncate")

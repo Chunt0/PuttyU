@@ -3,7 +3,7 @@ import { Shell } from "./Shell.tsx";
 import { Placeholder } from "./Placeholder.tsx";
 import { RequireAuth } from "../features/auth/RequireAuth.tsx";
 import { Login } from "../features/auth/Login.tsx";
-import { Chat } from "../features/chat/Chat.tsx";
+import { Home } from "../features/courses/Home.tsx";
 import { Providers } from "../features/models/Providers.tsx";
 import { Memory } from "../features/memory/Memory.tsx";
 import { Corpus } from "../features/corpus/Corpus.tsx";
@@ -24,7 +24,7 @@ export const router = createBrowserRouter([
       {
         element: <Shell />,
         children: [
-          { index: true, element: <Chat /> },
+          { index: true, element: <Home /> },
           { path: "models", element: <Providers /> },
           { path: "memory", element: <Memory /> },
           { path: "corpus", element: <Corpus /> },

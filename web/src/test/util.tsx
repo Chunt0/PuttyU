@@ -57,13 +57,16 @@ export function findCall(
   });
 }
 
-/** Stub global fetch, routing by URL substring. Each handler gets (url, init). */
+/** Stub global fetch, routing by URL substring. Each handler gets (url, init); for
+ * Request-shaped calls (openapi-fetch) the method is surfaced on init so handlers can
+ * branch on it (e.g. one URL serving GET list + POST create). */
 export function stubFetch(routes: Array<[string, (url: string, init?: RequestInit) => Response]>) {
   const fn = vi.fn(async (url: string | URL | Request, init?: RequestInit) => {
     // openapi-fetch passes a Request object; raw fetch passes a string. Normalise.
     const u = url instanceof Request ? url.url : String(url);
+    const effInit = url instanceof Request ? { method: url.method, ...init } : init;
     for (const [needle, handler] of routes) {
-      if (u.includes(needle)) return handler(u, init);
+      if (u.includes(needle)) return handler(u, effInit);
     }
     throw new Error(`unrouted fetch: ${u}`);
   });

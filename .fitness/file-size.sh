@@ -7,7 +7,7 @@ cd "$(dirname "$0")/.." || exit 2
 
 CEILING=800
 ALLOW=".fitness/oversized-allowlist.txt"
-EXCLUDE_RE='^static/|^web/node_modules/|web/src/api/schema\.d\.ts'
+EXCLUDE_RE='^web/node_modules/|web/src/api/schema\.d\.ts'
 
 fail=0
 while IFS= read -r f; do

@@ -17,11 +17,6 @@ class TestAppStructure:
         app_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "app.py")
         assert os.path.exists(app_path), "app.py should exist"
 
-    def test_static_directory_exists(self):
-        """Test that static directory exists"""
-        static_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static")
-        assert os.path.exists(static_path), "static directory should exist"
-
     def test_routes_directory_exists(self):
         """Test that routes directory exists"""
         routes_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "routes")
@@ -51,9 +46,9 @@ class TestImports:
 
     def test_constants_importable(self):
         """Test that constants module is importable"""
-        from src.constants import BASE_DIR, STATIC_DIR, SESSIONS_FILE, MEMORY_FILE
+        from src.constants import BASE_DIR, SESSIONS_FILE, MEMORY_FILE
         assert BASE_DIR is not None
-        assert STATIC_DIR is not None
+        assert SESSIONS_FILE is not None
 
     def test_app_helpers_importable(self):
         """Test that app_helpers module is importable"""

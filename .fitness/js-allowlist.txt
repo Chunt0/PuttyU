@@ -3,8 +3,6 @@
 # (zero JS in the repo). Every entry is on death row — shrink it, never grow it. New JS
 # anywhere NOT matching a prefix below fails CI.
 #
-# static/ is the bulk (the old vanilla-JS frontend, 153 files) and disappears wholesale in
-# Slice 7 when /legacy is retired — at which point delete that line and the repo is JS-free.
-static/
+# static/ (the old vanilla-JS frontend) was deleted in Slice 7. The only JS left is the
+# two CI helper scripts below — port them to .ts and the repo is JS-free.
 .github/scripts/
-tests/markdown_codefence_placeholder_regression.mjs

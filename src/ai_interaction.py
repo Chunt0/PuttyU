@@ -1270,8 +1270,7 @@ async def do_ui_control(content: str, session_id: Optional[str] = None, owner: O
       switch_model <model>    — Change the model for the current session
       set_theme <preset>      — Apply a theme preset (dark, light, paper, nord, dracula, gruvbox, gpt, claude, lavender, etc.)
       create_theme <name> <bg> <fg> <panel> <border> <accent> [key=val ...] — Create custom theme. Optional key=val: advanced color overrides AND background effects: bgPattern=<none|dots|synapse|rain|constellations|perlin-flow|petals|sparkles|embers>, bgEffectColor=#RRGGBB, bgEffectIntensity=<num>, bgEffectSize=<num>, frosted=true|false
-      open_panel <name>       — Open a panel (documents, gallery, email, sessions, notes, memories, skills, settings, cookbook)
-      open_email_reply <uid> [folder] [reply|reply-all|ai-reply] — Open a reply draft document for an email; does not send
+      open_panel <name>       — Open a panel (documents, sessions, notes, memories, skills, settings, cookbook)
       get_toggles             — Return current toggle states (server-side knowledge)
     """
     lines = content.strip().split("\n")
@@ -1365,10 +1364,9 @@ async def do_ui_control(content: str, session_id: Optional[str] = None, owner: O
 
     elif action == "set_theme":
         theme_name = parts[1].lower() if len(parts) > 1 else ""
-        # Theme colors are defined in static/js/theme.js on the frontend.
+        # Theme colors are defined on the frontend (legacy theme preset keys).
         # We pass the name; the frontend looks it up from presets + custom themes.
         # Also check user's custom themes stored in prefs.
-        # Must match the THEMES keys in static/js/theme.js.
         known_presets = [
             "dark", "light", "midnight", "paper", "cyberpunk", "retrowave",
             "forest", "ocean", "ume", "copper", "terminal", "organs",
@@ -1470,8 +1468,8 @@ async def do_ui_control(content: str, session_id: Optional[str] = None, owner: O
         }
 
     elif action == "open_panel":
-        # Open a top-level panel/modal: documents/library, gallery,
-        # email, sessions, notes, memories, skills, settings, cookbook.
+        # Open a top-level panel/modal: documents/library, sessions,
+        # notes, memories, skills, settings, cookbook.
         panel = parts[1].lower() if len(parts) > 1 else ""
         _panel_aliases = {
             "documents": "documents",
@@ -1480,12 +1478,6 @@ async def do_ui_control(content: str, session_id: Optional[str] = None, owner: O
             "docs": "documents",
             "library": "documents",
             "doclib": "documents",
-            "gallery": "gallery",
-            "images": "gallery",
-            "email": "email",
-            "emails": "email",
-            "inbox": "email",
-            "mail": "email",
             "sessions": "sessions",
             "chats": "sessions",
             "history": "sessions",
@@ -1507,28 +1499,11 @@ async def do_ui_control(content: str, session_id: Optional[str] = None, owner: O
         }
         target = _panel_aliases.get(panel)
         if not target:
-            return {"error": f"Unknown panel '{panel}'. Valid: documents, gallery, email, sessions, notes, memories, skills, settings, cookbook."}
+            return {"error": f"Unknown panel '{panel}'. Valid: documents, sessions, notes, memories, skills, settings, cookbook."}
         return {
             "ui_event": "open_panel",
             "panel": target,
             "results": f"Opening {target} panel",
-        }
-
-    elif action == "open_email_reply":
-        reply_parts = lines[0].strip().split()
-        uid = reply_parts[1].strip() if len(reply_parts) > 1 else ""
-        folder = reply_parts[2].strip() if len(reply_parts) > 2 else "INBOX"
-        mode = reply_parts[3].strip().lower() if len(reply_parts) > 3 else "reply"
-        if not uid:
-            return {"error": "open_email_reply needs: open_email_reply <uid> [folder] [reply|reply-all|ai-reply]"}
-        if mode not in ("reply", "reply-all", "ai-reply"):
-            mode = "reply"
-        return {
-            "ui_event": "open_email_reply",
-            "uid": uid,
-            "folder": folder or "INBOX",
-            "mode": mode,
-            "results": f"Opening reply draft for email UID {uid}",
         }
 
     elif action == "get_toggles":
@@ -1690,29 +1665,6 @@ async def do_generate_image(content: str, session_id: Optional[str] = None, owne
             image_url = None
             image_id = None
 
-            def _save_to_gallery(filename: str) -> str:
-                """Insert a GalleryImage row and return the new id (or '')."""
-                try:
-                    from src.database import SessionLocal as _GallerySL, GalleryImage
-                    new_id = str(uuid.uuid4())
-                    _gdb = _GallerySL()
-                    _gdb.add(GalleryImage(
-                        id=new_id,
-                        filename=filename,
-                        prompt=prompt,
-                        model=model_id,
-                        size=size,
-                        quality=payload.get("quality", "medium"),
-                        session_id=session_id,
-                        owner=owner,
-                    ))
-                    _gdb.commit()
-                    _gdb.close()
-                    return new_id
-                except Exception as _ge:
-                    logger.warning(f"Failed to save gallery record: {_ge}")
-                    return ""
-
             # GPT image models always return b64_json; DALL-E may return url
             if img.get("b64_json"):
                 img_dir = Path("data/generated_images")
@@ -1721,7 +1673,6 @@ async def do_generate_image(content: str, session_id: Optional[str] = None, owne
                 img_path = img_dir / filename
                 img_path.write_bytes(base64.b64decode(img.get("b64_json")))
                 image_url = f"/api/generated-image/{filename}"
-                image_id = _save_to_gallery(filename)
 
             elif img.get("url"):
                 # Download external URL and save locally (DALL-E returns temp URLs)
@@ -1734,7 +1685,6 @@ async def do_generate_image(content: str, session_id: Optional[str] = None, owne
                         img_path = img_dir / filename
                         img_path.write_bytes(dl_resp.content)
                         image_url = f"/api/generated-image/{filename}"
-                        image_id = _save_to_gallery(filename)
                     else:
                         image_url = img["url"]  # fallback to external URL
                 except Exception as _dl_e:

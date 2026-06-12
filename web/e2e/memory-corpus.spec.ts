@@ -57,7 +57,7 @@ test("add a memory and view the corpus", async ({ page }) => {
   await page.getByRole("button", { name: "Memory", exact: true }).click();
   await expect(page.getByText("User is studying statistics")).toBeVisible();
   await page.getByLabel("Memory text").fill("User lives in Berlin");
-  await page.getByRole("button", { name: "Add" }).click();
+  await page.getByRole("button", { name: "Add", exact: true }).click();
   await expect(page.getByText("User lives in Berlin")).toBeVisible();
 
   // Corpus: the active embedding model and the indexed document are shown.

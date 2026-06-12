@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Gate 6e (ADR 0001/0002): TypeScript only. The frontend rewrite is TS — no new JavaScript,
 # anywhere. The ONLY tolerated `.js/.jsx/.mjs/.cjs` are listed (by path prefix) in
-# js-allowlist.txt: the legacy `static/` frontend (deleted in Slice 7) and a couple of
-# CI/tooling files. The GOAL is an EMPTY allowlist = the repo is provably zero-JS.
+# js-allowlist.txt — now just a couple of CI/tooling files (the legacy `static/`
+# frontend was deleted in Slice 7). The GOAL is an EMPTY allowlist = provably zero-JS.
 #
 # Any JS outside the allowlist fails the build — so the new web/ tree (and any future code)
 # can never regress to JavaScript.
@@ -12,6 +12,9 @@ cd "$(dirname "$0")/.." || exit 2
 ALLOW=".fitness/js-allowlist.txt"
 fail=0
 while IFS= read -r f; do
+  # Skip index entries deleted from the worktree (e.g. the static/ tree removed
+  # in Slice 7 before the deletion is committed) — judge what actually exists.
+  [ -f "$f" ] || continue
   ok=0
   while IFS= read -r prefix; do
     case "$prefix" in ''|\#*) continue ;; esac

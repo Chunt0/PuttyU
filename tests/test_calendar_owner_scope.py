@@ -158,13 +158,10 @@ def _install_calendar_db_stub(monkeypatch):
         "DocumentVersion",
         "Session",
         "ChatMessage",
-        "GalleryImage",
-        "GalleryAlbum",
         "Note",
         "ScheduledTask",
         "TaskRun",
         "ModelEndpoint",
-        "Webhook",
     ]:
         setattr(db, name, MagicMock())
     monkeypatch.setitem(sys.modules, "core.database", db)

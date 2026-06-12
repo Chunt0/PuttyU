@@ -27,3 +27,7 @@ export type ResearchLibraryResponse = components["schemas"]["ResearchLibraryResp
 
 // Slice 6.5b — notes
 export type Note = components["schemas"]["NoteResponse"];
+
+// Phase-2 T1 — courses (ADR 0004)
+export type Course = components["schemas"]["CourseResponse"];
+export type CourseSources = components["schemas"]["CourseSourcesResponse"];

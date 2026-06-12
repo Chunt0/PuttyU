@@ -258,7 +258,6 @@ def setup_chat_routes(
     research_handler,
     upload_handler,
     memory_vector=None,
-    webhook_manager=None,
     skills_manager=None,
 ) -> APIRouter:
     router = APIRouter(tags=["chat"])
@@ -318,7 +317,6 @@ def setup_chat_routes(
             att_ids=att_ids,
             use_web=use_web,
             time_filter=time_filter,
-            webhook_manager=webhook_manager,
         )
 
         # Research injection
@@ -351,10 +349,10 @@ def setup_chat_routes(
         update_session_last_accessed(session)
         session_manager.save_sessions()
 
-        # Background tasks (memory, webhook, auto-name)
+        # Background tasks (memory, auto-name)
         run_post_response_tasks(
             sess, session_manager, session, message, reply, None,
-            ctx.uprefs, memory_manager, memory_vector, webhook_manager,
+            ctx.uprefs, memory_manager, memory_vector,
             character_name=ctx.preset.character_name,
             owner=ctx.user,
         )
@@ -391,8 +389,7 @@ def setup_chat_routes(
         allow_bash = form_data.get("allow_bash")
         allow_web_search = form_data.get("allow_web_search")
         use_rag = form_data.get("use_rag")
-        search_context = form_data.get("search_context")  # pre-fetched web search results (compare mode)
-        compare_mode = str(form_data.get("compare_mode", "")).lower() == "true"
+        search_context = form_data.get("search_context")  # pre-fetched web search results
         incognito = str(form_data.get("incognito", "")).lower() == "true"
         plan_mode = str(form_data.get("plan_mode", "")).lower() == "true"
         chat_mode = str(form_data.get("mode", "")).lower()  # 'chat' or 'agent'
@@ -520,8 +517,6 @@ def setup_chat_routes(
             incognito=incognito,
             no_memory=no_memory,
             search_context=search_context,
-            compare_mode=compare_mode,
-            webhook_manager=webhook_manager,
             use_enhanced_message=True,
             # Skills index only ships when the model can actually call
             # manage_skills (agent mode). In plain chat or incognito the
@@ -644,7 +639,7 @@ def setup_chat_routes(
             disabled_tools.update(_global_disabled)
 
         # Light auto-escalation: the user is in chat mode and just expressed a
-        # notes/calendar/email intent. Grant the relevant managers but withhold
+        # notes/calendar intent. Grant the relevant managers but withhold
         # the heavy "do things on the computer" tools — otherwise the model
         # tries to shell out for a request that never needed it, then fails
         # (and looks broken when the shell is disabled).
@@ -652,24 +647,6 @@ def setup_chat_routes(
             disabled_tools.update({
                 "bash", "python", "read_file", "write_file", "builtin_browser",
             })
-
-        # Disable document tools in compare sessions — they break the pane UI
-        if sess.name and sess.name.startswith("[CMP]"):
-            disabled_tools.update({"create_document", "edit_document", "update_document"})
-
-        # Compare mode: disable tools based on compare type
-        if compare_mode:
-            _compare_strip = {
-                "create_document", "edit_document", "update_document",
-                "chat_with_model", "create_session", "list_sessions",
-                "send_to_session",
-                "pipeline", "manage_session", "manage_memory", "list_models",
-                "generate_image", "ui_control",
-            }
-            disabled_tools.update(_compare_strip)
-            # In chat mode compare, disable ALL agent tools (no bash, python, file ops)
-            if chat_mode == 'chat':
-                disabled_tools.update({"bash", "python", "read_file", "write_file", "web_search", "web_fetch", "search_chats", "manage_tasks"})
 
         # Plan mode: investigate read-only, propose a plan, don't mutate. Block
         # every tool not on the read-only allowlist. (stream_agent_loop enforces
@@ -715,12 +692,9 @@ def setup_chat_routes(
                 logger.info(f"Research endpoint resolved: model={_r_model}, endpoint={_r_ep}, auth_keys={_auth_keys}, sess_headers_keys={list(sess.headers.keys()) if isinstance(sess.headers, dict) else type(sess.headers)}")
 
                 # Clarification round: only for very short/vague queries on first research message.
-                # Skip in compare mode — each pane is a fresh session, so every one would
-                # ask clarifying questions and the user would have to answer each pane
-                # separately, breaking the parallel comparison.
                 _prior_json = research_handler._get_session_json(session)
                 _history_len = len(sess.history) if hasattr(sess, 'history') else 0
-                _is_first_research = not _prior_json and _history_len <= 2 and not compare_mode
+                _is_first_research = not _prior_json and _history_len <= 2
 
                 if _is_first_research:
                     logger.info(f"First research message — asking clarifying questions for: {message[:60]}")
@@ -983,8 +957,8 @@ def setup_chat_routes(
                                     yield f'data: {json.dumps({"type": "message_saved", "id": _saved_id})}\n\n'
                                 run_post_response_tasks(
                                     sess, session_manager, session, message, full_response,
-                                    last_metrics, ctx.uprefs, memory_manager, memory_vector, webhook_manager,
-                                    incognito=incognito, compare_mode=compare_mode,
+                                    last_metrics, ctx.uprefs, memory_manager, memory_vector,
+                                    incognito=incognito,
                                     character_name=ctx.preset.character_name,
                                                             owner=_user,
                                 )
@@ -1093,8 +1067,8 @@ def setup_chat_routes(
                                     yield f'data: {json.dumps({"type": "message_saved", "id": _saved_id})}\n\n'
                                 run_post_response_tasks(
                                     sess, session_manager, session, message, full_response,
-                                    last_metrics, ctx.uprefs, memory_manager, memory_vector, webhook_manager,
-                                    incognito=incognito, compare_mode=compare_mode,
+                                    last_metrics, ctx.uprefs, memory_manager, memory_vector,
+                                    incognito=incognito,
                                     character_name=ctx.preset.character_name,
                                                             agent_rounds=_agent_rounds,
                                     agent_tool_calls=_agent_tool_calls,

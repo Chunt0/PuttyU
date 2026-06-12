@@ -1,12 +1,12 @@
-#compdef puttyu puttyu-backup puttyu-calendar puttyu-contacts puttyu-cookbook puttyu-docs puttyu-gallery puttyu-mail puttyu-mcp puttyu-memory puttyu-notes puttyu-personal puttyu-preset puttyu-research puttyu-sessions puttyu-signature puttyu-skills puttyu-tasks puttyu-theme puttyu-webhook
+#compdef puttyu puttyu-calendar puttyu-cookbook puttyu-docs puttyu-mcp puttyu-memory puttyu-notes puttyu-personal puttyu-preset puttyu-research puttyu-sessions puttyu-skills puttyu-tasks puttyu-theme
 # Zsh tab-completion for the puttyu umbrella + sub-CLIs.
 #
 # Drop in any directory on $fpath, e.g.:
 #     fpath=(/path/to/puttyu-ui/scripts/_completion $fpath)
 #     autoload -U compinit; compinit
 #
-# Then `puttyu <tab>` completes subcommands; `puttyu mail <tab>`
-# completes mail subcommands; `puttyu-mail <tab>` works the same.
+# Then `puttyu <tab>` completes subcommands; `puttyu notes <tab>`
+# completes notes subcommands; `puttyu-notes <tab>` works the same.
 
 _puttyu_scripts_dir() {
     local self="${(%):-%x}"

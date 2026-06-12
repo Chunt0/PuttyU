@@ -487,10 +487,6 @@ async def _run_subprocess_streaming(
 
 _ADMIN_TOOLS = {
     "app_api",
-    "manage_endpoints",
-    "manage_mcp",
-    "manage_webhooks",
-    "manage_tokens",
     "manage_settings",
     "download_model",
     "serve_model",
@@ -1146,8 +1142,7 @@ async def execute_tool_block(
     from src.tool_implementations import (
         do_create_document, do_update_document, do_edit_document,
         do_suggest_document, do_search_chats, do_manage_tasks,
-        do_manage_skills, do_api_call, do_manage_endpoints,
-        do_manage_mcp, do_manage_webhooks, do_manage_tokens,
+        do_manage_skills, do_api_call,
         do_manage_documents, do_manage_settings, do_manage_notes,
         do_manage_calendar,
         do_download_model, do_serve_model, do_list_served_models, do_stop_served_model,
@@ -1155,9 +1150,7 @@ async def execute_tool_block(
         do_list_downloads, do_cancel_download, do_search_hf_models, do_list_cached_models,
         do_list_serve_presets, do_serve_preset, do_adopt_served_model,
         do_list_cookbook_servers,
-        do_edit_image, do_trigger_research, do_manage_research, do_resolve_contact,
-        do_manage_contact,
-        do_vault_search, do_vault_get, do_vault_unlock,
+        do_trigger_research, do_manage_research,
         do_app_api,
     )
 
@@ -1177,12 +1170,12 @@ async def execute_tool_block(
                     "error": (
                         f"You wrote a JSON object inside a ```{tool}``` block, but that's not a tool call.\n"
                         "To call a tool, use the tool name as the fence tag, e.g.\n"
-                        "```resolve_contact\n"
-                        "{\"name\": \"...\"}\n"
+                        "```manage_memory\n"
+                        "{\"action\": \"add\", \"text\": \"...\"}\n"
                         "```\n"
                         "or\n"
-                        "```send_email\n"
-                        "{\"to\": \"...\", \"subject\": \"...\", \"body\": \"...\"}\n"
+                        "```manage_notes\n"
+                        "{\"action\": \"create\", \"title\": \"...\"}\n"
                         "```"
                     ),
                     "exit_code": 1,
@@ -1369,18 +1362,6 @@ async def execute_tool_block(
         first_line = content.split("\n")[0].strip()[:60]
         desc = f"api_call: {first_line}"
         result = await do_api_call(content)
-    elif tool == "manage_endpoints":
-        desc = "manage_endpoints"
-        result = await do_manage_endpoints(content, owner=owner)
-    elif tool == "manage_mcp":
-        desc = "manage_mcp"
-        result = await do_manage_mcp(content, owner=owner)
-    elif tool == "manage_webhooks":
-        desc = "manage_webhooks"
-        result = await do_manage_webhooks(content, owner=owner)
-    elif tool == "manage_tokens":
-        desc = "manage_tokens"
-        result = await do_manage_tokens(content, owner=owner)
     elif tool == "manage_documents":
         desc = "manage_documents"
         result = await do_manage_documents(content, owner=owner)
@@ -1435,9 +1416,6 @@ async def execute_tool_block(
     elif tool == "list_cookbook_servers":
         desc = "list_cookbook_servers"
         result = await do_list_cookbook_servers(content, owner=owner)
-    elif tool == "edit_image":
-        desc = "edit_image"
-        result = await do_edit_image(content, owner=owner)
     elif tool == "edit_file":
         result = await _do_edit_file(content, workspace=workspace)
         desc = result.get("output") or result.get("error") or "edit_file"
@@ -1447,21 +1425,6 @@ async def execute_tool_block(
     elif tool == "manage_research":
         desc = "manage_research"
         result = await do_manage_research(content, owner=owner)
-    elif tool == "resolve_contact":
-        desc = "resolve_contact"
-        result = await do_resolve_contact(content, owner=owner)
-    elif tool == "manage_contact":
-        desc = "manage_contact"
-        result = await do_manage_contact(content, owner=owner)
-    elif tool == "vault_search":
-        desc = "vault_search"
-        result = await do_vault_search(content, owner=owner)
-    elif tool == "vault_get":
-        desc = "vault_get"
-        result = await do_vault_get(content, owner=owner)
-    elif tool == "vault_unlock":
-        desc = "vault_unlock"
-        result = await do_vault_unlock(content, owner=owner)
     elif tool.startswith("mcp__"):
         # MCP tool dispatch
         mcp = get_mcp_manager()

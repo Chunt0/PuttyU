@@ -26,7 +26,8 @@ _FRONT_MATTER_RE = re.compile(
     r'<!--\s*pdf_form_source\s+upload_id="(?P<upload_id>[^"]+)"(?:\s+fields="(?P<fields>\d+)")?\s*-->'
 )
 
-# Freeform annotation bullet — mirrors the JS regex in static/js/document.js.
+# Freeform annotation bullet — must stay in sync with the frontend document
+# editor's annotation-comment format (originally static/js/document.js).
 # Coords are page percentages (0–100); kind/lh are optional for backward compat.
 _ANNOTATION_RE = re.compile(
     r'^[ \t]*-\s+(?P<value>.*?)\s*<!--\s*annotation\s+id=(?P<id>[\w-]+)\s+page=(?P<page>\d+)\s+x=(?P<x>[\d.]+)\s+y=(?P<y>[\d.]+)\s+w=(?P<w>[\d.]+)\s+h=(?P<h>[\d.]+)(?:\s+kind=(?P<kind>\w+))?(?:\s+lh=(?P<lh>[\d.]+))?\s*-->[ \t]*$',
@@ -318,9 +319,8 @@ def _format_field_bullet(f: dict[str, Any]) -> str:
     parens, or special chars appear in the raw AcroForm field name. The
     visible label is the human-readable bit.
 
-    Signature fields encode the chosen signature ID inline as
-    `signature:<id>` so the picker selection persists in the doc and the
-    export route can stamp the saved PNG without extra state.
+    Signature fields render as `_(unsigned)_` — they are shown for context
+    but cannot be filled (the stored-signature stamping feature was removed).
     """
     label = _flatten(f.get("label")) or f["name"]
     name = _encode_name(f["name"])
@@ -335,8 +335,7 @@ def _format_field_bullet(f: dict[str, Any]) -> str:
         shown = value if value else "_(not selected)_"
         body = f'**{label}** [{opts_str}]: {shown}'
     elif ftype == "signature":
-        shown = value if (value and value.startswith("signature:")) else "_(unsigned)_"
-        body = f'**{label}:** {shown}'
+        body = f'**{label}:** _(unsigned)_'
     else:
         shown = value if value else "_(empty)_"
         body = f'**{label}:** {shown}'

@@ -125,6 +125,7 @@ class SessionResponse(BaseModel):
     model: str = Field(..., description="Model being used")
     rag: bool = Field(default=False, description="RAG enabled")
     archived: bool = Field(default=False, description="Whether session is archived")
+    course_id: Optional[str] = Field(default=None, description="Course this session belongs to (ADR 0004); null = course-less")
 
 
 class MemoryResponse(BaseModel):
@@ -180,6 +181,7 @@ class SessionListItem(BaseModel):
     has_images: bool = False
     mode: Optional[str] = None
     message_count: int = 0
+    course_id: Optional[str] = None
 
 
 class HistoryMessage(BaseModel):
@@ -195,6 +197,7 @@ class HistoryResponse(BaseModel):
     model: str
     endpoint_url: Optional[str] = None
     name: str
+    course_id: Optional[str] = None
 
 
 # --- Slice 3 response contracts (Memory + Personal docs / RAG + Embeddings) -------------
@@ -358,3 +361,50 @@ class NoteResponse(BaseModel):
 class NoteListResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
     notes: List[NoteResponse] = Field(default_factory=list)
+
+
+# --- Phase-2 T1: courses (ADR 0004) ------------------------------------------------------
+# Real OpenAPI seam: course_routes.py is born small + typed, so requests AND responses live
+# here. `extra="allow"` keeps the contract additive (no field-drop), like the other slices.
+
+class CourseCreateRequest(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    name: str = Field(..., min_length=1, max_length=200, description="Free-form course name (no fixed catalog)")
+    settings: Optional[Dict[str, Any]] = Field(default=None, description="Persona dial / coupling mutes (ADR 0004)")
+
+
+class CourseUpdateRequest(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    name: Optional[str] = Field(default=None, min_length=1, max_length=200)
+    settings: Optional[Dict[str, Any]] = None
+
+
+class CourseResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    id: str
+    name: str
+    status: str = "active"  # active | archived
+    owner: Optional[str] = None
+    settings: Dict[str, Any] = Field(default_factory=dict)
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+    archived_at: Optional[str] = None
+
+
+class CourseListResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    courses: List[CourseResponse] = Field(default_factory=list)
+
+
+class CourseSourcesUpdateRequest(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    source_ids: List[str] = Field(default_factory=list, description="Replacement set of linked corpus_source ids")
+
+
+class CourseSourcesResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    course_id: str
+    source_ids: List[str] = Field(default_factory=list)
+    # Set when the corpus tables aren't present yet (src/corpus isn't wired into
+    # init_db): ids were accepted verbatim, unverified.
+    note: Optional[str] = None

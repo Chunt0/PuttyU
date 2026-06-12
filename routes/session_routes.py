@@ -10,7 +10,7 @@ import logging
 from core.session_manager import SessionManager
 from core.models import ChatMessage
 from src.request_models import SessionResponse, SessionListItem
-from core.database import Session as DbSession, SessionLocal, Document, GalleryImage
+from core.database import Session as DbSession, SessionLocal, Document
 from src.auth_helpers import get_current_user, effective_user
 
 
@@ -19,22 +19,6 @@ def _sanitize_export_filename(name: str) -> str:
     name = name if isinstance(name, str) else ""
     name = re.sub(r"[^A-Za-z0-9._-]", "_", name)
     return name[:128]
-
-
-# Blind-compare helper sessions are created with this name prefix. Their real
-# model must never surface in the session list / sidebar — otherwise a blind
-# comparison can be de-anonymized before the user votes (issue #1285).
-COMPARE_SESSION_PREFIX = "[CMP] "
-
-
-def _public_model(name: str, model: str) -> str:
-    """Blank out the real model of blind-compare helper sessions so the
-    session list can't be used to map a neutral pane label ("Model A") back
-    to its model. The Compare UI tracks models client-side, so hiding it here
-    costs the sidebar nothing. See issue #1285."""
-    if (name or "").startswith(COMPARE_SESSION_PREFIX):
-        return ""
-    return model
 
 
 def _content_to_text(content) -> str:
@@ -207,7 +191,7 @@ def _pick_endpoint_for_sort(owner=None):
         return url, model, headers
     return None, None, None
 
-def setup_session_routes(session_manager: SessionManager, config: dict, webhook_manager=None):
+def setup_session_routes(session_manager: SessionManager, config: dict):
     """Setup session routes with the provided manager and config"""
 
     REQUEST_TIMEOUT = config.get("REQUEST_TIMEOUT", 20)
@@ -215,7 +199,7 @@ def setup_session_routes(session_manager: SessionManager, config: dict, webhook_
     SESSIONS_FILE = config.get("SESSIONS_FILE")
     
     @router.get("/sessions", response_model=list[SessionListItem])
-    def list_sessions(request: Request):
+    def list_sessions(request: Request, course_id: str = ""):
         user = effective_user(request)
         # Lazy purge: incognito sessions are ephemeral by design — wipe leftovers
         # from the DB and session_manager so they vanish on the next page refresh.
@@ -262,7 +246,8 @@ def setup_session_routes(session_manager: SessionManager, config: dict, webhook_
             last_msg_map = {}
             mode_map = {}
             msg_count_map = {}
-            rows = db.query(DbSession.id, DbSession.folder, DbSession.total_input_tokens, DbSession.total_output_tokens, DbSession.is_important, DbSession.created_at, DbSession.updated_at, DbSession.last_message_at, DbSession.mode, DbSession.message_count).filter(DbSession.archived == False).all()
+            course_map = {}
+            rows = db.query(DbSession.id, DbSession.folder, DbSession.total_input_tokens, DbSession.total_output_tokens, DbSession.is_important, DbSession.created_at, DbSession.updated_at, DbSession.last_message_at, DbSession.mode, DbSession.message_count, DbSession.course_id).filter(DbSession.archived == False).all()
             for row in rows:
                 folder_map[row.id] = row.folder
                 token_map[row.id] = (row.total_input_tokens or 0) + (row.total_output_tokens or 0)
@@ -278,6 +263,7 @@ def setup_session_routes(session_manager: SessionManager, config: dict, webhook_
                 )
                 mode_map[row.id] = row.mode
                 msg_count_map[row.id] = row.message_count or 0
+                course_map[row.id] = row.course_id
             # Sessions with active documents that have content
             from sqlalchemy import func
             doc_session_ids = set(
@@ -287,15 +273,14 @@ def setup_session_routes(session_manager: SessionManager, config: dict, webhook_
                         func.trim(Document.current_content) != "")
                 .distinct().all()
             )
-            img_session_ids = set(
-                r[0] for r in db.query(GalleryImage.session_id)
-                .filter(GalleryImage.session_id != None)
-                .distinct().all()
-            )
+            # Gallery removed (Slice 7): no per-session generated-image rows
+            # anymore, so has_images is always False. Field kept for response
+            # shape stability.
+            img_session_ids = set()
         finally:
             db.close()
 
-        sessions = [{"id": s.id, "name": s.name, "model": _public_model(s.name, s.model),
+        sessions = [{"id": s.id, "name": s.name, "model": s.model,
                      "endpoint_url": s.endpoint_url, "rag": s.rag,
                      "archived": s.archived, "folder": folder_map.get(s.id),
                      "total_tokens": token_map.get(s.id, 0),
@@ -306,12 +291,14 @@ def setup_session_routes(session_manager: SessionManager, config: dict, webhook_
                      "has_documents": s.id in doc_session_ids,
                      "has_images": s.id in img_session_ids,
                      "mode": mode_map.get(s.id),
-                     "message_count": msg_count_map.get(s.id, 0)}
+                     "message_count": msg_count_map.get(s.id, 0),
+                     "course_id": course_map.get(s.id)}
                     for s in user_sessions.values()
                     if not s.archived
                     and (s.name or "").strip() not in ("Nobody", "Incognito")
                     and (s.name or "").strip() not in _HIDDEN_SYSTEM_SESSION_NAMES]
-
+        if course_id:  # optional course scoping (ADR 0004); omitted/empty = all
+            sessions = [s for s in sessions if s["course_id"] == course_id]
         return sessions
     
     @router.post("/session", response_model=SessionResponse)
@@ -324,6 +311,7 @@ def setup_session_routes(session_manager: SessionManager, config: dict, webhook_
         skip_validation: str = Form(None),
         api_key: str = Form(""),
         endpoint_id: str = Form(""),
+        course_id: str = Form(""),
     ):
         skip_val = str(skip_validation).lower() == "true"
         user = get_current_user(request)
@@ -420,11 +408,9 @@ def setup_session_routes(session_manager: SessionManager, config: dict, webhook_
             from src.endpoint_resolver import build_headers
             session.headers = build_headers(resolved_key, resolved_base)
             _persist_session_headers(sid, session.headers)
-        # Fire webhook (sync-safe)
-        if webhook_manager:
-            webhook_manager.fire_and_forget("session.created", {
-                "session_id": sid, "name": session.name, "model": model_to_use,
-            })
+        if course_id and course_id.strip():  # ADR 0004: bind to a course (validated, Gate 5)
+            from routes.course_helpers import bind_session_course
+            bind_session_course(sid, course_id.strip(), user)
         # Fire event for automation tasks
         from src.event_bus import fire_event
         fire_event("session_created", user)
@@ -433,8 +419,9 @@ def setup_session_routes(session_manager: SessionManager, config: dict, webhook_
             name=session.name,
             model=model_to_use,
             rag=str(rag).lower() == "true" if rag else False,
-            archived=False
-        )    
+            archived=False,
+            course_id=course_id.strip() or None if course_id else None,
+        )
     @router.patch("/session/{sid}")
     def rename_session(
         request: Request, sid: str,

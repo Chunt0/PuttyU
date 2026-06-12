@@ -627,7 +627,6 @@ class McpManager:
             "image_gen",
             "memory",
             "rag",
-            "email",
         }
 
     def get_server_status(self, server_id: str) -> Dict:

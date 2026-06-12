@@ -125,3 +125,20 @@ def owner_filter(query, model_cls, user: str, *, include_shared: bool = True):
     if include_shared:
         return query.filter((model_cls.owner == user) | (model_cls.owner == None))  # noqa: E711
     return query.filter(model_cls.owner == user)
+
+
+def owner_scoped(query, model_cls, user):
+    """Gate 5 (ADR 0002): THE sanctioned way to scope a query to a user's rows.
+
+    Semantics match the codebase's legacy convention (see `owner_filter`):
+      * rows owned by `user` are visible;
+      * legacy/shared null-owner rows are also visible (the repo-wide
+        `(owner == user) | (owner IS NULL)` rule, e.g. model_routes,
+        tool_implementations);
+      * a falsy `user` (single-user / auth-off mode) leaves the query
+        unfiltered.
+
+    New feature code (courses, todos, …) must call this instead of writing
+    ad-hoc `.filter(Model.owner == ...)` expressions.
+    """
+    return owner_filter(query, model_cls, user, include_shared=True)

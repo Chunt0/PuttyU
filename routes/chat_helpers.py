@@ -301,12 +301,8 @@ def add_user_message(sess, chat_handler, preprocessed: PreprocessedMessage, inco
         chat_handler.update_session_name_if_needed(sess, preprocessed.text_for_context)
 
 
-def fire_message_event(request, webhook_manager, session_id: str, sess, message: str, compare_mode: bool = False):
-    """Fire webhook and event_bus events for a new user message."""
-    if webhook_manager and not compare_mode:
-        asyncio.create_task(webhook_manager.fire("chat.message", {
-            "session_id": session_id, "model": sess.model, "message": message[:2000],
-        }))
+def fire_message_event(request, session_id: str, sess, message: str):
+    """Fire event_bus events for a new user message."""
     from src.event_bus import fire_event
     user = get_current_user(request)
     fire_event("message_sent", user)
@@ -444,8 +440,6 @@ async def build_chat_context(
     incognito: bool = False,
     no_memory: bool = False,
     search_context: str = None,
-    compare_mode: bool = False,
-    webhook_manager=None,
     use_enhanced_message: bool = False,
     agent_mode: bool = False,
 ) -> ChatContext:
@@ -472,7 +466,7 @@ async def build_chat_context(
 
     # Fire events
     if not incognito:
-        fire_message_event(request, webhook_manager, session_id, sess, message, compare_mode)
+        fire_message_event(request, session_id, sess, message)
 
     # Resolve user prefs
     user = get_current_user(request)
@@ -493,7 +487,7 @@ async def build_chat_context(
     if incognito:
         use_rag_val = False
 
-    # If pre-fetched search context was provided (compare mode), skip live web search
+    # If pre-fetched search context was provided, skip live web search
     skip_web = bool(search_context)
 
     # Build context preface
@@ -520,7 +514,7 @@ async def build_chat_context(
     # Capture used memories immediately
     used_memories = getattr(chat_processor, '_last_used_memories', [])
 
-    # Inject pre-fetched search context (compare mode)
+    # Inject pre-fetched search context
     if search_context:
         preface.append(untrusted_context_message("prefetched search context", search_context))
 
@@ -831,10 +825,8 @@ def run_post_response_tasks(
     uprefs: dict,
     memory_manager,
     memory_vector,
-    webhook_manager,
     *,
     incognito: bool = False,
-    compare_mode: bool = False,
     character_name: str = None,
     agent_rounds: int = 0,
     agent_tool_calls: int = 0,
@@ -842,11 +834,11 @@ def run_post_response_tasks(
     owner: str = None,
     extract_skills: bool = True,
 ):
-    """Fire background tasks after a completed response: memory extraction, webhooks, auto-name, skill extraction."""
+    """Fire background tasks after a completed response: memory extraction, auto-name, skill extraction."""
     # Memory extraction — only every 4th message pair to avoid excess LLM calls
     _msg_count = len(sess.history) if hasattr(sess, 'history') else 0
     _should_extract = (_msg_count >= 4) and (_msg_count % 4 == 0)
-    if not incognito and not compare_mode and _should_extract and uprefs.get("auto_memory", True):
+    if not incognito and _should_extract and uprefs.get("auto_memory", True):
         from services.memory.memory_extractor import extract_and_store
         from src.task_endpoint import resolve_task_endpoint
         t_url, t_model, t_headers = resolve_task_endpoint(
@@ -859,7 +851,7 @@ def run_post_response_tasks(
 
     # Skill extraction from complex agent runs. Only when the user actually
     # chose agent mode — not a chat we auto-escalated for a notes/calendar
-    # intent, and never in incognito/compare.
+    # intent, and never in incognito.
     auto_skills_enabled = bool(uprefs.get("auto_skills", True))
     # Quiet by default — full gate/dispatch/start trace runs at DEBUG so
     # users can re-enable diagnostics with LOG_LEVEL=DEBUG when something
@@ -867,15 +859,14 @@ def run_post_response_tasks(
     # maybe_extract_skill (Auto-extracted / dropped / failed).
     logger.debug(
         "[skill-extract] gate: extract_skills=%s auto_skills=%s incognito=%s "
-        "compare=%s rounds=%d tools=%d skills_manager=%s",
-        extract_skills, auto_skills_enabled, incognito, compare_mode,
+        "rounds=%d tools=%d skills_manager=%s",
+        extract_skills, auto_skills_enabled, incognito,
         agent_rounds, agent_tool_calls, "set" if skills_manager else "MISSING",
     )
     if (
         extract_skills
         and auto_skills_enabled
         and not incognito
-        and not compare_mode
         and (agent_rounds >= 2 or agent_tool_calls >= 2)
     ):
         if skills_manager is None:
@@ -900,13 +891,6 @@ def run_post_response_tasks(
     # Token accumulation
     if last_metrics:
         accumulate_token_usage(session_id, last_metrics)
-
-    # Webhook
-    if webhook_manager and not compare_mode:
-        asyncio.create_task(webhook_manager.fire("chat.completed", {
-            "session_id": session_id, "model": sess.model,
-            "user_message": message, "response": full_response[:2000],
-        }))
 
     # Auto-name
     if needs_auto_name(sess.name):

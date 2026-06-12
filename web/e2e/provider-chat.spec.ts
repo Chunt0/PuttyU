@@ -84,7 +84,7 @@ test("configure a provider, pick a model, and chat", async ({ page }) => {
   // Go to Providers, add an endpoint, pick the default model.
   await page.getByRole("button", { name: "Providers", exact: true }).click();
   await page.getByLabel("Base URL").fill("http://localhost:11434");
-  await page.getByRole("button", { name: "Add" }).click();
+  await page.getByRole("button", { name: "Add", exact: true }).click();
   // The endpoint row appears (its Disable toggle is unique to a listed, enabled endpoint).
   await expect(page.getByRole("button", { name: "Disable" })).toBeVisible();
   await page.getByLabel("Default chat model").selectOption("ep1|llama3");

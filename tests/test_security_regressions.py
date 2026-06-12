@@ -2,9 +2,6 @@
 
 - `src.secret_storage.encrypt/decrypt` round-trip, idempotent on already-
   encrypted input, transparent on legacy plaintext, fail-soft on bad key.
-- `routes.email_helpers._q` quotes IMAP mailbox names so a folder named
-  `"INBOX" (BODY ...` (or one containing `\\`) can't terminate the IMAP
-  command early.
 - Compose-upload tokens flow through `pathlib.Path(token).name` so a
   caller supplying `../../etc/passwd` can't escape `COMPOSE_UPLOADS_DIR`.
 
@@ -91,8 +88,8 @@ def test_secret_storage_is_encrypted(tmp_path, monkeypatch):
 
 def test_secret_storage_corrupt_token_returns_empty(tmp_path, monkeypatch):
     """A row encrypted under a different key (or hand-corrupted) must
-    degrade to '' rather than raise — so a single bad row can't 500 the
-    whole email config lookup."""
+    degrade to '' rather than raise — so a single bad row can't 500 a
+    whole config lookup."""
     ss = _import_secret_storage(tmp_path, monkeypatch)
     assert ss.decrypt("enc:not-a-valid-fernet-token") == ""
 
@@ -127,15 +124,13 @@ def test_readme_native_quickstart_uses_loopback():
 
 
 def test_ollama_cookbook_runner_does_not_force_public_bind():
+    # (The legacy static/js/cookbook.js half of this guard died with the
+    # retired vanilla-JS frontend in Slice 7; the backend route remains.)
     route = Path("routes/cookbook_routes.py").read_text(encoding="utf-8")
-    cookbook_js = Path("static/js/cookbook.js").read_text(encoding="utf-8")
     assert 'OLLAMA_HOST="0.0.0.0:${PUTTYU_OLLAMA_PORT}" ollama serve' not in route
     assert 'OLLAMA_HOST="${PUTTYU_OLLAMA_HOST}:${PUTTYU_OLLAMA_PORT}" ollama serve' in route
     assert '_ollama_default_host = "0.0.0.0" if remote else "127.0.0.1"' in route
     assert "WARNING: remote Ollama will bind" in route
-    assert "OLLAMA_HOST=0.0.0.0:${ollamaPort}" not in cookbook_js
-    assert "const bindHost = _envState.remoteHost ? '0.0.0.0' : '127.0.0.1';" in cookbook_js
-    assert "OLLAMA_HOST=${bindHost}:${ollamaPort}" in cookbook_js
 
 
 def _import_integrations(tmp_path, monkeypatch):
@@ -193,44 +188,6 @@ def test_integrations_plaintext_keys_migrate_on_load(tmp_path, monkeypatch):
     migrated = json.loads(migrated_text)
     assert migrated[0]["api_key"].startswith("enc:")
     assert "legacy-secret" not in migrated_text
-
-
-# ── _q IMAP mailbox quoter ─────────────────────────────────────
-
-def _import_q():
-    sys.modules.pop("routes.email_helpers", None)
-    from routes.email_helpers import _q  # noqa: WPS433
-    return _q
-
-
-def test_q_plain_name():
-    _q = _import_q()
-    assert _q("INBOX") == '"INBOX"'
-
-
-def test_q_name_with_spaces():
-    """`[Gmail]/Sent Mail` is the kind of folder that breaks unquoted
-    `conn.select(folder)`. The helper must always quote."""
-    _q = _import_q()
-    assert _q("[Gmail]/Sent Mail") == '"[Gmail]/Sent Mail"'
-
-
-def test_q_escapes_backslash():
-    _q = _import_q()
-    assert _q("weird\\name") == '"weird\\\\name"'
-
-
-def test_q_escapes_double_quote():
-    """A folder name like `INBOX" (BODY ...` would terminate the IMAP
-    string early without quote-escaping."""
-    _q = _import_q()
-    assert _q('INBOX" injected') == '"INBOX\\" injected"'
-
-
-def test_q_empty_input():
-    _q = _import_q()
-    assert _q("") == '""'
-    assert _q(None) == '""'
 
 
 # ── compose-upload path traversal block ─────────────────────────
@@ -305,7 +262,6 @@ def _stub_core_database_for_route_imports(monkeypatch):
         "ChatMessage",
         "Document",
         "DocumentVersion",
-        "GalleryImage",
         "ModelEndpoint",
     ):
         setattr(db, name, MagicMock())
@@ -466,8 +422,7 @@ def test_pdf_marker_render_lookup_denies_cross_owner_without_doc_leak(tmp_path):
 def test_require_user_rejects_unauthenticated(monkeypatch):
     """The shared auth dependency must raise 401 when the middleware
     didn't attach a user AND auth is configured. Mirrors the
-    defense-in-depth check on /api/contacts/*, /api/personal/*,
-    /api/email/*."""
+    defense-in-depth check on /api/personal/*."""
     sys.modules.pop("src.auth_helpers", None)
     from fastapi import HTTPException
 
@@ -495,30 +450,6 @@ def test_require_user_rejects_unauthenticated(monkeypatch):
     with pytest.raises(HTTPException) as exc:
         auth_helpers.require_user(_Req())
     assert exc.value.status_code == 401
-
-
-def test_inprocess_pollers_gate(monkeypatch):
-    """The PUTTYU_INPROCESS_POLLERS env var must let operators kill
-    the asyncio pollers when cron / systemd is driving the one-shot
-    `puttyu-mail poll-*` CLI subcommands instead. Two pollers racing
-    on the same SQLite would mark scheduled rows as 'sent' twice."""
-    import sys as _sys
-    _sys.modules.pop("routes.email_pollers", None)
-    from routes.email_pollers import _inprocess_pollers_enabled  # noqa: WPS433
-
-    # Defaults to enabled (preserves single-process deployments).
-    monkeypatch.delenv("PUTTYU_INPROCESS_POLLERS", raising=False)
-    assert _inprocess_pollers_enabled() is True
-
-    # Any of the off-values disables.
-    for off in ("0", "false", "no", "off", "FALSE", "Off"):
-        monkeypatch.setenv("PUTTYU_INPROCESS_POLLERS", off)
-        assert _inprocess_pollers_enabled() is False, f"{off!r} should disable"
-
-    # Explicit on-values stay enabled.
-    for on in ("1", "true", "yes", "anything-truthy"):
-        monkeypatch.setenv("PUTTYU_INPROCESS_POLLERS", on)
-        assert _inprocess_pollers_enabled() is True, f"{on!r} should enable"
 
 
 def test_require_user_accepts_loopback_when_unconfigured(monkeypatch):
@@ -871,37 +802,7 @@ def test_web_fetch_guard_blocks_redirect_into_private(monkeypatch):
     assert "Blocked" in str(exc.value)
 
 
-# ── audit fixes (2026-06-01): email XSS, attachment traversal, authz ──
-
-def _import_attachment_extract_dir():
-    sys.modules.pop("routes.email_helpers", None)
-    from routes.email_helpers import attachment_extract_dir, ATTACHMENTS_DIR
-    return attachment_extract_dir, ATTACHMENTS_DIR
-
-
-@pytest.mark.parametrize("folder,uid", [
-    ("../../../../tmp/evil", "1"),
-    ("INBOX", "../../etc/cron.d/x"),
-    ("a/../../b", "x"),
-    ("..", ".."),
-    ("/abs/path", "2"),
-])
-def test_attachment_extract_dir_stays_contained(folder, uid):
-    """User-controlled folder/uid must never escape ATTACHMENTS_DIR — pins the
-    fix for the attachment-extraction path traversal."""
-    aed, base = _import_attachment_extract_dir()
-    target = aed(folder, uid)
-    base_r = base.resolve()
-    assert target == base_r or base_r in target.parents
-    # exactly one extra path segment, and no `..` component survived
-    rel = target.relative_to(base_r)
-    assert ".." not in rel.parts
-
-
-def test_attachment_extract_dir_normal_inputs_unchanged():
-    aed, base = _import_attachment_extract_dir()
-    assert aed("INBOX", "123") == base.resolve() / "INBOX_123"
-
+# ── audit fixes (2026-06-01): authz ──
 
 def test_diagnostics_routes_are_admin_gated():
     """db/rag stats + test endpoints must require admin (they relied only on
@@ -911,16 +812,6 @@ def test_diagnostics_routes_are_admin_gated():
     for handler in ("get_database_stats", "get_rag_stats", "test_youtube", "test_research"):
         assert f"def {handler}(request: Request" in text, handler
     assert text.count("require_admin(request)") >= 4
-
-
-def test_email_thread_rendering_sanitizes_body_html():
-    """Both threaded render paths must run server-parsed body_html through the
-    allowlist sanitizer (the flat path already did)."""
-    src = Path(__file__).resolve().parents[1] / "static" / "js" / "emailLibrary.js"
-    text = src.read_text()
-    # every `t.body_html` reference is wrapped by _sanitizeHtml(...)
-    assert text.count("t.body_html") == text.count("_sanitizeHtml(t.body_html")
-    assert "t.body_html" in text  # guard against the file being refactored away
 
 
 def test_session_html_export_escapes_name():
@@ -1001,16 +892,10 @@ def test_mcp_oauth_config_sanitizes_paths_and_env(tmp_path, monkeypatch):
     assert env["GMAIL_CREDENTIALS_PATH"] == cfg["token_file"]
 
 
-def test_gmail_mcp_preset_uses_contained_oauth_paths():
-    src = Path(__file__).resolve().parents[1] / "static" / "js" / "admin.js"
-    text = src.read_text()
-    preset = text.split('{ name: "Gmail"', 1)[1].split('{ name: "Email (IMAP/SMTP)"', 1)[0]
-
-    assert "~/.gmail-mcp" not in preset
-    assert 'oauthFile: { dir: "gmail"' in preset
-    assert 'keys_file: "gmail/gcp-oauth.keys.json"' in preset
-    assert 'token_file: "gmail/credentials.json"' in preset
-
+# (test_gmail_mcp_preset_uses_contained_oauth_paths was deleted with the legacy
+# static/ frontend in Slice 7 — it pinned the Gmail MCP preset paths inside
+# static/js/admin.js, which no longer exists. The backend containment guards
+# above, test_mcp_oauth_paths_*, still cover the actual path resolution.)
 
 
 # -- export/gallery filename hardening ----------------------------------------
@@ -1036,14 +921,6 @@ def _import_session_routes_for_filename():
     return importlib.import_module("routes.session_routes")
 
 
-def _import_gallery_routes_for_filename():
-    # Same rationale as the session route helper: import _sanitize_gallery_filename
-    # against the real core.database and leave a clean, real module cached.
-    _drop_route_module_cache("routes.gallery_routes")
-    _drop_route_module_cache("routes.gallery_helpers")
-    return importlib.import_module("routes.gallery_routes")
-
-
 def test_export_filename_sanitizer_blocks_header_and_path_chars():
     mod = _import_session_routes_for_filename()
 
@@ -1061,22 +938,6 @@ def test_export_filename_sanitizer_preserves_safe_names():
     assert mod._sanitize_export_filename("conversation_20260602.md") == "conversation_20260602.md"
     assert mod._sanitize_export_filename("") == ""
 
-
-def test_gallery_replace_filename_sanitizer_uses_basename():
-    mod = _import_gallery_routes_for_filename()
-
-    out = mod._sanitize_gallery_filename("../../etc/cron.d/evil image.png")
-
-    assert out == "evil_image.png"
-    assert "/" not in out
-    assert "\\" not in out
-
-
-def test_gallery_replace_filename_sanitizer_falls_back_when_empty(monkeypatch):
-    mod = _import_gallery_routes_for_filename()
-    monkeypatch.setattr(mod.uuid, "uuid4", lambda: types.SimpleNamespace(hex="abcdef1234567890"))
-
-    assert mod._sanitize_gallery_filename("../") == "abcdef123456"
 
 def test_chat_active_document_lookup_is_owner_scoped():
     """The explicit `active_doc_id` path in /api/chat_stream must scope the

@@ -21,7 +21,7 @@ if "core.database" not in sys.modules:
     _core_db = types.ModuleType("core.database")
     for _name in [
         "SessionLocal", "ModelEndpoint", "Session", "ChatMessage", "Document",
-        "DocumentVersion", "GalleryImage", "GalleryAlbum", "Note",
+        "DocumentVersion", "Note",
         "CalendarCal", "CalendarEvent", "ScheduledTask", "TaskRun",
         "McpServer",
     ]:

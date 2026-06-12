@@ -40,7 +40,7 @@ def test_secret_in_list_of_dicts_blanked():
 
 def test_non_secret_keys_preserved():
     s = {"keybinds": {"send": "Enter"}, "theme": "dark", "image_model": "x",
-         "default_endpoint_id": "ep1", "search_result_count": 5, "tts_enabled": True}
+         "default_endpoint_id": "ep1", "search_result_count": 5, "memory": True}
     assert scrub_settings(s) == s  # untouched
 
 

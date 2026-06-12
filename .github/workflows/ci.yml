@@ -35,11 +35,12 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020  # v4
         with:
           node-version: "20"
-      # Syntax-check our own JS (skip vendored libs in static/lib).
+      # Syntax-check the last remaining JS (CI helper scripts — the legacy
+      # static/ frontend was deleted in Slice 7; Gate 6e forbids new JS).
       - name: node --check
         run: |
-          shopt -s globstar nullglob
-          for f in static/app.js static/js/**/*.js; do
+          shopt -s nullglob
+          for f in .github/scripts/*.js; do
             node --check "$f"
           done
 

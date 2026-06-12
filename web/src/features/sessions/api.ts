@@ -4,14 +4,18 @@ import { api } from "../../api/client.ts";
 import { del, getJson, patchForm, postForm } from "../../api/forms.ts";
 import type { Session, SessionResponse } from "../../api/types.ts";
 import type { DefaultChat } from "../models/types.ts";
+import { useCourseStore } from "../courses/store.ts";
 
 export const sessionsKey = ["sessions"] as const;
 
-export function useSessions() {
+/** Sessions, optionally scoped to a course (ADR 0004). `null` = all (Home). */
+export function useSessions(courseId: string | null = null) {
   return useQuery({
-    queryKey: sessionsKey,
+    queryKey: courseId ? ([...sessionsKey, courseId] as const) : sessionsKey,
     queryFn: async (): Promise<Session[]> => {
-      const { data, error } = await api.GET("/api/sessions");
+      const { data, error } = await api.GET("/api/sessions", {
+        params: { query: courseId ? { course_id: courseId } : {} },
+      });
       if (error || !data) throw new Error("failed to load sessions");
       return data;
     },
@@ -29,7 +33,12 @@ export function useCreateSession() {
         def?.endpoint_id && def.model
           ? { name, endpoint_id: def.endpoint_id, model: def.model }
           : { name, skip_validation: "true" };
-      return postForm<SessionResponse>("/api/session", fields);
+      // A chat started under a course tab belongs to that course (ADR 0004).
+      const courseId = useCourseStore.getState().activeCourseId;
+      return postForm<SessionResponse>(
+        "/api/session",
+        courseId ? { ...fields, course_id: courseId } : fields,
+      );
     },
     onSuccess: () => qc.invalidateQueries({ queryKey: sessionsKey }),
   });

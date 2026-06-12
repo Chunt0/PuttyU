@@ -128,23 +128,6 @@ async def call_tool(name: str, arguments: dict) -> list[TextContent]:
                 img_path.write_bytes(base64.b64decode(img["b64_json"]))
                 image_url = f"{_pub_base}/api/generated-image/{filename}"
 
-                # Save to gallery
-                try:
-                    from src.database import SessionLocal, GalleryImage
-                    db = SessionLocal()
-                    db.add(GalleryImage(
-                        id=str(uuid.uuid4()),
-                        filename=filename,
-                        prompt=prompt,
-                        model=model_id,
-                        size=size,
-                        quality=payload.get("quality", "medium"),
-                    ))
-                    db.commit()
-                    db.close()
-                except Exception:
-                    pass
-
             elif img.get("url"):
                 image_url = img["url"]
             else:

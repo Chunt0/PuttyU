@@ -4,12 +4,13 @@ import os
 
 
 def register_static_mime_types() -> None:
-    """Force stable JS module MIME types across platforms.
+    """Force stable JS module MIME types.
 
-    Some native Windows setups inherit stale/incorrect registry mappings for
-    ``.js``/``.mjs``, which can make Starlette serve ES modules with a non-JS
-    ``Content-Type`` and cause the UI to load but fail on click. Re-register the
-    standard MIME types at startup so static assets are served consistently.
+    The built SPA bundle (web/dist/assets/*.js) is served via Starlette's
+    StaticFiles, which resolves Content-Type through the ``mimetypes`` registry.
+    A stale/incorrect system mapping for ``.js``/``.mjs`` would make the browser
+    refuse to execute the modules, so re-register the standard types at startup
+    so bundle assets are served consistently.
     """
 
     mimetypes.add_type("text/javascript", ".js")
@@ -50,7 +51,7 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 # Core imports
 from core.constants import (
-    BASE_DIR, STATIC_DIR, SESSIONS_FILE,
+    BASE_DIR, SESSIONS_FILE,
     REQUEST_TIMEOUT, OPENAI_API_KEY,
 )
 from core.database import SessionLocal, ApiToken
@@ -128,7 +129,6 @@ _TIMEOUT_EXEMPT_PREFIXES = (
     "/api/model-endpoints", # /probe sub-route also iterates models
     "/api/cookbook/setup",  # remote pacman/apt installs
     "/api/upload",          # large files
-    "/api/image",           # diffusion proxies (inpaint/harmonize/upscale/etc.) — own 120s httpx timeout
 )
 
 
@@ -175,7 +175,7 @@ if AUTH_ENABLED:
     }
     # /assets + /fonts: the puttyU SPA bundle must load before the user is
     # authenticated so the client-side login screen can render.
-    AUTH_EXEMPT_PREFIXES = ["/static", "/assets", "/fonts"]
+    AUTH_EXEMPT_PREFIXES = ["/assets", "/fonts"]
     # Dynamic paths whose own handler proves identity via a path-embedded
     # secret instead of the session/bearer auth. The route handler at
     # routes/task_routes.py validates the per-task `webhook_token` itself
@@ -365,32 +365,10 @@ if AUTH_ENABLED:
 else:
     logger.info("Auth middleware disabled (set AUTH_ENABLED=true to enable)")
 
-# ========= STATIC FILES =========
-os.makedirs(STATIC_DIR, exist_ok=True)
-
-
-class _RevalidatingStatic(StaticFiles):
-    """Serve static assets normally, but force the browser to REVALIDATE
-    source files (.js/.css/.html) on every load instead of serving a stale
-    copy from disk cache. The app ships raw ES modules with no build step or
-    versioned URLs, so browsers were caching modules across deploys — a code
-    change wouldn't appear without a manual hard-refresh. `no-cache` keeps the
-    cached bytes but requires a conditional request; unchanged files still
-    return a cheap 304 (ETag/Last-Modified are preserved)."""
-
-    async def get_response(self, path, scope):
-        resp = await super().get_response(path, scope)
-        if path.endswith((".js", ".css", ".html")):
-            resp.headers["Cache-Control"] = "no-cache"
-        return resp
-
-
-app.mount("/static", _RevalidatingStatic(directory="static"), name="static")
-
-# ========= NEW WEB UI — puttyU SPA (web/dist) =========
+# ========= WEB UI — puttyU SPA (web/dist) =========
 # The TypeScript/React frontend is built to web/dist (Dockerfile bun stage, or
 # `cd web && bun run build` locally) and served from here. The legacy static/
-# frontend above is no longer routed to users — see serve_index / spa_fallback.
+# frontend was retired in Slice 7.
 WEB_DIST = abs_join(BASE_DIR, "web/dist")
 WEB_INDEX = abs_join(WEB_DIST, "index.html")
 if os.path.isdir(WEB_DIST):
@@ -418,27 +396,6 @@ def _serve_web_app() -> HTMLResponse:
 async def serve_generated_image(filename: str, request: Request):
     """Serve generated images from the data directory."""
     img_path = resolve_generated_image_path(filename)
-    # SECURITY: filename is the only key, so anyone who knows / guesses a
-    # 12-hex content hash could pull another user's image bytes. Require
-    # auth and verify ownership via the gallery row (when one exists).
-    try:
-        from src.auth_helpers import get_current_user
-        from core.database import SessionLocal as _SL, GalleryImage as _GI
-        _user = get_current_user(request)
-        if _user:
-            _db = _SL()
-            try:
-                _row = _db.query(_GI).filter(_GI.filename == filename).first()
-                # Generated-but-not-yet-imported images have no row → allow.
-                # Row exists with a different owner → 404 (don't confirm existence).
-                if _row is not None and _row.owner and _row.owner != _user:
-                    raise HTTPException(status_code=404, detail="Image not found")
-            finally:
-                _db.close()
-    except HTTPException:
-        raise
-    except Exception:
-        pass
     ext = filename.rsplit('.', 1)[-1].lower()
     mime = {
         "png": "image/png", "jpg": "image/jpeg", "jpeg": "image/jpeg",
@@ -504,12 +461,6 @@ chat_handler      = components["chat_handler"]
 model_discovery   = components["model_discovery"]
 skills_manager    = components["skills_manager"]
 
-# TTS
-from services.tts import get_tts_service
-
-tts_service = get_tts_service()
-logger.info("TTS service initialized (provider managed via admin settings)")
-
 # ========= EXCEPTION HANDLERS =========
 @app.exception_handler(SessionNotFoundError)
 async def session_not_found_handler(request: Request, exc: SessionNotFoundError):
@@ -527,11 +478,6 @@ async def llm_service_error_handler(request: Request, exc: LLMServiceError):
 async def web_search_error_handler(request: Request, exc: WebSearchError):
     return JSONResponse(status_code=502, content={"error": "WEB_SEARCH_ERROR", "message": str(exc)})
 
-# ========= WEBHOOK MANAGER =========
-from src.webhook_manager import WebhookManager
-
-webhook_manager = WebhookManager(api_key_manager=api_key_manager)
-
 # ========= INCLUDE ROUTERS =========
 
 # Auth
@@ -544,22 +490,13 @@ upload_router, upload_cleanup_func = setup_upload_routes(upload_handler)
 app.include_router(upload_router)
 upload_cleanup_task = None
 
-# Emoji SVG proxy (same-origin, lazy-cached Twemoji) — lets the chat render
-# emojis as flat SVG instead of system color glyphs.
-from routes.emoji_routes import setup_emoji_routes
-app.include_router(setup_emoji_routes())
-
 from routes.workspace_routes import setup_workspace_routes
 app.include_router(setup_workspace_routes())
 
 # Sessions
 from routes.session_routes import setup_session_routes
 session_config = {"REQUEST_TIMEOUT": REQUEST_TIMEOUT, "OPENAI_API_KEY": OPENAI_API_KEY, "SESSIONS_FILE": SESSIONS_FILE}
-app.include_router(setup_session_routes(session_manager, session_config, webhook_manager=webhook_manager))
-
-# Admin Danger Zone wipes (Settings → System → Danger Zone)
-from routes.admin_wipe_routes import setup_admin_wipe_routes
-app.include_router(setup_admin_wipe_routes(session_manager))
+app.include_router(setup_session_routes(session_manager, session_config))
 
 # Memory
 from routes.memory_routes import setup_memory_routes
@@ -574,7 +511,6 @@ app.include_router(setup_chat_routes(
     session_manager, chat_handler, chat_processor,
     memory_manager, research_handler, upload_handler,
     memory_vector=memory_vector,
-    webhook_manager=webhook_manager,
     skills_manager=skills_manager,
 ))
 
@@ -618,33 +554,10 @@ app.include_router(setup_model_routes(model_discovery))
 from routes.copilot_routes import setup_copilot_routes
 app.include_router(setup_copilot_routes())
 
-# TTS
-from routes.tts_routes import setup_tts_routes
-app.include_router(setup_tts_routes(tts_service))
-
-# STT
-from services.stt import get_stt_service
-stt_service = get_stt_service()
-from routes.stt_routes import setup_stt_routes
-app.include_router(setup_stt_routes(stt_service))
-logger.info("STT service initialized (provider managed via settings)")
-
 # Documents (artifacts/canvas)
 from routes.document_routes import setup_document_routes
 document_router = setup_document_routes(session_manager, upload_handler)
 app.include_router(document_router)
-
-# Signatures (reusable image stamps)
-from routes.signature_routes import setup_signature_routes
-app.include_router(setup_signature_routes())
-
-# Gallery (image library)
-from routes.gallery_routes import setup_gallery_routes
-app.include_router(setup_gallery_routes())
-
-# Persisted image-editor drafts (server-backed projects)
-from routes.editor_draft_routes import setup_editor_draft_routes
-app.include_router(setup_editor_draft_routes())
 
 # Scheduled tasks + event bus
 from src.task_scheduler import TaskScheduler
@@ -674,21 +587,9 @@ app.include_router(setup_cookbook_routes())
 from routes.hwfit_routes import setup_hwfit_routes
 app.include_router(setup_hwfit_routes())
 
-# Model A/B Comparison
-from routes.compare_routes import setup_compare_routes
-app.include_router(setup_compare_routes(session_manager))
-
 # User Preferences
 from routes.prefs_routes import setup_prefs_routes
 app.include_router(setup_prefs_routes())
-
-# Backup (export/import user data)
-from routes.backup_routes import setup_backup_routes
-app.include_router(setup_backup_routes(memory_manager, preset_manager, skills_manager))
-
-from routes.font_routes import setup_font_routes
-app.include_router(setup_font_routes())
-
 
 # MCP (Model Context Protocol)
 from src.mcp_manager import McpManager
@@ -707,58 +608,24 @@ set_ai_memory_manager(memory_manager, memory_vector)
 set_ai_rag_manager(rag_manager, personal_docs_mgr)
 logger.info("AI interaction tools initialized (session, memory, RAG, UI control)")
 
-# Webhooks
-from routes.webhook_routes import setup_webhook_routes
-app.include_router(setup_webhook_routes(webhook_manager, auth_manager, session_manager, api_key_manager))
-
 # API Tokens
 from routes.api_token_routes import setup_api_token_routes
 app.include_router(setup_api_token_routes())
 
-logger.info("Webhook & API token routes initialized")
+logger.info("API token routes initialized")
 
 # Notes (Google Keep-style notes/todos)
 from routes.note_routes import setup_note_routes
 app.include_router(setup_note_routes(task_scheduler))
 
-# Email
-from routes.email_routes import setup_email_routes
-email_router = setup_email_routes()
-app.include_router(email_router)
-
-# Codex integration — HTTP surface for the Codex plugin/MCP bridge. Reuses
-# api_token scopes (todos:read|write, email:read|draft|send) so external
-# Codex sessions can only touch the data the user explicitly allowed. Mounted
-# AFTER email so the codex_routes can borrow the email router for shared
-# search/threading helpers.
-from routes.codex_routes import setup_codex_routes, setup_claude_routes
-app.include_router(setup_codex_routes(
-    email_router=email_router,
-    memory_router=memory_router,
-    calendar_router=calendar_router,
-    document_router=document_router,
-))
-app.include_router(setup_claude_routes())
-
-from routes.vault_routes import setup_vault_routes
-app.include_router(setup_vault_routes())
-
-# Contacts (CardDAV)
-from routes.contacts_routes import setup_contacts_routes
-app.include_router(setup_contacts_routes())
+# Courses (Phase-2 T1 — ADR 0004: the central scoping noun)
+from routes.course_routes import setup_course_routes
+app.include_router(setup_course_routes())
 
 from companion import setup_companion_routes
 app.include_router(setup_companion_routes())
 
 # ========= ROUTES (kept in app.py) =========
-
-def _serve_html_with_nonce(request: Request, file_path: str) -> HTMLResponse:
-    """Read an HTML file and inject the CSP nonce into inline <script> tags."""
-    with open(file_path, "r", encoding="utf-8") as f:
-        html = f.read()
-    nonce = getattr(request.state, "csp_nonce", "")
-    html = html.replace("{{CSP_NONCE}}", nonce)
-    return HTMLResponse(html)
 
 @app.get("/")
 async def serve_index(request: Request):
@@ -814,7 +681,7 @@ async def runtime_info() -> Dict[str, object]:
     }
 
 # ========= SPA FALLBACK =========
-# Registered LAST so every explicit API route and static mount above wins first.
+# Registered LAST so every explicit API route and asset mount above wins first.
 # Any remaining non-API GET serves the puttyU SPA shell, letting client-side
 # deep links (/models, /notes, /research, …) resolve to react-router.
 @app.get("/{full_path:path}")
@@ -840,7 +707,6 @@ app.router.lifespan_context = _lifespan
 async def _startup_event():
     global upload_cleanup_task
     logger.info("Application starting up...")
-    webhook_manager.set_loop(asyncio.get_running_loop())
     # Wipe any leftover incognito sessions from previous process — they're
     # ephemeral by design and must not survive a restart.
     try:
@@ -1005,8 +871,7 @@ async def _startup_event():
         logger.debug(f"Skill owner backfill skipped: {e}")
 
     # Start scheduled task runner — skip when running under a cron-driven
-    # deployment where an external worker drives task firing. Mirrors
-    # `PUTTYU_INPROCESS_POLLERS` from the email pollers.
+    # deployment where an external worker drives task firing.
     _tasks_inprocess = (os.environ.get("PUTTYU_INPROCESS_TASKS") or os.environ.get("PUTTYU_INPROCESS_TASKS") or "1").strip().lower()
     if _tasks_inprocess not in ("0", "false", "no", "off", ""):
         await task_scheduler.start()
@@ -1084,11 +949,6 @@ async def _shutdown_event():
         await task_scheduler.stop()
     except Exception:
         pass
-    # Close webhook manager
-    try:
-        await webhook_manager.close()
-    except Exception as e:
-        logger.warning(f"Webhook manager shutdown error: {e}")
     # Disconnect all MCP servers
     try:
         await mcp_manager.disconnect_all()

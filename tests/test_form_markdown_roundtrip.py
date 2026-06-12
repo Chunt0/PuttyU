@@ -18,13 +18,15 @@ def test_asterisk_label_value_survives_export_roundtrip():
         {"name": "state", "label": "State *", "type": "choice",
          "options": ["CA", "NY"], "value": "NY", "page": 1},
         {"name": "sign", "label": "Signature *", "type": "signature",
-         "value": "signature:s1", "page": 1},
+         "value": "", "page": 1},
     ]
     md = render_form_as_markdown(fields, "u", "F")
     vals = parse_markdown_to_values(md)
     assert vals["email"] == "me@x.com"
     assert vals["state"] == "NY"
-    assert vals["sign"] == "signature:s1"
+    # Signature fields always render as the _(unsigned)_ placeholder (the
+    # stored-signature stamping feature was removed), which parses back empty.
+    assert vals["sign"] == ""
 
 
 def test_plain_labels_and_colon_values_unaffected():

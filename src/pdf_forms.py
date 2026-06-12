@@ -216,62 +216,22 @@ def extract_fields(path: str) -> list[dict[str, Any]]:
     return out
 
 
-def stamp_signatures(
-    pdf_path: str,
-    output_path: str,
-    stamps: dict[str, bytes],
-) -> int:
-    """Stamp PNG signature images into the PDF at each named field's rect.
-
-    `stamps` is {field_name: png_bytes}. Each named field is found in the
-    AcroForm; the image is drawn into the field's rectangle preserving aspect
-    ratio. The widget itself is left intact (still a form field) so it can be
-    re-edited later if needed; the stamp is rendered on top.
-
-    Returns the number of stamps written. Pass the source PDF (or an
-    already-filled output from fill_fields) and a fresh output_path.
-    """
-    if not stamps:
-        return 0
-    _require_fitz()
-    doc = fitz.open(pdf_path)
-    written = 0
-    try:
-        for page in doc:
-            for w in page.widgets() or []:
-                name = w.field_name
-                if name not in stamps:
-                    continue
-                png = stamps[name]
-                if not png:
-                    continue
-                try:
-                    page.insert_image(w.rect, stream=png, keep_proportion=True, overlay=True)
-                    written += 1
-                except Exception as e:
-                    logger.warning(f"Failed to stamp signature into {name}: {e}")
-        doc.save(output_path, incremental=False, deflate=True)
-    finally:
-        doc.close()
-    return written
-
-
 def stamp_annotations(
     pdf_path: str,
     output_path: str,
     annotations: list[dict],
-    signature_pngs: dict[str, bytes] | None = None,
 ) -> int:
-    """Burn freeform annotations (text, check, signature) onto a PDF.
+    """Burn freeform annotations (text, check) onto a PDF.
 
     Each annotation has page-percentage coords (x, y, w, h: 0–100), a `kind`
-    in {text, check, signature}, a string value, and a line_height for text.
+    in {text, check}, a string value, and a line_height for text. Legacy
+    `signature` annotations are skipped — the stored-signature stamping
+    feature was removed with the signature CRUD.
     Returns the number of annotations stamped.
     """
     if not annotations:
         return 0
     _require_fitz()
-    signature_pngs = signature_pngs or {}
     doc = fitz.open(pdf_path)
     written = 0
     try:
@@ -344,18 +304,6 @@ def stamp_annotations(
                     shape.commit()
                     written += 1
 
-                elif kind == "signature":
-                    if not isinstance(value, str) or not value.startswith("signature:"):
-                        continue
-                    sid = value[len("signature:"):].strip()
-                    png = signature_pngs.get(sid)
-                    if not png:
-                        continue
-                    try:
-                        page.insert_image(rect, stream=png, keep_proportion=True, overlay=True)
-                        written += 1
-                    except Exception as e:
-                        logger.warning(f"signature stamp failed: {e}")
             except Exception as e:
                 logger.warning(f"Failed to stamp annotation {ann.get('id')}: {e}")
                 continue
