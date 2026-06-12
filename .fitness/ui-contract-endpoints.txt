@@ -1,0 +1,35 @@
+# Endpoints the shipped UI consumes — Gate 6b requires each to carry a response_model=
+# (keeps the OpenAPI client accurate). Format: `METHOD /api/path` (use the literal path as
+# written in the route decorator; path params like {id} are fine). Grows one slice at a
+# time. Empty in Slice 0 — Slice 1 adds the auth/session/chat contract surface.
+#
+# Slice 1 (auth + chat + sessions):
+GET /api/auth/status
+POST /api/auth/login
+POST /api/auth/logout
+GET /api/sessions
+GET /api/history/{session_id}
+#
+# Slice 3 (memory + personal docs / RAG + embeddings):
+GET /api/memory
+POST /api/memory/add
+POST /api/memory/search
+DELETE /api/memory/{memory_id}
+GET /api/personal
+POST /api/personal/upload
+DELETE /api/personal/file
+GET /api/embeddings/models
+GET /api/embeddings/endpoint
+#
+# Slice 5 (deep research — JSON endpoints; stream is SSE + report is HTML, both untyped):
+POST /api/research/start
+GET /api/research/status/{session_id}
+GET /api/research/library
+#
+# Slice 6.5b (notes — KEEP, tutoring core):
+GET /api/notes
+POST /api/notes
+PUT /api/notes/{note_id}
+DELETE /api/notes/{note_id}
+POST /api/notes/{note_id}/pin
+POST /api/notes/{note_id}/archive

@@ -1,0 +1,4 @@
+# Paths whose Python files Gate 6d holds to "no CUT-module imports" (path prefixes, one
+# per line). Starts with the new corpus subsystem; widens as KEEP modules are rewritten
+# lean and CUT code is deleted (Slice 7), until it can cover the whole backend.
+src/corpus/

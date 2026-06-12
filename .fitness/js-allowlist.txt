@@ -1,0 +1,10 @@
+# Gate 6e (no-javascript.sh) — path prefixes where legacy/tooling JavaScript is TEMPORARILY
+# tolerated. ADR 0001: the rewrite is TypeScript-only; the END STATE is an EMPTY allowlist
+# (zero JS in the repo). Every entry is on death row — shrink it, never grow it. New JS
+# anywhere NOT matching a prefix below fails CI.
+#
+# static/ is the bulk (the old vanilla-JS frontend, 153 files) and disappears wholesale in
+# Slice 7 when /legacy is retired — at which point delete that line and the repo is JS-free.
+static/
+.github/scripts/
+tests/markdown_codefence_placeholder_regression.mjs

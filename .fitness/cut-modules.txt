@@ -1,0 +1,23 @@
+# CUT route modules (SPEC Appendix C.1) — deleted lazily in Slice 7. Gate 6d forbids the
+# lean core (see lean-core-paths.txt) from importing any of these. One module name per line
+# (no path, no extension); matched against `from/import [routes.|services.|src.]<name>`.
+email_routes
+email_pollers
+email_helpers
+calendar_routes
+gallery_routes
+gallery_helpers
+note_routes
+contacts_routes
+webhook_routes
+vault_routes
+compare_routes
+codex_routes
+tts_routes
+stt_routes
+signature_routes
+emoji_routes
+font_routes
+editor_draft_routes
+backup_routes
+admin_wipe_routes

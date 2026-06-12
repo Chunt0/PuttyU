@@ -1,0 +1,128 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+!static/js/editor/build/
+venv/
+.venv/
+*.egg
+
+# Environment
+.env
+.env.bak.*
+!.env.example
+
+# Data — all user data stays local
+data/
+!services/hwfit/data/
+!services/hwfit/data/hf_models.json
+logs/
+*.log
+*.db
+*.sqlite
+*.sqlite3
+
+# Node
+node_modules/
+services/node_modules/
+services/data/
+
+# IDE / Editor
+.aider*
+.claude/
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Test capture artifacts (browser session dumps may contain personal content)
+.playwright-mcp/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.cache
+cache/
+output.txt.txt
+
+# Media (uploaded/generated)
+*.jpg
+*.jpeg
+*.png
+*.gif
+*.bmp
+*.webp
+*.tiff
+*.pdf
+
+# …except shipped demo assets in docs/ that the README links to.
+!docs/*.jpg
+!docs/*.jpeg
+!docs/*.png
+!docs/*.gif
+!docs/*.webp
+# …and curated docs/ subfolder assets (e.g. accessibility before/after shots).
+!docs/**/*.png
+!docs/**/*.jpg
+!docs/**/*.gif
+!docs/**/*.webp
+# …and the new-UI screenshots the README links to.
+!snapshots/*.png
+
+# Reports and temp files
+reports/
+# Top-level runtime tasks dir only — anchored so it doesn't swallow web/src/features/tasks/.
+/tasks/
+scripts/compound/*.json
+research_data/
+**/search_analytics.json
+
+# Internal dev/review notes — not for public repo
+dev-docs/
+# Windows-port working docs (local only, not for public repo)
+docs/windows-port/
+
+# Local config
+compound.config.json
+*.error.log
+_scratch/
+
+# --- Pipeline results (downloads, slides, transcripts, run logs) ---
+output/
+
+# --- Downloaded model caches ---
+**/.ecapa_model/
+.cache/
+*.ckpt
+*.pt
+*.bin
+
+# --- Media files (source downloads & extracted audio), anywhere ---
+*.mp4
+*.mkv
+*.webm
+*.m4a
+*.aac
+*.opus
+*.mp3
+*.wav
+*.flac
+*.part
+*.ytdl
+
+# --- Corpus build/test data (compiled in a separate project; see ADR 0003).
+# The corpus subsystem is built/tested against this sample; integration tests are
+# skipif-guarded so CI degrades gracefully when it's absent. Not committed (large PDF). ---
+/example-textbook/
+
+# --- Separate sibling project that lives in this working dir; not part of puttyU. ---
+/Media-Transcription/
+
+# Design-system skill working dir — not part of the app (was committed by accident).
+/putty-ai-design/

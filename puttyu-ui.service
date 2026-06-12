@@ -1,0 +1,18 @@
+# Copy to /etc/systemd/system/puttyu-ui.service
+# Edit User, WorkingDirectory, and ExecStart paths to match your setup
+[Unit]
+Description=puttyU
+After=network.target
+
+[Service]
+Type=simple
+# CHANGE THESE to match your user and install path:
+User=YOURUSER
+WorkingDirectory=/home/YOURUSER/puttyu-ui
+ExecStart=/home/YOURUSER/puttyu-ui/venv/bin/uvicorn app:app --port 7000 --host 0.0.0.0
+Restart=always
+RestartSec=3
+EnvironmentFile=-/home/YOURUSER/puttyu-ui/.env
+
+[Install]
+WantedBy=multi-user.target

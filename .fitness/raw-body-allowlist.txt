@@ -1,0 +1,22 @@
+# Gate 6c frozen allowlist (path|maxcount): route files using request.json()/form()
+# at Slice 0. FROZEN — migrate to Pydantic models and shrink; no new files, no growth.
+routes/api_token_routes.py|1
+routes/auth_routes.py|5
+routes/backup_routes.py|1
+routes/calendar_routes.py|3
+routes/chat_routes.py|3
+routes/cookbook_routes.py|1
+routes/document_routes.py|2
+routes/gallery_routes.py|18
+routes/history_routes.py|7
+routes/mcp_routes.py|1
+routes/memory_routes.py|1
+routes/model_routes.py|2
+routes/note_routes.py|2
+routes/preset_routes.py|2
+routes/search_routes.py|2
+routes/session_routes.py|2
+routes/shell_routes.py|2
+routes/skills_routes.py|5
+routes/task_routes.py|1
+routes/upload_routes.py|1

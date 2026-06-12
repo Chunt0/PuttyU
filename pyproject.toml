@@ -1,0 +1,7 @@
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+# Markers must be registered so `--strict-markers` (CI) rejects typos.
+markers = [
+    "quarantine: known flaky / environment-dependent test. Excluded from the required CI gate (ADR 0002 Gate 2) and run informationally instead. Tag a test here ONLY with a one-line reason; the fix is to stabilise and untag, never to weaken the gate.",
+]

@@ -1,0 +1,468 @@
+/* ============================================================================
+   themes.css — full putty-ai theme set wired into puttyU.
+
+   Source: putty-ai-design/themes.css (18 [data-theme] blocks). Each block sets
+   the design-kit token names (--fg, --border-2, --accent-solid, …). The app's
+   screens, however, read a SHORTER set of token names defined in shell.css:
+     --text  (kit: --fg)      --border2 (kit: --border-2)
+   plus --accent-solid / --accent-solid-hover / --panel2 / --muted, which not
+   every kit block defines.
+
+   The bridge (bottom of this file): a single `:root[data-theme]` rule remaps
+   the kit tokens onto the app's token names, with fallbacks for any derived
+   token a theme omits. Default state (no data-theme attribute) is untouched —
+   shell.css `:root` keeps the putty monochrome look.
+   ============================================================================ */
+
+:root[data-theme="putty"]{ /* monochrome house brand — coral interactive accent */
+  --bg: #0e0e10;
+  --bg2: #191a1d;
+  --panel: #1b1c1f;
+  --panel2: #252629;
+  --surface-3: #2c2d31;
+  --fg: #eaeaec;
+  --heading: #ffffff;
+  --muted: #93969c;
+  --faint: #3d3e44;
+  --accent: #e06c75;
+  --accent2: #ef8088;
+  --on-accent: #ffffff;
+  --accent-solid: #c2454f;
+  --accent-solid-hover: #cf5560;
+  --accent-solid-press: #a83843;
+  --red: #e06c75;
+  --border: #313338;
+  --border-2: #42444a;
+  --brand-putty: #e06c75;
+  --user-bubble: #252629;
+  --green: #5cc28d;
+  --gold: #e0a95e;
+  --error: #e0686e;
+}
+:root[data-theme="putty-light"]{ /* house brand — light mode (pure-grey paper, coral accent) */
+  --bg: #f5f5f6;
+  --bg2: #ffffff;
+  --panel: #ffffff;
+  --panel2: #eeeef0;
+  --surface-3: #e8e8eb;
+  --fg: #1b1c1f;
+  --heading: #0e0e10;
+  --muted: #6b6e74;
+  --faint: #d8d9dc;
+  --accent: #c2454f;
+  --accent2: #d15863;
+  --on-accent: #ffffff;
+  --accent-solid: #c2454f;
+  --accent-solid-hover: #ad3a43;
+  --accent-solid-press: #97303a;
+  --focus: rgba(194,69,79,0.32);
+  --red: #c2454f;
+  --border: #e3e3e6;
+  --border-2: #cdced2;
+  --brand-putty: #e06c75;
+  --user-bubble: #eeeef0;
+  --green: #2e9d6b;
+  --gold: #a9792a;
+  --error: #cf4a52;
+}
+:root[data-theme="dark"]{ /* Original */
+  --bg: #282c34;
+  --bg2: #21252b;
+  --panel: #111111;
+  --panel2: #1f2628;
+  --surface-3: #273235;
+  --fg: #9cdef2;
+  --heading: #c0eaf7;
+  --muted: #688e9d;
+  --faint: #304852;
+  --accent: #e06c75;
+  --accent2: #e9969d;
+  --on-accent: #ffffff;
+  --accent-solid: #c2454f;
+  --accent-solid-hover: #cf5560;
+  --red: #e06c75;
+  --border: #355a66;
+  --border-2: #4a7482;
+  --brand-putty: #e06c75;
+  --user-bubble: #21252b;
+  --green: #5bbf8f;
+  --gold: #d6a35c;
+  --error: #e06c75;
+}
+:root[data-theme="light"]{ /* Light */
+  --bg: #f0ebe3;
+  --bg2: #f5f2ed;
+  --panel: #faf6f0;
+  --panel2: #eae6df;
+  --surface-3: #e0dcd5;
+  --fg: #5a5248;
+  --heading: #3e3831;
+  --muted: #9e978e;
+  --faint: #dfd9cf;
+  --accent: #c47d5a;
+  --accent2: #b56741;
+  --on-accent: #ffffff;
+  --accent-solid: #ac6843;
+  --accent-solid-hover: #98572f;
+  --red: #c47d5a;
+  --border: #d4cdc2;
+  --border-2: #bcb4aa;
+  --brand-putty: #c47d5a;
+  --user-bubble: #f5f2ed;
+  --green: #2e9d6b;
+  --gold: #a9792a;
+  --error: #c0573a;
+}
+:root[data-theme="midnight"]{ /* Midnight */
+  --bg: #0d1117;
+  --bg2: #070a0d;
+  --panel: #161b22;
+  --panel2: #282d34;
+  --surface-3: #33383f;
+  --fg: #c9d1d9;
+  --heading: #e1e5ea;
+  --muted: #747b82;
+  --faint: #22272e;
+  --accent: #f85149;
+  --accent2: #fa807a;
+  --on-accent: #ffffff;
+  --accent-solid: #d83f38;
+  --accent-solid-hover: #ec4b43;
+  --red: #f85149;
+  --border: #30363d;
+  --border-2: #4f555c;
+  --brand-putty: #f85149;
+  --user-bubble: #070a0d;
+  --green: #5bbf8f;
+  --gold: #d6a35c;
+  --error: #f85149;
+}
+:root[data-theme="paper"]{ /* Paper */
+  --bg: #faf8f5;
+  --bg2: #ffffff;
+  --panel: #ffffff;
+  --panel2: #ebebeb;
+  --surface-3: #e0dfdf;
+  --fg: #3b3836;
+  --heading: #201f1e;
+  --muted: #918e8c;
+  --faint: #e4e0da;
+  --accent: #c5ac4a;
+  --accent2: #ae9638;
+  --on-accent: #ffffff;
+  --accent-solid: #8f7c2c;
+  --accent-solid-hover: #7d6c24;
+  --red: #c5ac4a;
+  --border: #d5d0c8;
+  --border-2: #b6b2ab;
+  --brand-putty: #c5ac4a;
+  --user-bubble: #ffffff;
+  --green: #2e9d6b;
+  --gold: #a9792a;
+  --error: #c0573a;
+}
+:root[data-theme="cyberpunk"]{ /* Cyberpunk */
+  --bg: #0a0a0f;
+  --bg2: #040406;
+  --panel: #12101a;
+  --panel2: #122631;
+  --surface-3: #12343e;
+  --fg: #0ff0fc;
+  --heading: #37f3fd;
+  --muted: #0d8991;
+  --faint: #61219f;
+  --accent: #e040fb;
+  --accent2: #e872fc;
+  --on-accent: #ffffff;
+  --accent-solid: #b526cf;
+  --accent-solid-hover: #c731e2;
+  --red: #e040fb;
+  --border: #9b30ff;
+  --border-2: #7f56fe;
+  --brand-putty: #e040fb;
+  --user-bubble: #040406;
+  --green: #5bbf8f;
+  --gold: #d6a35c;
+  --error: #e040fb;
+}
+:root[data-theme="retrowave"]{ /* Retrowave */
+  --bg: #1a1a2e;
+  --bg2: #141424;
+  --panel: #16213e;
+  --panel2: #2b2541;
+  --surface-3: #382743;
+  --fg: #e94560;
+  --heading: #ed697f;
+  --muted: #8c324a;
+  --faint: #3c2a61;
+  --accent: #e94560;
+  --accent2: #ee7387;
+  --on-accent: #ffffff;
+  --accent-solid: #d12e49;
+  --accent-solid-hover: #e03a55;
+  --red: #e94560;
+  --border: #533483;
+  --border-2: #71377c;
+  --brand-putty: #e94560;
+  --user-bubble: #141424;
+  --green: #5bbf8f;
+  --gold: #d6a35c;
+  --error: #e94560;
+}
+:root[data-theme="forest"]{ /* Forest */
+  --bg: #1b2a1b;
+  --bg2: #152115;
+  --panel: #142414;
+  --panel2: #233622;
+  --surface-3: #2c402b;
+  --fg: #a8d5a2;
+  --heading: #c2e2be;
+  --muted: #698865;
+  --faint: #2f512f;
+  --accent: #7cb871;
+  --accent2: #9bc993;
+  --on-accent: #ffffff;
+  --accent-solid: #4f8a46;
+  --accent-solid-hover: #5c9b52;
+  --red: #7cb871;
+  --border: #3d6b3d;
+  --border-2: #528051;
+  --brand-putty: #7cb871;
+  --user-bubble: #152115;
+  --green: #5bbf8f;
+  --gold: #d6a35c;
+  --error: #d56a6a;
+}
+:root[data-theme="ocean"]{ /* Ocean */
+  --bg: #0b1a2c;
+  --bg2: #081320;
+  --panel: #091422;
+  --panel2: #122738;
+  --surface-3: #183245;
+  --fg: #64d2ff;
+  --heading: #8ddeff;
+  --muted: #3c7fa0;
+  --faint: #163a57;
+  --accent: #4facfe;
+  --accent2: #82c4fe;
+  --on-accent: #ffffff;
+  --accent-solid: #2c7fd1;
+  --accent-solid-hover: #3a8fe2;
+  --red: #4facfe;
+  --border: #1e5074;
+  --border-2: #2c6a90;
+  --brand-putty: #4facfe;
+  --user-bubble: #081320;
+  --green: #5bbf8f;
+  --gold: #d6a35c;
+  --error: #e0686e;
+}
+:root[data-theme="ume"]{ /* Ume */
+  --bg: #2b1b2e;
+  --bg2: #221524;
+  --panel: #1e1420;
+  --panel2: #342534;
+  --surface-3: #403040;
+  --fg: #f5c2e7;
+  --heading: #fbe5f5;
+  --muted: #9a7794;
+  --faint: #523559;
+  --accent: #f5a0c0;
+  --accent2: #facedf;
+  --on-accent: #2b1b2e;
+  --accent-solid: #d06f96;
+  --accent-solid-hover: #e07fa6;
+  --red: #f5a0c0;
+  --border: #6c4675;
+  --border-2: #875f8c;
+  --brand-putty: #f5a0c0;
+  --user-bubble: #221524;
+  --green: #5bbf8f;
+  --gold: #d6a35c;
+  --error: #e0686e;
+}
+:root[data-theme="copper"]{ /* Copper */
+  --bg: #1c1410;
+  --bg2: #120d0a;
+  --panel: #140f0a;
+  --panel2: #292119;
+  --surface-3: #362c22;
+  --fg: #e8c39e;
+  --heading: #f0d7bf;
+  --muted: #8c745e;
+  --faint: #543b25;
+  --accent: #d4764e;
+  --accent2: #de9677;
+  --on-accent: #ffffff;
+  --accent-solid: #b85e38;
+  --accent-solid-hover: #c96b42;
+  --red: #d4764e;
+  --border: #7a5533;
+  --border-2: #906b48;
+  --brand-putty: #d4764e;
+  --user-bubble: #120d0a;
+  --green: #5bbf8f;
+  --gold: #d6a35c;
+  --error: #e0686e;
+}
+:root[data-theme="terminal"]{ /* Terminal */
+  --bg: #000000;
+  --bg2: #000000;
+  --panel: #0a0a0a;
+  --panel2: #092310;
+  --surface-3: #083113;
+  --fg: #00ff41;
+  --heading: #29ff5f;
+  --muted: #008c24;
+  --faint: #002300;
+  --accent: #00ff41;
+  --accent2: #33ff67;
+  --on-accent: #111111;
+  --accent-solid: #00c733;
+  --accent-solid-hover: #00e23a;
+  --red: #00ff41;
+  --border: #003b00;
+  --border-2: #00620d;
+  --brand-putty: #00ff41;
+  --user-bubble: #000000;
+  --green: #5bbf8f;
+  --gold: #d6a35c;
+  --error: #00ff41;
+}
+:root[data-theme="organs"]{ /* Organs */
+  --bg: #0a0406;
+  --bg2: #000000;
+  --panel: #15080a;
+  --panel2: #2b1e1d;
+  --surface-3: #382b28;
+  --fg: #efe1c8;
+  --heading: #f8f2e8;
+  --muted: #887e71;
+  --faint: #270e11;
+  --accent: #c83240;
+  --accent2: #d55864;
+  --on-accent: #ffffff;
+  --accent-solid: #b32b38;
+  --accent-solid-hover: #c43040;
+  --red: #c83240;
+  --border: #3a1519;
+  --border-2: #5e3e3c;
+  --brand-putty: #c83240;
+  --user-bubble: #000000;
+  --green: #5bbf8f;
+  --gold: #d6a35c;
+  --error: #c83240;
+}
+:root[data-theme="lavender"]{ /* Lavender */
+  --bg: #f3eef8;
+  --bg2: #fbf9fc;
+  --panel: #faf7ff;
+  --panel2: #e7e4ee;
+  --surface-3: #dcd8e3;
+  --fg: #3d3551;
+  --heading: #262132;
+  --muted: #8f889c;
+  --faint: #ddd4e8;
+  --accent: #9b6dcc;
+  --accent2: #864fc1;
+  --on-accent: #ffffff;
+  --accent-solid: #7c4eb0;
+  --accent-solid-hover: #6c3fa0;
+  --red: #9b6dcc;
+  --border: #cec3de;
+  --border-2: #b1a7c2;
+  --brand-putty: #9b6dcc;
+  --user-bubble: #fbf9fc;
+  --green: #2e9d6b;
+  --gold: #a9792a;
+  --error: #c0573a;
+}
+:root[data-theme="gpt"]{ /* GPT */
+  --bg: #212121;
+  --bg2: #2f2f2f;
+  --panel: #171717;
+  --panel2: #2c2c2c;
+  --surface-3: #393939;
+  --fg: #ececec;
+  --heading: #ffffff;
+  --muted: #919191;
+  --faint: #353535;
+  --accent: #b4b4b4;
+  --accent2: #cfcfcf;
+  --on-accent: #171717;
+  --accent-solid: #8f8f8f;
+  --accent-solid-hover: #a0a0a0;
+  --red: #949494;
+  --border: #424242;
+  --border-2: #646464;
+  --brand-putty: #949494;
+  --user-bubble: #2f2f2f;
+  --green: #5bbf8f;
+  --gold: #d6a35c;
+  --error: #e0686e;
+}
+:root[data-theme="claude"]{ /* Claude */
+  --bg: #262624;
+  --bg2: #1e1e1d;
+  --panel: #30302e;
+  --panel2: #444441;
+  --surface-3: #504f4d;
+  --fg: #f5f4f0;
+  --heading: #ffffff;
+  --muted: #989794;
+  --faint: #3c3c39;
+  --accent: #c6613f;
+  --accent2: #d28166;
+  --on-accent: #ffffff;
+  --accent-solid: #b04f30;
+  --accent-solid-hover: #c25938;
+  --red: #c6613f;
+  --border: #4a4a47;
+  --border-2: #6c6c69;
+  --brand-putty: #c6613f;
+  --user-bubble: #1e1e1d;
+  --green: #5bbf8f;
+  --gold: #d6a35c;
+  --error: #d56a6a;
+}
+:root[data-theme="cute"]{ /* Cute */
+  --bg: #fff0f5;
+  --bg2: #ffffff;
+  --panel: #fff8fa;
+  --panel2: #fbe9ef;
+  --surface-3: #f8e0e8;
+  --fg: #d4608a;
+  --heading: #c9386c;
+  --muted: #c77f9b;
+  --faint: #f6d3df;
+  --accent: #ff6b9d;
+  --accent2: #ff4282;
+  --on-accent: #ffffff;
+  --accent-solid: #e84a82;
+  --accent-solid-hover: #d63d74;
+  --red: #ff6b9d;
+  --border: #f0c0d0;
+  --border-2: #eaadc2;
+  --brand-putty: #ff6b9d;
+  --user-bubble: #ffffff;
+  --green: #2e9d6b;
+  --gold: #a9792a;
+  --error: #d63d74;
+}
+
+/* ----------------------------------------------------------------------------
+   BRIDGE — map the kit's token names onto the app's token names.
+   Applies only when a theme is active (`[data-theme]` present on <html>), so
+   the default putty look from shell.css `:root` is never overridden.
+
+   --text   ← --fg          (kit calls primary text --fg; app reads --text)
+   --border2 ← --border-2   (app drops the hyphen)
+   Derived tokens fall back if a theme block omits them:
+     --panel2       ← --surface-3, then --panel
+     --muted        is set by every block (kept as-is)
+     --accent-solid ← --accent (every block now defines it explicitly)
+   -------------------------------------------------------------------------- */
+:root[data-theme] {
+  --text: var(--fg);
+  --border2: var(--border-2);
+}

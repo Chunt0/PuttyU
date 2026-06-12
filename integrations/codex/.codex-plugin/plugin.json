@@ -1,0 +1,22 @@
+{
+  "name": "puttyu",
+  "version": "0.1.1",
+  "description": "Connect Codex to a scoped puttyU instance.",
+  "author": {
+    "name": "puttyU"
+  },
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "puttyU",
+    "shortDescription": "Use scoped puttyU tools from Codex.",
+    "longDescription": "Connects Codex terminal sessions to puttyU through user-controlled scoped API tokens. Codex must use /api/codex/* endpoints so puttyU Settings can enforce tool access.",
+    "developerName": "puttyU",
+    "category": "Productivity",
+    "capabilities": [
+      "todos",
+      "email",
+      "scoped-api"
+    ],
+    "defaultPrompt": "Use puttyU only through configured scoped access. Check capabilities before reading or writing data."
+  }
+}
