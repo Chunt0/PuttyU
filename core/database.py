@@ -1426,6 +1426,15 @@ def init_db():
     _migrate_add_calendar_origin()
     _migrate_encrypt_endpoint_keys()
     _migrate_drop_cut_feature_tables()
+    # Phase-2 T2a: the corpus tables (ADR 0003) join init_db now that the
+    # library has HTTP routes. ensure_corpus_tables is create-only/idempotent;
+    # the lazy import avoids a circular import (src.corpus.models imports Base
+    # from this module — both names are bound before init_db() runs below).
+    try:
+        from src.corpus.models import ensure_corpus_tables
+        ensure_corpus_tables(bind=engine)
+    except Exception as _corpus_err:  # never block app boot on the corpus
+        logging.getLogger(__name__).warning(f"corpus tables not ensured: {_corpus_err}")
 
 
 def _migrate_drop_cut_feature_tables():

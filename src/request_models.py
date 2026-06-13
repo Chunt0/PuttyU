@@ -408,3 +408,150 @@ class CourseSourcesResponse(BaseModel):
     # Set when the corpus tables aren't present yet (src/corpus isn't wired into
     # init_db): ids were accepted verbatim, unverified.
     note: Optional[str] = None
+
+
+# --- Phase-2 T2a: corpus library + course materials (SPEC F2, ADR 0003/0004) -------------
+# Real OpenAPI seam: corpus_routes.py is born small + typed. `kind` discriminates the
+# shared read-only library (owner NULL) from the caller's own materials.
+
+class CorpusSourceItem(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    id: str
+    kind: str = "library"  # library | material
+    title: str = ""
+    source_type: str = ""  # textbook|literature|video_transcript|material
+    subject: Optional[str] = None
+    authors: Optional[str] = None
+    status: str = "ready"  # importing|ready|failed|needs_ocr
+    course_id: Optional[str] = None
+    tags: List[str] = Field(default_factory=list)
+    has_pdf: bool = False
+    chunk_count: int = 0
+
+
+class CorpusSourceListResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    sources: List[CorpusSourceItem] = Field(default_factory=list)
+
+
+class CorpusTocNode(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    heading: str
+    ordinal: int = 0
+    page_start: Optional[int] = None
+    children: List["CorpusTocNode"] = Field(default_factory=list)
+
+
+class CorpusTocResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    source_id: str
+    toc: List[CorpusTocNode] = Field(default_factory=list)
+
+
+class CorpusSearchRequest(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    query: str = Field(..., min_length=1, max_length=2000)
+    course_id: Optional[str] = Field(default=None, description="Scope to a course's linked sources + materials")
+    tags: Optional[List[str]] = Field(default=None, description="Narrow to sources carrying at least one tag")
+    top_k: int = Field(default=6, ge=1, le=25)
+
+
+class CorpusSearchItem(BaseModel):
+    """The typed citation contract (SPEC §5.4) — retrieval returns these, the chat
+    stream carries them as the `citations` control event, the UI renders chips."""
+    model_config = ConfigDict(extra="allow")
+    chunk_id: str
+    source_id: str
+    title: str = ""
+    heading: str = ""
+    page_start: Optional[int] = None
+    citation: str = ""
+    text: str = ""
+
+
+class CorpusSearchResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    items: List[CorpusSearchItem] = Field(default_factory=list)
+    # True when Chroma/embeddings were unavailable and the SQL keyword fallback served
+    # the query (the rag_vector degradation contract, surfaced honestly).
+    keyword_fallback: bool = False
+
+
+class CorpusMaterialUploadResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    source: CorpusSourceItem
+    created: bool = True  # False = idempotent re-upload (same content hash)
+    chunks: int = 0
+    needs_ocr: bool = False
+
+
+class CorpusTagsUpdateRequest(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    tags: List[str] = Field(default_factory=list, description="Replacement tag list")
+
+
+# --- Phase-2 T2a: model router (SPEC F7, §5.3d — the third one-door) ---------------------
+# The tier table is DATA (data/router.json), these models are its typed mirror.
+
+class RouterPin(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    endpoint_id: str
+    model: Optional[str] = None  # omitted = endpoint's first enabled chat model
+
+
+class RouterCapability(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    vision: bool = False
+    reasoning: str = "standard"  # micro | light | standard | deep
+    context_window: Optional[int] = None
+    local: Optional[bool] = None  # override the base_url heuristic
+
+
+class RouterConfigResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    policy: str = "local_first"  # local_first | quality_first
+    pins: Dict[str, RouterPin] = Field(default_factory=dict)
+    capabilities: Dict[str, RouterCapability] = Field(default_factory=dict)
+    # False = router dormant; every call site transparently uses the legacy
+    # default-model chain (current behavior unchanged).
+    configured: bool = False
+
+
+class RouterConfigUpdateRequest(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    policy: Optional[str] = None
+    pins: Optional[Dict[str, RouterPin]] = None
+    capabilities: Optional[Dict[str, RouterCapability]] = None
+
+
+class RouterResolutionRow(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    tier: str
+    modality: str = "text"
+    endpoint_id: Optional[str] = None
+    model: Optional[str] = None
+    token_budget: int = 0
+    why: str = ""
+    degraded: bool = False  # nearest-tier / legacy-chain note (no silent degradation)
+    error: Optional[str] = None  # vision with no VL candidate (setup hint)
+
+
+class RouterResolutionResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    policy: str = "local_first"
+    configured: bool = False
+    rows: List[RouterResolutionRow] = Field(default_factory=list)
+
+
+class RouterLogEntry(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    ts: float = 0
+    profile: Dict[str, Any] = Field(default_factory=dict)
+    endpoint_id: Optional[str] = None
+    model: str = ""
+    why: str = ""
+
+
+class RouterLogResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    entries: List[RouterLogEntry] = Field(default_factory=list)

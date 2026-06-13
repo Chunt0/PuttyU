@@ -22,8 +22,11 @@ class SourceType:
     TEXTBOOK = "textbook"
     LITERATURE = "literature"
     VIDEO_TRANSCRIPT = "video_transcript"
+    # Phase-2 (SPEC F2): an owner-uploaded course material (syllabus, homework
+    # sheet, any PDF). Sits beside the curated library — owner is always set.
+    MATERIAL = "material"
 
-    ALL = frozenset({TEXTBOOK, LITERATURE, VIDEO_TRANSCRIPT})
+    ALL = frozenset({TEXTBOOK, LITERATURE, VIDEO_TRANSCRIPT, MATERIAL})
 
 
 class Kind:

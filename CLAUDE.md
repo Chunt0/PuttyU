@@ -333,6 +333,41 @@ state from turns, fires an event, persists; scheduler drives spaced repetition).
   older specs got `exact: true` — the "+" tab name substring-matched "Add"); tsc/eslint/
   fitness green.
 
+- **Phase-2 T2a done (2026-06-13)** — backend half of library + grounding + router (F2/F3/F7).
+  **Corpus wired**: `ensure_corpus_tables()` now runs in `init_db` (lazy import, never blocks
+  boot). NEW `routes/corpus_routes.py` (241 lines, real OpenAPI seam, owner_scoped): GET
+  `/api/corpus/sources` (library|material `kind` discriminator + tags from meta), GET
+  `/sources/{id}/toc` (heading tree), GET `/sources/{id}/pdf` (FileResponse, untyped), POST
+  `/search` (course→source_ids via `course_source` ∪ owned materials, tag filter by SQL on
+  meta, **keyword fallback** when Chroma/embeddings are down — `src/corpus/course_search.py`).
+  **Materials** (F2 block 2): `src/corpus/importers/upload_importer.py` — PDF or images→ONE
+  PDF (Pillow save_all) under `data/corpus/<id>/source.pdf`, text via the documents pypdf+VL
+  path, page-aware paragraph chunks, idempotent by owner-salted content hash, no-text-layer →
+  `needs_ocr` status note (never fails); POST/PATCH-tags/DELETE `/api/corpus/materials` (+
+  `material` SourceType). **Model router v1** (F7, §5.3d): `src/model_router.py` —
+  `resolve(TaskProfile{tier,modality,output_shape,latency,privacy}) -> RoutedModel{endpoint_id,
+  model,token_budget,why,endpoint_url,headers}`; config is DATA in `data/router.json`
+  ({policy local_first|quality_first, pins{tier→endpoint+model}, capabilities{endpoint→vision/
+  reasoning/context_window/local}}, atomic_io writes); pin → policy-ranked → nearest-tier
+  degradation (one-model box resolves everything); RouterError ONLY for vision w/ no VL
+  candidate (setup-hint message); **unconfigured = transparent legacy endpoint_resolver chain
+  (behavior unchanged)**; every resolve logs to `data/router_log.jsonl` (>5MB rotation) +
+  bounded deque. `routes/router_routes.py`: GET/PUT `/api/router/config`, GET `/resolution`
+  (live tier table + vision row + degradation notes), GET `/log`. Adopted at ONE call site:
+  `research_routes._resolve_research_endpoint` (tier=deep, legacy research-chain fallback).
+  **Grounded chat** (F3, §5.4): `src/corpus/grounding.py` `maybe_ground()` — session
+  `course_id` (or `course_id` form field fallback on chat_stream) → top-6 course-scoped
+  search → delimited GROUNDING system block w/ the F3 rules (cite as [title §heading, p. N];
+  "not in your course library…"; never invent citations) appended to the preface in
+  `build_chat_context` (chat_helpers; skipped in incognito), and a `citations` SSE control
+  event ({chunk_id,source_id,title,heading,page_start,citation}) emitted BEFORE token
+  streaming; retrieval failure → log + ungrounded turn; no course → byte-identical. Contract:
+  `ui-contract-endpoints.txt` 31→41 (+6 corpus, +4 router); schema.d.ts regenerated. Note:
+  pre-existing Gate-6c false positive fixed (course_routes docstring contained the literal
+  `request.json()` — reworded, no code change). pytest 2122 (+62: corpus routes/upload/router/
+  router-routes/grounding); vitest 113/113, Playwright 19+1 skipped, tsc/eslint/fitness green.
+  Frontend adoption (library panel, citation chips, router settings) is the NEXT slice.
+
 **ALL KEEP SCREENS EXIST + Slice 7 demolition complete** → Phase 1 is done. Next: Phase-2
 tutoring UX (see `docs/SPEC-phase-2-tutoring-ux.md`).
 

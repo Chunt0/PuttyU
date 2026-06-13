@@ -1309,6 +1309,141 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/corpus/materials": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload Material
+         * @description Ingest an uploaded PDF — or several images assembled server-side into
+         *     ONE PDF — as an owner-scoped course material. Idempotent by content hash.
+         */
+        post: operations["upload_material_api_corpus_materials_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/corpus/materials/{source_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Material
+         * @description Remove a material: SQLite rows (chunk cascade), Chroma vectors
+         *     (best-effort — the index is disposable, ADR 0003), and stored files.
+         */
+        delete: operations["delete_material_api_corpus_materials__source_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/corpus/materials/{source_id}/tags": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Replace Tags
+         * @description Replace the material's tag list (stored in meta.tags; the search tag
+         *     filter reads it via SQL, so no Chroma re-index is needed).
+         */
+        patch: operations["replace_tags_api_corpus_materials__source_id__tags_patch"];
+        trace?: never;
+    };
+    "/api/corpus/search": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Search Corpus */
+        post: operations["search_corpus_api_corpus_search_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/corpus/sources": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Sources
+         * @description Both halves of retrieval in one list: shared library sources
+         *     (kind=library) and the caller's own materials (kind=material).
+         */
+        get: operations["list_sources_api_corpus_sources_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/corpus/sources/{source_id}/pdf": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Source Pdf */
+        get: operations["source_pdf_api_corpus_sources__source_id__pdf_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/corpus/sources/{source_id}/toc": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Source Toc */
+        get: operations["source_toc_api_corpus_sources__source_id__toc_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/courses": {
         parameters: {
             query?: never;
@@ -3642,6 +3777,66 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/router/config": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Config */
+        get: operations["get_config_api_router_config_get"];
+        /**
+         * Put Config
+         * @description Update the policy dial / per-tier pins / capability table. Omitted
+         *     fields keep their current value; saved atomically (core/atomic_io).
+         */
+        put: operations["put_config_api_router_config_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/router/log": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Log */
+        get: operations["get_log_api_router_log_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/router/resolution": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Resolution
+         * @description The live tier→endpoint/model table, including nearest-tier and
+         *     legacy-chain degradation notes and the vision row (setup hint on error).
+         */
+        get: operations["get_resolution_api_router_resolution_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/runtime": {
         parameters: {
             query?: never;
@@ -5567,6 +5762,26 @@ export interface components {
             /** Files */
             files: string[];
         };
+        /** Body_upload_material_api_corpus_materials_post */
+        Body_upload_material_api_corpus_materials_post: {
+            /**
+             * Course Id
+             * @default
+             */
+            course_id: string;
+            /** Files */
+            files: string[];
+            /**
+             * Tags
+             * @default
+             */
+            tags: string;
+            /**
+             * Title
+             * @default
+             */
+            title: string;
+        };
         /** ChangePasswordRequest */
         ChangePasswordRequest: {
             /** Current Password */
@@ -5627,6 +5842,183 @@ export interface components {
             prompt?: string | null;
             /** Scheduled Time */
             scheduled_time?: string | null;
+        };
+        /** CorpusMaterialUploadResponse */
+        CorpusMaterialUploadResponse: {
+            /**
+             * Chunks
+             * @default 0
+             */
+            chunks: number;
+            /**
+             * Created
+             * @default true
+             */
+            created: boolean;
+            /**
+             * Needs Ocr
+             * @default false
+             */
+            needs_ocr: boolean;
+            source: components["schemas"]["CorpusSourceItem"];
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * CorpusSearchItem
+         * @description The typed citation contract (SPEC §5.4) — retrieval returns these, the chat
+         *     stream carries them as the `citations` control event, the UI renders chips.
+         */
+        CorpusSearchItem: {
+            /** Chunk Id */
+            chunk_id: string;
+            /**
+             * Citation
+             * @default
+             */
+            citation: string;
+            /**
+             * Heading
+             * @default
+             */
+            heading: string;
+            /** Page Start */
+            page_start?: number | null;
+            /** Source Id */
+            source_id: string;
+            /**
+             * Text
+             * @default
+             */
+            text: string;
+            /**
+             * Title
+             * @default
+             */
+            title: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** CorpusSearchRequest */
+        CorpusSearchRequest: {
+            /**
+             * Course Id
+             * @description Scope to a course's linked sources + materials
+             */
+            course_id?: string | null;
+            /** Query */
+            query: string;
+            /**
+             * Tags
+             * @description Narrow to sources carrying at least one tag
+             */
+            tags?: string[] | null;
+            /**
+             * Top K
+             * @default 6
+             */
+            top_k: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** CorpusSearchResponse */
+        CorpusSearchResponse: {
+            /** Items */
+            items?: components["schemas"]["CorpusSearchItem"][];
+            /**
+             * Keyword Fallback
+             * @default false
+             */
+            keyword_fallback: boolean;
+        } & {
+            [key: string]: unknown;
+        };
+        /** CorpusSourceItem */
+        CorpusSourceItem: {
+            /** Authors */
+            authors?: string | null;
+            /**
+             * Chunk Count
+             * @default 0
+             */
+            chunk_count: number;
+            /** Course Id */
+            course_id?: string | null;
+            /**
+             * Has Pdf
+             * @default false
+             */
+            has_pdf: boolean;
+            /** Id */
+            id: string;
+            /**
+             * Kind
+             * @default library
+             */
+            kind: string;
+            /**
+             * Source Type
+             * @default
+             */
+            source_type: string;
+            /**
+             * Status
+             * @default ready
+             */
+            status: string;
+            /** Subject */
+            subject?: string | null;
+            /** Tags */
+            tags?: string[];
+            /**
+             * Title
+             * @default
+             */
+            title: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** CorpusSourceListResponse */
+        CorpusSourceListResponse: {
+            /** Sources */
+            sources?: components["schemas"]["CorpusSourceItem"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** CorpusTagsUpdateRequest */
+        CorpusTagsUpdateRequest: {
+            /**
+             * Tags
+             * @description Replacement tag list
+             */
+            tags?: string[];
+        } & {
+            [key: string]: unknown;
+        };
+        /** CorpusTocNode */
+        CorpusTocNode: {
+            /** Children */
+            children?: components["schemas"]["CorpusTocNode"][];
+            /** Heading */
+            heading: string;
+            /**
+             * Ordinal
+             * @default 0
+             */
+            ordinal: number;
+            /** Page Start */
+            page_start?: number | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** CorpusTocResponse */
+        CorpusTocResponse: {
+            /** Source Id */
+            source_id: string;
+            /** Toc */
+            toc?: components["schemas"]["CorpusTocNode"][];
+        } & {
+            [key: string]: unknown;
         };
         /** CourseCreateRequest */
         CourseCreateRequest: {
@@ -6494,6 +6886,155 @@ export interface components {
              * @default running
              */
             status: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** RouterCapability */
+        RouterCapability: {
+            /** Context Window */
+            context_window?: number | null;
+            /** Local */
+            local?: boolean | null;
+            /**
+             * Reasoning
+             * @default standard
+             */
+            reasoning: string;
+            /**
+             * Vision
+             * @default false
+             */
+            vision: boolean;
+        } & {
+            [key: string]: unknown;
+        };
+        /** RouterConfigResponse */
+        RouterConfigResponse: {
+            /** Capabilities */
+            capabilities?: {
+                [key: string]: components["schemas"]["RouterCapability"];
+            };
+            /**
+             * Configured
+             * @default false
+             */
+            configured: boolean;
+            /** Pins */
+            pins?: {
+                [key: string]: components["schemas"]["RouterPin"];
+            };
+            /**
+             * Policy
+             * @default local_first
+             */
+            policy: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** RouterConfigUpdateRequest */
+        RouterConfigUpdateRequest: {
+            /** Capabilities */
+            capabilities?: {
+                [key: string]: components["schemas"]["RouterCapability"];
+            } | null;
+            /** Pins */
+            pins?: {
+                [key: string]: components["schemas"]["RouterPin"];
+            } | null;
+            /** Policy */
+            policy?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** RouterLogEntry */
+        RouterLogEntry: {
+            /** Endpoint Id */
+            endpoint_id?: string | null;
+            /**
+             * Model
+             * @default
+             */
+            model: string;
+            /** Profile */
+            profile?: {
+                [key: string]: unknown;
+            };
+            /**
+             * Ts
+             * @default 0
+             */
+            ts: number;
+            /**
+             * Why
+             * @default
+             */
+            why: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** RouterLogResponse */
+        RouterLogResponse: {
+            /** Entries */
+            entries?: components["schemas"]["RouterLogEntry"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** RouterPin */
+        RouterPin: {
+            /** Endpoint Id */
+            endpoint_id: string;
+            /** Model */
+            model?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** RouterResolutionResponse */
+        RouterResolutionResponse: {
+            /**
+             * Configured
+             * @default false
+             */
+            configured: boolean;
+            /**
+             * Policy
+             * @default local_first
+             */
+            policy: string;
+            /** Rows */
+            rows?: components["schemas"]["RouterResolutionRow"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** RouterResolutionRow */
+        RouterResolutionRow: {
+            /**
+             * Degraded
+             * @default false
+             */
+            degraded: boolean;
+            /** Endpoint Id */
+            endpoint_id?: string | null;
+            /** Error */
+            error?: string | null;
+            /**
+             * Modality
+             * @default text
+             */
+            modality: string;
+            /** Model */
+            model?: string | null;
+            /** Tier */
+            tier: string;
+            /**
+             * Token Budget
+             * @default 0
+             */
+            token_budget: number;
+            /**
+             * Why
+             * @default
+             */
+            why: string;
         } & {
             [key: string]: unknown;
         };
@@ -8916,6 +9457,220 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    upload_material_api_corpus_materials_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_upload_material_api_corpus_materials_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorpusMaterialUploadResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_material_api_corpus_materials__source_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorpusSourceItem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    replace_tags_api_corpus_materials__source_id__tags_patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CorpusTagsUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorpusSourceItem"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    search_corpus_api_corpus_search_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CorpusSearchRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorpusSearchResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_sources_api_corpus_sources_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorpusSourceListResponse"];
+                };
+            };
+        };
+    };
+    source_pdf_api_corpus_sources__source_id__pdf_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    source_toc_api_corpus_sources__source_id__toc_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CorpusTocResponse"];
                 };
             };
             /** @description Validation Error */
@@ -13021,6 +13776,110 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    get_config_api_router_config_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RouterConfigResponse"];
+                };
+            };
+        };
+    };
+    put_config_api_router_config_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RouterConfigUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RouterConfigResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_log_api_router_log_get: {
+        parameters: {
+            query?: {
+                limit?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RouterLogResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_resolution_api_router_resolution_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RouterResolutionResponse"];
                 };
             };
         };

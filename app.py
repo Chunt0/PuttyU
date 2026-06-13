@@ -622,6 +622,14 @@ app.include_router(setup_note_routes(task_scheduler))
 from routes.course_routes import setup_course_routes
 app.include_router(setup_course_routes())
 
+# Corpus library + course materials (Phase-2 T2a — SPEC F2, ADR 0003/0004)
+from routes.corpus_routes import setup_corpus_routes
+app.include_router(setup_corpus_routes())
+
+# Model router (Phase-2 T2a — SPEC F7, §5.3d: the third one-door)
+from routes.router_routes import setup_router_routes
+app.include_router(setup_router_routes())
+
 from companion import setup_companion_routes
 app.include_router(setup_companion_routes())
 

@@ -2,7 +2,7 @@
 """Course CRUD + archive + library-source linking (Phase-2 T1, ADR 0004).
 
 Born small and typed: every endpoint carries a response_model (Gate 6b), bodies
-are Pydantic (Gate 6c — no raw request.json()), and every query goes through
+are Pydantic (Gate 6c — no raw body parsing), and every query goes through
 owner_scoped (Gate 5). Archive is a status flip — sessions, notes, mastery
 history and the graph region scoped to the course are retained (no hard delete
 in v1).

@@ -389,6 +389,7 @@ def setup_chat_routes(
         allow_bash = form_data.get("allow_bash")
         allow_web_search = form_data.get("allow_web_search")
         use_rag = form_data.get("use_rag")
+        course_id = form_data.get("course_id")  # grounding fallback when the session isn't course-bound (F3)
         search_context = form_data.get("search_context")  # pre-fetched web search results
         incognito = str(form_data.get("incognito", "")).lower() == "true"
         plan_mode = str(form_data.get("plan_mode", "")).lower() == "true"
@@ -522,6 +523,7 @@ def setup_chat_routes(
             # manage_skills (agent mode). In plain chat or incognito the
             # index would be useless / unwanted noise.
             agent_mode=(chat_mode == "agent"),
+            course_id=course_id,
         )
 
         _research_flags = {"do": do_research}  # Mutable container for generator scope
@@ -677,6 +679,10 @@ def setup_chat_routes(
 
             if ctx.rag_sources:
                 yield f"data: {json.dumps({'type': 'rag_sources', 'data': ctx.rag_sources})}\n\n"
+
+            # Course-grounding citations (SPEC §5.4): typed control event, always BEFORE tokens.
+            if ctx.citations:
+                yield f"data: {json.dumps({'type': 'citations', 'data': ctx.citations})}\n\n"
 
             if web_sources:
                 yield f"data: {json.dumps({'type': 'web_sources', 'data': web_sources})}\n\n"

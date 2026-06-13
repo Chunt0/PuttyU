@@ -43,3 +43,17 @@ POST /api/courses/{course_id}/archive
 POST /api/courses/{course_id}/unarchive
 GET /api/courses/{course_id}/sources
 PUT /api/courses/{course_id}/sources
+#
+# Phase-2 T2a (corpus library + course materials — SPEC F2; PDF endpoint is a FileResponse, untyped):
+GET /api/corpus/sources
+GET /api/corpus/sources/{source_id}/toc
+POST /api/corpus/search
+POST /api/corpus/materials
+PATCH /api/corpus/materials/{source_id}/tags
+DELETE /api/corpus/materials/{source_id}
+#
+# Phase-2 T2a (model router — SPEC F7):
+GET /api/router/config
+PUT /api/router/config
+GET /api/router/resolution
+GET /api/router/log

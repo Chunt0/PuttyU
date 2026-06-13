@@ -43,14 +43,20 @@ def _first_chat_model(models) -> str:
 
 
 def _resolve_research_endpoint(sess) -> tuple:
-    """Return (endpoint_url, model, headers) for Deep Research, checking admin overrides."""
-    url, model, headers = resolve_endpoint(
-        "research",
+    """Return (endpoint_url, model, headers) for Deep Research.
+
+    Phase-2 T2a: routed through the model router (tier=deep, background — F7).
+    When the router is unconfigured this is a TRANSPARENT fallback to the
+    legacy research→utility→default purpose-chain (behavior unchanged)."""
+    from src.model_router import TaskProfile, resolve as route_model
+    routed = route_model(
+        TaskProfile(tier="deep", latency="background"),
+        legacy_prefix="research",
         fallback_url=sess.endpoint_url,
         fallback_model=sess.model,
         fallback_headers=sess.headers,
     )
-    return url, model, headers
+    return routed.endpoint_url, routed.model, routed.headers
 
 
 def _owned_enabled_endpoint(db, owner, endpoint_id=None):

@@ -63,6 +63,9 @@ class ChatContext:
     # The chat route emits a doc_update SSE event for each before streaming
     # begins, so the editor pane switches to the new doc immediately.
     auto_opened_docs: list = field(default_factory=list)
+    # Course-grounding citations (SPEC F3/§5.4) — emitted as the `citations`
+    # SSE control event before token streaming. Empty when the turn is course-less.
+    citations: list = field(default_factory=list)
 
 
 # ── Helpers ────────────────────────────────────────────────────────────── #
@@ -442,6 +445,7 @@ async def build_chat_context(
     search_context: str = None,
     use_enhanced_message: bool = False,
     agent_mode: bool = False,
+    course_id: str = None,
 ) -> ChatContext:
     """Build the full context (preface + messages) for an LLM call.
 
@@ -514,6 +518,15 @@ async def build_chat_context(
     # Capture used memories immediately
     used_memories = getattr(chat_processor, '_last_used_memories', [])
 
+    # Course-grounded retrieval (SPEC F3): session.course_id (or the request's
+    # course_id) scopes a corpus search; hits inject a GROUNDING block + typed
+    # citations. maybe_ground never raises — retrieval failure = ungrounded turn.
+    from src.corpus.grounding import maybe_ground
+    grounding_msg, citations = (maybe_ground(session_id, message, user, course_id)
+                                if not incognito else (None, []))
+    if grounding_msg:
+        preface.append(grounding_msg)
+
     # Inject pre-fetched search context
     if search_context:
         preface.append(untrusted_context_message("prefetched search context", search_context))
@@ -550,6 +563,7 @@ async def build_chat_context(
         preset=preset,
         preprocessed=preprocessed,
         auto_opened_docs=auto_opened_docs,
+        citations=citations,
     )
 
 
