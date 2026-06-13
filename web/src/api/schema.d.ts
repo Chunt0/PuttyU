@@ -2125,6 +2125,115 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/graph/assertions/{assertion_id}/challenge": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Challenge Assertion
+         * @description Invalidate the assertion (never delete) and record the user's
+         *     correction as a NEW stated assertion whose episode ref points at the
+         *     challenged row — no hidden student model.
+         */
+        post: operations["challenge_assertion_api_graph_assertions__assertion_id__challenge_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/graph/concepts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Concept Tree
+         * @description State-colored concept tree for a course region (or everything the
+         *     caller owns), nested by heading_path. `state` is the only mastery
+         *     vocabulary exposed; no-evidence nodes are "unknown", not zero.
+         */
+        get: operations["concept_tree_api_graph_concepts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/graph/concepts/{concept_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Concept Detail
+         * @description Everything behind a node's state: the evidence rows and the full
+         *     assertion timeline INCLUDING invalidated entries — 'used to confuse
+         *     these; resolved around June 10' stays queryable (bi-temporal).
+         */
+        get: operations["concept_detail_api_graph_concepts__concept_id__get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/graph/concepts/{concept_id}/override": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Override Concept
+         * @description The student is an authority on themself — overrides are evidence
+         *     too (an append-only row, not an edit), so the log keeps the receipt.
+         */
+        post: operations["override_concept_api_graph_concepts__concept_id__override_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/graph/observations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Observations
+         * @description Stated assertions, newest first (invalidated ones ride along with
+         *     invalidated_at set). With course_id, concept-object rows are filtered
+         *     to the course region; non-concept observations always pass.
+         */
+        get: operations["list_observations_api_graph_observations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/health": {
         parameters: {
             query?: never;
@@ -6275,6 +6384,196 @@ export interface components {
             rrule?: string | null;
             /** Summary */
             summary?: string | null;
+        };
+        /**
+         * GraphAssertionItem
+         * @description One timeline entry — invalidated assertions ride along with their
+         *     invalidated_at set (the trajectory view: the arc, not just the state).
+         */
+        GraphAssertionItem: {
+            /** Confidence */
+            confidence?: number | null;
+            /** Episode Refs */
+            episode_refs?: {
+                [key: string]: unknown;
+            }[];
+            /** Id */
+            id: string;
+            /** Invalidated At */
+            invalidated_at?: string | null;
+            /** Invalidation Reason */
+            invalidation_reason?: string | null;
+            /**
+             * Kind
+             * @default inferred
+             */
+            kind: string;
+            /** Object Id */
+            object_id?: string | null;
+            /** Object Name */
+            object_name?: string | null;
+            /** Object Type */
+            object_type?: string | null;
+            /** Quote */
+            quote?: string | null;
+            /**
+             * Relation
+             * @default
+             */
+            relation: string;
+            /**
+             * Statement
+             * @default
+             */
+            statement: string;
+            /**
+             * Subject Type
+             * @default
+             */
+            subject_type: string;
+            /** Valid From */
+            valid_from?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** GraphChallengeRequest */
+        GraphChallengeRequest: {
+            /** Correction */
+            correction: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** GraphChallengeResponse */
+        GraphChallengeResponse: {
+            correction: components["schemas"]["GraphAssertionItem"];
+            invalidated: components["schemas"]["GraphAssertionItem"];
+        } & {
+            [key: string]: unknown;
+        };
+        /** GraphConceptDetailResponse */
+        GraphConceptDetailResponse: {
+            /** Assertions */
+            assertions?: components["schemas"]["GraphAssertionItem"][];
+            /** Evidence */
+            evidence?: components["schemas"]["GraphEvidenceItem"][];
+            /** Heading Path */
+            heading_path?: string[];
+            /** Id */
+            id: string;
+            /**
+             * Name
+             * @default
+             */
+            name: string;
+            /** P Known */
+            p_known?: number | null;
+            /**
+             * State
+             * @default unknown
+             */
+            state: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** GraphConceptNode */
+        GraphConceptNode: {
+            /** Children */
+            children?: components["schemas"]["GraphConceptNode"][];
+            /**
+             * Evidence Count
+             * @default 0
+             */
+            evidence_count: number;
+            /** Id */
+            id: string;
+            /**
+             * Name
+             * @default
+             */
+            name: string;
+            /** P Known */
+            p_known?: number | null;
+            /**
+             * State
+             * @default unknown
+             */
+            state: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** GraphConceptsResponse */
+        GraphConceptsResponse: {
+            /** Concepts */
+            concepts?: components["schemas"]["GraphConceptNode"][];
+            /** Course Id */
+            course_id?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** GraphEvidenceItem */
+        GraphEvidenceItem: {
+            /** Created At */
+            created_at?: string | null;
+            /** Episode Ref */
+            episode_ref?: {
+                [key: string]: unknown;
+            } | null;
+            /** Id */
+            id: string;
+            /**
+             * Indirect
+             * @default false
+             */
+            indirect: boolean;
+            /** Note */
+            note?: string | null;
+            /**
+             * Signal
+             * @default
+             */
+            signal: string;
+            /** Source */
+            source?: string | null;
+            /**
+             * Weight
+             * @default 1
+             */
+            weight: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /** GraphObservationsResponse */
+        GraphObservationsResponse: {
+            /** Observations */
+            observations?: components["schemas"]["GraphAssertionItem"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** GraphOverrideRequest */
+        GraphOverrideRequest: {
+            /** Known */
+            known: boolean;
+        } & {
+            [key: string]: unknown;
+        };
+        /** GraphOverrideResponse */
+        GraphOverrideResponse: {
+            /**
+             * Evidence Count
+             * @default 0
+             */
+            evidence_count: number;
+            /** Id */
+            id: string;
+            /** P Known */
+            p_known?: number | null;
+            /**
+             * State
+             * @default unknown
+             */
+            state: string;
+        } & {
+            [key: string]: unknown;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -10915,6 +11214,169 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    challenge_assertion_api_graph_assertions__assertion_id__challenge_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                assertion_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GraphChallengeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphChallengeResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    concept_tree_api_graph_concepts_get: {
+        parameters: {
+            query?: {
+                course_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphConceptsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    concept_detail_api_graph_concepts__concept_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                concept_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphConceptDetailResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    override_concept_api_graph_concepts__concept_id__override_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                concept_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GraphOverrideRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphOverrideResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_observations_api_graph_observations_get: {
+        parameters: {
+            query?: {
+                course_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GraphObservationsResponse"];
                 };
             };
             /** @description Validation Error */

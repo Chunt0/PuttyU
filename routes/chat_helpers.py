@@ -103,14 +103,10 @@ def _enforce_chat_privileges(request, sess) -> None:
     from core.database import Session as _DbSess, ChatMessage as _Cm
     db = SessionLocal()
     try:
-        count = (
-            db.query(_Cm)
-            .join(_DbSess, _Cm.session_id == _DbSess.id)
-            .filter(_DbSess.owner == user,
-                    _Cm.role == "user",
-                    _Cm.timestamp >= _dt.utcnow() - _td(days=1))
-            .count()
-        )
+        count = (db.query(_Cm).join(_DbSess, _Cm.session_id == _DbSess.id)
+                 .filter(_DbSess.owner == user, _Cm.role == "user",
+                         _Cm.timestamp >= _dt.utcnow() - _td(days=1))
+                 .count())
     finally:
         db.close()
     if count >= cap:
@@ -307,8 +303,7 @@ def add_user_message(sess, chat_handler, preprocessed: PreprocessedMessage, inco
 def fire_message_event(request, session_id: str, sess, message: str):
     """Fire event_bus events for a new user message."""
     from src.event_bus import fire_event
-    user = get_current_user(request)
-    fire_event("message_sent", user)
+    fire_event("message_sent", get_current_user(request))
 
 
 def _session_url_matches_endpoint(session_url: str, endpoint_base: str) -> bool:
@@ -481,10 +476,8 @@ async def build_chat_context(
     # Skills injection respects its own enable toggle (mirrors memory_enabled).
     # When off, the "Available skills" index is not added to the prompt.
     skills_enabled = not incognito and uprefs.get("skills_enabled", True)
-    logger.debug(
-        "Memory enabled=%s for user=%s (incognito=%s, no_memory=%s, pref=%s)",
-        mem_enabled, user, incognito, no_memory, uprefs.get("memory_enabled", "NOT_SET"),
-    )
+    logger.debug("Memory enabled=%s for user=%s (incognito=%s, no_memory=%s, pref=%s)",
+                 mem_enabled, user, incognito, no_memory, uprefs.get("memory_enabled", "NOT_SET"))
 
     # Use RAG?
     use_rag_val = (str(use_rag).lower() != "false") if use_rag is not None else True
@@ -526,6 +519,12 @@ async def build_chat_context(
                                 if not incognito else (None, []))
     if grounding_msg:
         preface.append(grounding_msg)
+
+    # Student context (ADR 0005/F6): the one-door assembler rides beside grounding.
+    from src.student_context import maybe_student_context
+    sc_msg = None if incognito else maybe_student_context(session_id, user, course_id)
+    if sc_msg:
+        preface.append(sc_msg)
 
     # Inject pre-fetched search context
     if search_context:
@@ -863,6 +862,10 @@ def run_post_response_tasks(
             t_url, t_model, t_headers,
         ))
 
+    if not incognito:  # ensemble-graph extraction (ADR 0005): background, never blocks
+        from src.graph.extractor import schedule_extraction
+        schedule_extraction(sess, session_id, owner=owner)
+
     # Skill extraction from complex agent runs. Only when the user actually
     # chose agent mode — not a chat we auto-escalated for a notes/calendar
     # intent, and never in incognito.
@@ -871,12 +874,10 @@ def run_post_response_tasks(
     # users can re-enable diagnostics with LOG_LEVEL=DEBUG when something
     # silently breaks. INFO-level only shows the outcome inside
     # maybe_extract_skill (Auto-extracted / dropped / failed).
-    logger.debug(
-        "[skill-extract] gate: extract_skills=%s auto_skills=%s incognito=%s "
-        "rounds=%d tools=%d skills_manager=%s",
-        extract_skills, auto_skills_enabled, incognito,
-        agent_rounds, agent_tool_calls, "set" if skills_manager else "MISSING",
-    )
+    logger.debug("[skill-extract] gate: extract_skills=%s auto_skills=%s incognito=%s "
+                 "rounds=%d tools=%d skills_manager=%s",
+                 extract_skills, auto_skills_enabled, incognito,
+                 agent_rounds, agent_tool_calls, "set" if skills_manager else "MISSING")
     if (
         extract_skills
         and auto_skills_enabled

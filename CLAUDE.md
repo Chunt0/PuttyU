@@ -396,6 +396,50 @@ state from turns, fires an event, persists; scheduler drives spaced repetition).
   (`library.spec.ts`, `grounded-chat.spec.ts` incl. the no-secure-context hint, router case in
   provider-chat.spec); tsc/eslint/fitness green; pytest untouched 2122.
 
+- **Phase-2 T3a done (2026-06-13)** — ensemble student-memory graph BACKEND (ADR 0005, F5 +
+  F6 minus periphery). NEW `src/graph/`: **models** (5 tables on shared Base via
+  `ensure_graph_tables()`, wired into init_db like corpus: `concept_node` (closed-world,
+  `(normalized_name, owner)` reuse index), `entity_node` (open-world sparse), `assertion`
+  (bi-temporal: subject/relation/object|literal, kind stated|inferred, quote XOR confidence,
+  `invalidated_at` — contradiction invalidates, NEVER deletes), `mastery_evidence`
+  (append-only log), `mastery_state` (derived cache; NO row = "unknown" ≠ zero); all
+  owner-nullable). **seeding** (structure-only: heading levels → concepts, KEY-TERMS `**term**`
+  lines → leaves, book order → `prerequisite_of` kind=inferred conf 0.5; normalized-name match
+  per owner REUSES the node + appends meta.sources — the F6 shared-node seam; idempotent;
+  flat/plain-paragraph materials skip; triggered best-effort from courses PUT /sources (new
+  links only) + course-bound material upload). **mastery** (BKT-lite learn=.2 slip=.1 guess=.2
+  prior=.2; partial=½-weight, hint=¼-negative, overrides SET p .95/.05 and still append rows;
+  states learning<.55≤shaky<.8≤mastered on READ-time effective_p — exp decay toward 0.5,
+  half-life 21d, decay alone never demotes past shaky; positive evidence splashes 0.25× rows
+  onto direct prereqs, splash never cascades; `rebuild_mastery()` replays the log).
+  **extractor** (after-turn hook in `run_post_response_tasks`, every turn, never incognito,
+  fire-and-forget; ONE LLM call via model_router tier=light/background/structured w/
+  legacy_prefix=utility — no LLM → silent skip; closed-world evidence (concept MUST match the
+  course-region shortlist), observations → entity ADD/NOOP (normalized-equality v1) + stated
+  assertion w/ verbatim quote + chat_message episode_refs, insights → inferred w/ confidence
+  (statement kept in literal even when concept-anchored — that's what the supersede rule keys
+  on); same subject+relation+object w/ different content → old invalidated "superseded").
+  **consolidation** (builtin action `graph_consolidation`, weekly cron `0 5 * * 0` in
+  HOUSEKEEPING_DEFAULTS, no LLM: merge dup entities + repoint assertions, stale (>60d)
+  inferred confidences ×0.8, invalidate <0.2 "decayed"). NEW `src/student_context.py` — THE
+  one read door (F6): tiers profile (course dial + stated prefs) / focus (frontier = first 5
+  non-mastered in ordinal order, shaky list, recent evidence, active insights) / **periphery
+  stub** (`periphery_tier()` returns [] — T4) / ambient (stated observations); ~4 chars/token
+  budget, degrades bottom-up (ambient→periphery→focus-compress-to-10, profile+focus always
+  survive); injected in `build_chat_context` beside grounding (course-bound turns only,
+  never raises, incognito skipped). NEW **Gate 6f** `.fitness/graph-one-door.sh` (+allowlist):
+  no .py outside src/graph/ + student_context + graph_routes + tests/ may touch the graph
+  tables (raw SQL or ORM-class import) — in run-all.sh. NEW `routes/graph_routes.py` (typed,
+  owner_scoped): GET `/api/graph/concepts?course_id=` (heading_path tree w/ state/p_known/
+  evidence_count), GET `/concepts/{id}` (evidence + full assertion timeline incl. invalidated
+  — the trajectory), POST `/concepts/{id}/override` {known} (overrides are evidence rows),
+  GET `/observations`, POST `/assertions/{id}/challenge` {correction} (invalidate + stated
+  correction w/ assertion episode_ref). Contract 41→46 endpoints; schema.d.ts regenerated.
+  chat_helpers stayed ≤913 (frozen ceiling) by compacting log/query lines. pytest 2122→2188
+  (+66: models/seeding/mastery/extractor/consolidation/student-context/routes/triggers);
+  vitest 135, Playwright 24+1 skip, tsc/eslint, fitness 6a–6f all green. Progress UI + the
+  periphery tier + review queue are T3b/T4.
+
 **ALL KEEP SCREENS EXIST + Slice 7 demolition complete** → Phase 1 is done. Next: Phase-2
 tutoring UX (see `docs/SPEC-phase-2-tutoring-ux.md`).
 

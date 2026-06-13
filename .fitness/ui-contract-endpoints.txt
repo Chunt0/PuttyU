@@ -57,3 +57,10 @@ GET /api/router/config
 PUT /api/router/config
 GET /api/router/resolution
 GET /api/router/log
+#
+# Phase-2 T3a (ensemble graph — SPEC F5, ADR 0005):
+GET /api/graph/concepts
+GET /api/graph/concepts/{concept_id}
+POST /api/graph/concepts/{concept_id}/override
+GET /api/graph/observations
+POST /api/graph/assertions/{assertion_id}/challenge

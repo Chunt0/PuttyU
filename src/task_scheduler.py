@@ -209,6 +209,9 @@ HOUSEKEEPING_DEFAULTS = {
     "tidy_research":        {"name": "Research Tidy",            "trigger_type": "event", "trigger_event": "research_completed", "trigger_count": 5, "schedule": None, "scheduled_time": None, "cron_expression": None, "legacy_names": ["Tidy Research"]},
     "classify_events":      {"name": "Calendar Classify Events", "schedule": "cron",  "scheduled_time": None,    "cron_expression": "0 6,18 * * *", "ship_paused": True, "legacy_names": ["Classify Calendar Events"]},
     "audit_skills":          {"name": "Skills Audit",             "trigger_type": "event", "trigger_event": "skill_added", "trigger_count": 5, "schedule": None, "scheduled_time": None, "cron_expression": None, "legacy_names": ["Audit Skills"]},
+    # Phase-2 T3a (ADR 0005): weekly graph tidy — merge duplicate entities,
+    # decay stale inferred confidences. No LLM, so it ships active.
+    "graph_consolidation":   {"name": "Graph Consolidation",      "schedule": "cron",  "scheduled_time": None,    "cron_expression": "0 5 * * 0", "legacy_names": []},
 }
 
 RETIRED_HOUSEKEEPING_ACTIONS = frozenset({

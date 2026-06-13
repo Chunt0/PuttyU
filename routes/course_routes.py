@@ -232,12 +232,21 @@ def setup_course_routes() -> APIRouter:
                 if unknown:
                     raise HTTPException(400, f"Unknown library source ids: {', '.join(unknown)}")
 
+            existing = {l.source_id for l in db.query(CourseSource)
+                        .filter(CourseSource.course_id == course_id).all()}
             db.query(CourseSource).filter(CourseSource.course_id == course_id).delete()
             for sid in source_ids:
                 db.add(CourseSource(course_id=course_id, source_id=sid))
             db.commit()
-            return {"course_id": course_id, "source_ids": source_ids, "note": note}
         finally:
             db.close()
+
+        # Phase-2 T3a (ADR 0005): newly-linked sources seed the course's graph
+        # region (structure-only; idempotent; best-effort — never fails the PUT).
+        added = [s for s in source_ids if s not in existing]
+        if added and known is not None:
+            from src.graph.seeding import seed_safely
+            seed_safely(course_id, added, owner=user or None)
+        return {"course_id": course_id, "source_ids": source_ids, "note": note}
 
     return router

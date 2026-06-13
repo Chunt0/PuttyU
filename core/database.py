@@ -1435,6 +1435,13 @@ def init_db():
         ensure_corpus_tables(bind=engine)
     except Exception as _corpus_err:  # never block app boot on the corpus
         logging.getLogger(__name__).warning(f"corpus tables not ensured: {_corpus_err}")
+    # Phase-2 T3a: the ensemble-graph tables (ADR 0005) — same self-managed,
+    # create-only pattern as the corpus (lazy import for the same Base cycle).
+    try:
+        from src.graph.models import ensure_graph_tables
+        ensure_graph_tables(bind=engine)
+    except Exception as _graph_err:  # never block app boot on the graph
+        logging.getLogger(__name__).warning(f"graph tables not ensured: {_graph_err}")
 
 
 def _migrate_drop_cut_feature_tables():

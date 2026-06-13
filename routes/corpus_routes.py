@@ -177,14 +177,21 @@ def setup_corpus_routes() -> APIRouter:
             except UploadError as e:
                 raise HTTPException(400, str(e))
             src = db.get(CorpusSource, result["source_id"])
-            return {
-                "source": _source_to_item(src, result["chunks"]),
-                "created": result["created"],
-                "chunks": result["chunks"],
-                "needs_ocr": result["needs_ocr"],
-            }
+            item = _source_to_item(src, result["chunks"])
         finally:
             db.close()
+        # Phase-2 T3a (ADR 0005): course-bound materials seed the graph region.
+        # seed_course_region itself skips plain-paragraph materials (no
+        # heading-ish chunks, no key terms); best-effort, never fails the upload.
+        if course_id and result["created"]:
+            from src.graph.seeding import seed_safely
+            seed_safely(course_id, [result["source_id"]], owner=user or None)
+        return {
+            "source": item,
+            "created": result["created"],
+            "chunks": result["chunks"],
+            "needs_ocr": result["needs_ocr"],
+        }
 
     @router.patch("/materials/{source_id}/tags", response_model=CorpusSourceItem)
     def replace_tags(request: Request, source_id: str, body: CorpusTagsUpdateRequest):

@@ -1,0 +1,8 @@
+# Gate 6f (ADR 0005) allowlist — path prefixes allowed to touch the ensemble-graph
+# tables (concept_node / entity_node / assertion / mastery_evidence / mastery_state).
+# The graph has ONE read door (src/student_context.py) and one HTTP adapter; everything
+# else must go through them. tests/ is allowed for fixture setup/asserts.
+src/graph/
+src/student_context.py
+routes/graph_routes.py
+tests/

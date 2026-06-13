@@ -555,3 +555,95 @@ class RouterLogEntry(BaseModel):
 class RouterLogResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
     entries: List[RouterLogEntry] = Field(default_factory=list)
+
+
+# --- Phase-2 T3a: ensemble student-memory graph (SPEC F5/F6, ADR 0005) -------------------
+# Real OpenAPI seam: routes/graph_routes.py is born small + typed. `state` is the ONLY
+# mastery vocabulary the UI shows (unknown|learning|shaky|mastered — §6 Q2).
+
+class GraphConceptNode(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    id: str
+    name: str = ""
+    state: str = "unknown"  # unknown | learning | shaky | mastered
+    p_known: Optional[float] = None  # effective (recency-decayed); None = unknown
+    evidence_count: int = 0
+    children: List["GraphConceptNode"] = Field(default_factory=list)
+
+
+class GraphConceptsResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    course_id: Optional[str] = None
+    concepts: List[GraphConceptNode] = Field(default_factory=list)
+
+
+class GraphEvidenceItem(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    id: str
+    signal: str = ""
+    weight: float = 1.0
+    created_at: Optional[str] = None
+    source: Optional[str] = None       # context.source (chat|gym|review|override|…)
+    note: Optional[str] = None
+    indirect: bool = False             # prerequisite-splash evidence
+    episode_ref: Optional[Dict[str, Any]] = None
+
+
+class GraphAssertionItem(BaseModel):
+    """One timeline entry — invalidated assertions ride along with their
+    invalidated_at set (the trajectory view: the arc, not just the state)."""
+    model_config = ConfigDict(extra="allow")
+    id: str
+    kind: str = "inferred"             # stated | inferred
+    relation: str = ""
+    statement: str = ""                # quote (stated) or literal/derived text
+    quote: Optional[str] = None        # verbatim — stated only
+    confidence: Optional[float] = None  # inferred only
+    subject_type: str = ""
+    object_type: Optional[str] = None
+    object_id: Optional[str] = None
+    object_name: Optional[str] = None
+    valid_from: Optional[str] = None
+    invalidated_at: Optional[str] = None
+    invalidation_reason: Optional[str] = None
+    episode_refs: List[Dict[str, Any]] = Field(default_factory=list)
+
+
+class GraphConceptDetailResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    id: str
+    name: str = ""
+    heading_path: List[str] = Field(default_factory=list)
+    state: str = "unknown"
+    p_known: Optional[float] = None
+    evidence: List[GraphEvidenceItem] = Field(default_factory=list)
+    assertions: List[GraphAssertionItem] = Field(default_factory=list)
+
+
+class GraphOverrideRequest(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    known: bool  # True -> "I know this" (p=.95); False -> "I never learned this" (p=.05)
+
+
+class GraphOverrideResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    id: str
+    state: str = "unknown"
+    p_known: Optional[float] = None
+    evidence_count: int = 0
+
+
+class GraphObservationsResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    observations: List[GraphAssertionItem] = Field(default_factory=list)
+
+
+class GraphChallengeRequest(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    correction: str = Field(..., min_length=1, max_length=2000)
+
+
+class GraphChallengeResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    invalidated: GraphAssertionItem
+    correction: GraphAssertionItem

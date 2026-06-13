@@ -630,6 +630,10 @@ app.include_router(setup_corpus_routes())
 from routes.router_routes import setup_router_routes
 app.include_router(setup_router_routes())
 
+# Ensemble student-memory graph (Phase-2 T3a — SPEC F5/F6, ADR 0005)
+from routes.graph_routes import setup_graph_routes
+app.include_router(setup_graph_routes())
+
 from companion import setup_companion_routes
 app.include_router(setup_companion_routes())
 
