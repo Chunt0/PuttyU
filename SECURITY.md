@@ -1,6 +1,6 @@
 # Security Policy
 
-puttyU is a self-hosted AI workspace with privileged local capabilities. Please do not run it as a public, unauthenticated service.
+puttyU is a self-hosted AI tutoring app with privileged local capabilities (shell, file access, model serving, uploads, web research, API tokens). Please do not run it as a public, unauthenticated service.
 
 ## Supported Versions
 
@@ -30,7 +30,7 @@ Before pushing a public fork, run:
 ```bash
 git status --short
 git check-ignore -v .env data/auth.json data/app.db logs/compound.log puttyu.db
-git grep -n -I -E "(sk-[A-Za-z0-9_-]{20,}|xox[baprs]-|AIza[0-9A-Za-z_-]{20,}|Bearer [A-Za-z0-9._~+/-]{20,})" -- . ':!static/lib/**' ':!package-lock.json'
+git grep -n -I -E "(sk-[A-Za-z0-9_-]{20,}|xox[baprs]-|AIza[0-9A-Za-z_-]{20,}|Bearer [A-Za-z0-9._~+/-]{20,})" -- . ':!web/bun.lock*' ':!package-lock.json'
 ```
 
 Only `.env.example`, docs, source, tests, and static assets should be committed. Never commit live `.env` values, `data/` contents, local databases, uploaded files, generated media, logs, backups, auth/session files, API keys, model/provider tokens, password hashes, or personal documents.

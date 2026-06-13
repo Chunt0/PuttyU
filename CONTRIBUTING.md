@@ -31,25 +31,44 @@ cp .env.example .env
 docker compose up -d --build
 ```
 
-Manual development uses Python 3.11+:
+Manual development uses Python 3.11+ for the backend and Bun for the frontend:
 
 ```bash
+# backend
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
-python -m uvicorn app:app --host 0.0.0.0 --port 7000
+mkdir -p data
+python -m uvicorn app:app --host 127.0.0.1 --port 7000
+
+# frontend (separate terminal)
+cd web && bun install && bun run dev
 ```
 
-Windows is not actively tested. Docker on Linux or a Linux/macOS manual install is the safer path for now.
+**Ubuntu Linux only.** Windows/macOS are not supported targets (`core/platform_compat.py`
+is POSIX-collapsed; do not reintroduce cross-OS branches). Docker on Linux is the
+safest path for normal testing.
 
-## Running Checks
+## Running checks
 
-Run the smallest relevant checks for your change:
+puttyU's invariants are **mechanical gates**, not conventions (ADR 0002). A change
+that adds a feature should add the test/contract/gate that keeps it honest. Run the
+smallest relevant checks for your change; for anything non-trivial, run them all:
 
 ```bash
-python -m pytest
-python -m py_compile app.py routes/*.py src/*.py
-node --check static/js/<file-you-changed>.js
+# backend tests (data/ must exist) — blocking in CI
+mkdir -p data && .venv/bin/python -m pytest -q -m "not quarantine"
+
+# frontend types, lint, unit, e2e
+cd web && bunx tsc --noEmit && bun run lint && bun run test && bun run e2e
+
+# the six bash fitness functions (file-size, response_model, raw-json,
+# cross-feature imports, no-javascript, graph one-door)
+bash .fitness/run-all.sh
+
+# regenerate the typed OpenAPI contract after ANY UI-consumed route change
+# (CI fails on drift)
+python scripts/openapi-export.py && cd web && bun run gen:api
 ```
 
 For Docker-related changes:
@@ -60,7 +79,8 @@ docker compose up -d --build
 docker compose logs --tail=120 puttyu
 ```
 
-Mention what you ran in the pull request description. If you could not run a check, say so.
+Mention what you ran in the pull request description. If you could not run a check,
+say so.
 
 ## Pull Requests
 
@@ -78,19 +98,34 @@ Please keep PRs small. Large PRs that mix unrelated cleanup, formatting, refacto
 
 ## Style and visual changes
 
-puttyU has an intentional visual style. PRs that ignore it will be closed without merge, no matter how correct the underlying code is.
+puttyU has an intentional visual style (the **putty-ai-design** kit). PRs that
+ignore it will be closed without merge, no matter how correct the underlying code
+is.
 
-Before submitting any change that affects what the app looks like — buttons, icons, fonts, colors, spacing, layout, CSS, HTML, SVG, or any `static/js/` module that draws to the DOM — please:
+Before submitting any change that affects what the app looks like — buttons, icons,
+fonts, colors, spacing, layout, CSS, or any React component in `web/src/` that draws
+to the DOM — please:
 
-1. **Run the app locally** and view the change in a browser. Type-checks and unit tests are not enough.
-2. **Attach a screenshot or short clip** of the change in the running app. Add a mobile screenshot too if the change affects mobile.
+1. **Run the app locally** (`cd web && bun run dev`) and view the change in a
+   browser. Type-checks and unit tests are not enough.
+2. **Attach a screenshot or short clip** of the change in the running app. Add a
+   mobile screenshot too if the change affects mobile.
 3. **Match the existing visual language.** Specifically:
-   - Reuse existing CSS variables (`--red`, `--fg`, `--bg`, `--card`, `--border`, …). Do not introduce new color values, font sizes, or spacing units.
-   - Reuse existing button, input, card, and border classes. Don't invent parallel styling for similar widgets.
-   - **No Unicode emoji in UI or code.** Use inline SVG (matching the monochrome icon style already in `static/index.html`) or plain text.
-   - Monospaced font (`Fira Code`) for primary UI text. Don't override.
-   - Dark theme is the default; any light-mode work goes through the existing theme system, not hard-coded.
-4. **Don't add parallel components.** If a similar widget already exists in the app, extend it instead of writing a new one.
+   - Use design tokens — `var(--token)` from `web/src/app/shell.css :root`. **Never
+     hardcode hex values, font sizes, or spacing units.** This is what lets all 18
+     themes re-skin everything.
+   - **Coral `#e06c75` is the only accent.** No gradients. Sentence-case headings.
+   - Reuse existing button, input, card, and shared components (`Markdown`,
+     `ConfirmButton`, `toast`, `Spinner`, …). Don't invent parallel widgets.
+   - **No emoji as UI.** Use inline SVG (matching the monochrome icon style) or
+     plain text.
+   - Type is **Inter** for UI text and **Fira Code** for mono/code. Don't override.
+   - Theme work goes through the theme system (`web/src/app/themes.css` +
+     `ThemePicker`), never hard-coded colors.
+4. **TypeScript only.** New `.js/.jsx/.mjs/.cjs` files fail Gate 6e. No `any` in
+   `web/src/api`.
+5. **Don't add parallel components.** If a similar widget already exists, extend it
+   instead of writing a new one.
 
 If you are unsure whether a change is "visual," it is. Default to attaching a screenshot.
 

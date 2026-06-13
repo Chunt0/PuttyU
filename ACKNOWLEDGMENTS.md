@@ -33,8 +33,9 @@ The full license texts are kept in [`licenses/`](licenses/).
   engine behind the Cookbook's model download / serve / "What Fits?" feature.
   Copyright © Alex Jones. **MIT License.** Adapted in `services/hwfit/`
   (hardware detection, quant-aware fit scoring, model catalog),
-  `routes/cookbook_*.py`, `routes/hwfit_routes.py`, `static/js/cookbook*.js`,
-  and `scripts/puttyu-cookbook`.
+  `routes/cookbook_*.py`, `routes/hwfit_routes.py`, and `scripts/puttyu-cookbook`.
+  This local-model-serving cluster is currently **dormant** (no frontend in the
+  tutoring app) but retained — see [`ROADMAP.md`](ROADMAP.md).
 - **[Tongyi DeepResearch](https://github.com/Alibaba-NLP/DeepResearch)** by
   **Alibaba-NLP / Tongyi Lab** — the multi-step deep-research agent pipeline.
   Copyright © Alibaba-NLP / Tongyi Lab. **Apache-2.0.** Adapted for puttyU's
@@ -56,41 +57,34 @@ just composed.
 | [ChromaDB](https://github.com/chroma-core/chroma) | `chromadb/chroma:latest` | Vector store for memory / RAG | Apache-2.0 |
 | [ntfy](https://github.com/binwiederhier/ntfy) | `binwiederhier/ntfy` | Push notifications (self-hosted reminders) | Apache-2.0 / GPL-2.0 |
 
-## Bundled front-end libraries
+## Front-end libraries
 
-Vendored in `static/lib/` and served directly:
-
-| Library | Purpose | License |
-|---|---|---|
-| [highlight.js](https://github.com/highlightjs/highlight.js) v11.9.0 | Code syntax highlighting | BSD-3-Clause |
-| [SheetJS / xlsx](https://github.com/SheetJS/sheetjs) (`xlsx.full.min.js`) | Spreadsheet (`.xlsx`) read/write | Apache-2.0 |
-| [docx](https://github.com/dolanmiu/docx) (`docx.umd.min.js`) | Generate `.docx` documents | MIT |
-| [mammoth.js](https://github.com/mwilliamson/mammoth.js) | Convert `.docx` → HTML | BSD-2-Clause |
-| [html2pdf.js](https://github.com/eKoopmans/html2pdf.js) | HTML → PDF export (bundles jsPDF + html2canvas) | MIT |
-| [jsPDF](https://github.com/parallax/jsPDF) (bundled in html2pdf) | PDF generation | MIT |
-| [html2canvas](https://github.com/niklasvh/html2canvas) (bundled in html2pdf) | DOM → canvas rasterization | MIT |
-| [node-qrcode](https://github.com/soldair/node-qrcode) (`qrcode.min.js`) | QR-code rendering (2FA setup) | MIT |
-
-## Front-end libraries loaded at runtime (CDN)
-
-Referenced from `cdn.jsdelivr.net` / `cdnjs.cloudflare.com` at runtime — not vendored:
+The current frontend (`web/`) is a TypeScript + React 19 + Vite SPA built with Bun;
+dependencies are managed via npm packages (see [`web/package.json`](web/package.json))
+and bundled by Vite. Key runtime libraries:
 
 | Library | Purpose | License |
 |---|---|---|
-| [KaTeX](https://github.com/KaTeX/KaTeX) 0.16.22 | Math typesetting | MIT |
-| [Mermaid](https://github.com/mermaid-js/mermaid) 11 | Diagrams from text | MIT |
-| [Pyodide](https://github.com/pyodide/pyodide) 0.27.5 | In-browser Python runtime | MPL-2.0 |
-| [PDFObject](https://github.com/pipwerks/PDFObject) 2.1.1 | Inline PDF embedding | MIT |
+| [React](https://github.com/facebook/react) 19 + [React DOM](https://github.com/facebook/react) | UI runtime | MIT |
+| [React Router](https://github.com/remix-run/react-router) 7 | Client-side routing | MIT |
+| [TanStack Query](https://github.com/TanStack/query) 5 | Server-state / data fetching | MIT |
+| [zustand](https://github.com/pmndrs/zustand) 5 | Client state stores | MIT |
+| [openapi-fetch](https://github.com/openapi-ts/openapi-typescript) / [openapi-typescript](https://github.com/openapi-ts/openapi-typescript) | Typed API client + generated types | MIT |
+| [react-markdown](https://github.com/remarkjs/react-markdown) + [remark-gfm](https://github.com/remarkjs/remark-gfm) | Markdown rendering | MIT |
+| [rehype-highlight](https://github.com/rehypejs/rehype-highlight) (wraps [highlight.js](https://github.com/highlightjs/highlight.js)) | Code syntax highlighting | MIT / BSD-3-Clause |
+| [Vite](https://github.com/vitejs/vite) 6 · [Vitest](https://github.com/vitest-dev/vitest) · [Playwright](https://github.com/microsoft/playwright) | Build, unit tests, e2e | MIT / Apache-2.0 |
+
+The legacy server-rendered frontend (`static/`, with its CDN-loaded KaTeX/Mermaid/
+Pyodide and vendored xlsx/docx/html2pdf libraries) has been **retired** and removed.
 
 ## Fonts
 
-Bundled in `static/fonts/`:
+Self-hosted in `web/public/fonts/`:
 
 | Font | License | Author |
 |---|---|---|
 | [Fira Code](https://github.com/tonsky/FiraCode) | SIL Open Font License 1.1 | Nikita Prokopov & contributors |
 | [Inter](https://github.com/rsms/inter) | SIL Open Font License 1.1 | Rasmus Andersson |
-| [GohuFont](https://font.gohu.org/) (`fonts/custom/GohuFont.ttf`) | WTFPL | Hugo Chargois |
 
 ## Python dependencies
 

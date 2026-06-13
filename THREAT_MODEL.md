@@ -1,6 +1,6 @@
 # Threat Model
 
-puttyU is a **self-hosted AI workspace with privileged local access**. This document states the trust boundary so contributors can reason about security decisions without reading through the full auth and middleware stack.
+puttyU is a **self-hosted AI tutoring app with privileged local access**. This document states the trust boundary so contributors can reason about security decisions without reading through the full auth and middleware stack.
 
 ## Trust Boundary
 
@@ -66,7 +66,7 @@ External content that reaches the LLM is treated as untrusted via `src/prompt_se
 
 - `X-Frame-Options: DENY` + `frame-ancestors 'none'` on all routes except tool-render iframes (which are sandboxed at the HTML level).
 - `X-Content-Type-Options: nosniff` and `Referrer-Policy: no-referrer` everywhere.
-- **CSP:** nonce-based `script-src 'self' 'nonce-{nonce}' https://cdn.jsdelivr.net`. `style-src 'unsafe-inline'` is intentionally kept — `static/index.html` ships inline `<style>` blocks and JS modules set `style=""` attributes at runtime. Inline styles do not execute script so the risk is visual-only. Removing this requires templating the HTML files and auditing all JS-set style attributes.
+- **CSP:** nonce-based `script-src 'self' 'nonce-{nonce}' https://cdn.jsdelivr.net`. `style-src 'unsafe-inline'` is intentionally kept — the React SPA (`web/dist`, served via StaticFiles) and its components set inline `style` attributes at runtime, and Vite injects styles. Inline styles do not execute script, so the risk is visual-only. Removing this would require eliminating all runtime-set style attributes.
 
 ## Known Gaps
 

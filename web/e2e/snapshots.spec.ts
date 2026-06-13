@@ -251,3 +251,191 @@ test("capture UI snapshots", async ({ page }) => {
   await shot(page, "22-theme-midnight");
   await page.getByLabel("Theme").selectOption("putty");
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Phase-2 tutoring screens (courses · grounded chat · library · progress graph).
+// A second self-contained capture against a mock backend seeded with a course,
+// a linked library source, a populated concept graph, and a grounded reply.
+// ─────────────────────────────────────────────────────────────────────────────
+
+type GraphAssertion = {
+  id: string; kind: string; relation: string; statement: string; quote: string | null;
+  confidence: number | null; subject_type: string; object_type: string | null;
+  object_id: string | null; object_name: string | null; valid_from: string;
+  invalidated_at: string | null; invalidation_reason: string | null; episode_refs: unknown[];
+};
+
+async function mockTutoringBackend(page: Page) {
+  let authed = false;
+  const sessions: { id: string; name: string; model: string; course_id: string | null }[] = [];
+  const history: { role: string; content: string }[] = [];
+
+  const assertions: GraphAssertion[] = [
+    { id: "a1", kind: "stated", relation: "states",
+      statement: "I always mix up sampling error and bias",
+      quote: "I always mix up sampling error and bias", confidence: null,
+      subject_type: "user", object_type: "concept", object_id: "n2",
+      object_name: "Sampling error", valid_from: "2026-06-08T10:00:00Z",
+      invalidated_at: null, invalidation_reason: null, episode_refs: [] },
+    { id: "a2", kind: "inferred", relation: "struggles_with", statement: "rushes the setup before reading the whole problem",
+      quote: null, confidence: 0.55, subject_type: "user", object_type: "concept",
+      object_id: "n2", object_name: "Sampling error", valid_from: "2026-05-20T10:00:00Z",
+      invalidated_at: null, invalidation_reason: null, episode_refs: [] },
+    { id: "a3", kind: "inferred", relation: "confuses",
+      statement: "confuses standard deviation with standard error", quote: null, confidence: 0.8,
+      subject_type: "user", object_type: "concept", object_id: "n2", object_name: "Sampling error",
+      valid_from: "2026-05-02T10:00:00Z", invalidated_at: "2026-06-02T10:00:00Z",
+      invalidation_reason: "contradicted", episode_refs: [] },
+  ];
+
+  await page.route("**/api/auth/status", (r) =>
+    r.fulfill({ json: { authenticated: authed, username: authed ? "ada" : null, is_admin: true } }));
+  await page.route("**/api/auth/login", (r) => { authed = true; return r.fulfill({ json: { ok: true, username: "ada" } }); });
+
+  await page.route("**/api/sessions**", (r) => {
+    const cid = new URL(r.request().url()).searchParams.get("course_id");
+    return r.fulfill({ json: cid ? sessions.filter((s) => s.course_id === cid) : sessions });
+  });
+  await page.route("**/api/default-chat", (r) => r.fulfill({ json: {} }));
+  await page.route("**/api/session", (r) => {
+    const s = { id: "s1", name: "New chat", model: "llama3", course_id: "c1" };
+    if (!sessions.find((x) => x.id === "s1")) sessions.push(s);
+    return r.fulfill({ json: s });
+  });
+  await page.route(/\/api\/history\/s1/, (r) =>
+    r.fulfill({ json: { history, model: "llama3", name: "New chat", course_id: "c1" } }));
+
+  // Two courses so the focus/periphery story (Calculus ↔ calc-based Physics) reads.
+  await page.route("**/api/courses**", (r) =>
+    r.fulfill({ json: { courses: [
+      { id: "c1", name: "AP Statistics", status: "active", settings: {} },
+      { id: "c2", name: "Physics — Mechanics", status: "active", settings: {} },
+    ] } }));
+  await page.route("**/api/courses/*/sources", (r) =>
+    r.fulfill({ json: { course_id: "c1", source_ids: ["s1"] } }));
+
+  // Library sources + the user's own materials (the Materials list filters
+  // /api/corpus/sources by kind=material). General route first; the TOC and PDF
+  // sub-paths registered AFTER so they win (Playwright: last matching route wins).
+  await page.route("**/api/corpus/sources**", (r) =>
+    r.fulfill({ json: { sources: [
+      { id: "s1", kind: "library", title: "Introductory Statistics", source_type: "textbook",
+        subject: "statistics", authors: "OpenStax", status: "ready", course_id: null,
+        tags: [], has_pdf: true, chunk_count: 642 },
+      { id: "s2", kind: "library", title: "University Physics Vol. 1", source_type: "textbook",
+        subject: "physics", authors: "OpenStax", status: "ready", course_id: null,
+        tags: [], has_pdf: true, chunk_count: 880 },
+      { id: "m1", kind: "material", title: "Week 3 — sampling worksheet", source_type: "material",
+        subject: null, authors: null, status: "ready", course_id: "c1",
+        tags: ["homework", "exam-prep"], has_pdf: true, chunk_count: 4 },
+      { id: "m2", kind: "material", title: "Course syllabus", source_type: "material",
+        subject: null, authors: null, status: "ready", course_id: "c1",
+        tags: ["syllabus"], has_pdf: true, chunk_count: 2 },
+    ] } }));
+  await page.route("**/api/corpus/sources/s1/toc", (r) =>
+    r.fulfill({ json: { source_id: "s1", toc: [
+      { heading: "Ch 1 Sampling and data", ordinal: 0, page_start: 9, children: [
+        { heading: "1.1 Definitions of statistics", ordinal: 1, page_start: 9, children: [] },
+        { heading: "1.3 Sampling error and bias", ordinal: 2, page_start: 22, children: [] },
+      ] },
+      { heading: "Ch 2 Descriptive statistics", ordinal: 3, page_start: 70, children: [
+        { heading: "2.3 Two kinds of data", ordinal: 4, page_start: 87, children: [] },
+      ] },
+    ] } }));
+  await page.route("**/api/corpus/sources/*/pdf**", (r) =>
+    r.fulfill({ status: 200, contentType: "application/pdf", body: "%PDF-1.4 fake" }));
+  await page.route("**/api/corpus/materials**", (r) => r.fulfill({ json: { sources: [] } }));
+
+  // The ensemble graph: a state-colored concept tree + one concept's trajectory.
+  // General concepts route first; the per-concept detail/override registered AFTER.
+  await page.route("**/api/graph/observations**", (r) =>
+    r.fulfill({ json: { observations: [] } }));
+  await page.route("**/api/graph/concepts**", (r) =>
+    r.fulfill({ json: { course_id: "c1", concepts: [
+      { id: "h1", name: "Ch 1 Sampling and data", state: "unknown", p_known: null, evidence_count: 0, children: [
+        { id: "n1", name: "Populations and samples", state: "mastered", p_known: 0.91, evidence_count: 6, children: [] },
+        { id: "n2", name: "Sampling error", state: "shaky", p_known: 0.31, evidence_count: 5, children: [] },
+        { id: "n4", name: "Bias", state: "learning", p_known: 0.48, evidence_count: 3, children: [] },
+      ] },
+      { id: "h2", name: "Ch 2 Descriptive statistics", state: "unknown", p_known: null, evidence_count: 0, children: [
+        { id: "n5", name: "Measures of center", state: "mastered", p_known: 0.88, evidence_count: 4, children: [] },
+        { id: "n6", name: "Standard deviation", state: "learning", p_known: 0.52, evidence_count: 3, children: [] },
+        { id: "n7", name: "Box plots", state: "unknown", p_known: null, evidence_count: 0, children: [] },
+      ] },
+    ] } }));
+  await page.route("**/api/graph/concepts/n2", (r) =>
+    r.fulfill({ json: {
+      id: "n2", name: "Sampling error", heading_path: ["Ch 1 Sampling and data", "Sampling error"],
+      state: "shaky", p_known: 0.31,
+      evidence: [
+        { id: "e1", signal: "correct", weight: 1, created_at: "2026-06-10T15:00:00Z", source: "gym", note: null, indirect: false, episode_ref: null },
+        { id: "e2", signal: "incorrect", weight: 1, created_at: "2026-06-04T15:00:00Z", source: "review", note: null, indirect: false, episode_ref: null },
+      ],
+      assertions,
+    } }));
+  await page.route("**/api/graph/concepts/n2/override", (r) =>
+    r.fulfill({ json: { id: "n2", state: "mastered", p_known: 0.95, evidence_count: 4 } }));
+
+  // A grounded reply: a `citations` control event precedes the tokens.
+  const GROUNDED = "A **parameter** describes a whole population (a fixed number you usually can't observe); a **statistic** is what you compute from a sample to estimate it. Because samples vary, a statistic carries *sampling error*. [Introductory Statistics §1.1 Definitions, p. 9]";
+  await page.route("**/api/chat_stream", (r) => {
+    history.push(
+      { role: "user", content: "what's the difference between a parameter and a statistic?" },
+      { role: "assistant", content: GROUNDED },
+    );
+    return r.fulfill({ status: 200, contentType: "text/event-stream",
+      body:
+        'data: {"type":"citations","data":[{"chunk_id":"ch1","source_id":"s1","title":"Introductory Statistics","heading":"Ch 1 > 1.1 Definitions","page_start":9,"citation":"[Introductory Statistics §1.1 Definitions, p. 9]"}]}\n\n' +
+        `data: {"delta":${JSON.stringify(GROUNDED)}}\n\n` +
+        "data: [DONE]\n\n" });
+  });
+}
+
+test("capture tutoring snapshots", async ({ page }) => {
+  test.skip(!process.env.SNAPSHOTS, "snapshot capture only — run with SNAPSHOTS=1");
+  test.setTimeout(120_000);
+  await mockTutoringBackend(page);
+
+  await page.goto("/");
+  await page.getByLabel("Username").fill("ada");
+  await page.getByLabel("Password").fill("secret");
+  await page.getByRole("button", { name: "Sign in" }).click();
+
+  // 23 — course landing: coverage chip, the mastery progress strip, materials with tags
+  await page.getByRole("tab", { name: "AP Statistics" }).click();
+  await page.getByText("Week 3 — sampling worksheet").waitFor();
+  await page.waitForTimeout(300);
+  await shot(page, "23-course-landing");
+
+  // 24 — grounded chat: the reply streams citation chips ("grounded in N sources")
+  await page.getByRole("main").getByRole("button", { name: "+ New chat" }).click();
+  await page.getByLabel("Message").fill("what's the difference between a parameter and a statistic?");
+  await page.getByRole("button", { name: "Send" }).click();
+  await page.getByText("grounded in 1 source").waitFor();
+  await page.getByRole("button", { name: /Introductory Statistics §1.1 Definitions/ }).waitFor();
+  await page.waitForTimeout(300);
+  await shot(page, "24-grounded-chat");
+
+  // 25 — the library: a real source's table of contents, a click opens the PDF at the page
+  await page.getByRole("button", { name: "Library", exact: true }).click();
+  const lib = page.getByTestId("window-library");
+  await lib.getByText("Introductory Statistics").first().waitFor();
+  await lib.getByRole("button", { name: "Contents of Introductory Statistics" }).click();
+  await lib.getByText("1.3 Sampling error and bias").waitFor();
+  await page.waitForTimeout(300);
+  await shot(page, "25-library-toc");
+  await page.getByRole("button", { name: "Close Library" }).click();
+
+  // 26 — Progress: the state-colored concept tree (4-state vocabulary, evidence counts)
+  await page.getByRole("button", { name: "Progress", exact: true }).click();
+  const prog = page.getByTestId("window-progress");
+  await prog.getByRole("button", { name: "Sampling error" }).waitFor();
+  await page.waitForTimeout(300);
+  await shot(page, "26-progress-tree");
+
+  // 27 — a concept's trajectory: verbatim stated quote + struck-through invalidated insight
+  await prog.getByRole("button", { name: "Sampling error" }).click();
+  await prog.getByText("I always mix up sampling error and bias").waitFor();
+  await page.waitForTimeout(300);
+  await shot(page, "27-concept-trajectory");
+});

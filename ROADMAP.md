@@ -1,80 +1,88 @@
 # Roadmap / Help Wanted
 
-puttyU is on a voyage, but not home yet. It works great for me (lol), but this ship is moving fast and feedback/help would be appreciated! (I don't know what I'm doing, help).
+puttyU is on a voyage, but not home yet. It works for me (lol), but this ship is
+moving fast and feedback/help would be appreciated. (I don't really know what I'm
+doing — help.)
 
 If you see weird CSS, strange layout behavior, or a suspiciously murky corner of
 the codebase, you are probably right to stay away.
 
-## High Priority
+**The source of truth for where the build is and what's next is
+[`docs/PHASE-2-BUILD-PLAN.md`](docs/PHASE-2-BUILD-PLAN.md)** — read that first. The
+frozen spec is [`docs/SPEC-phase-2-tutoring-ux.md`](docs/SPEC-phase-2-tutoring-ux.md).
+This file is the higher-level help-wanted list.
 
-- SQUASH BUGS
-- Fresh install smoke tests on Linux, macOS, and Windows. Docker, native Python,
-  and WSL all need coverage.
+## Current focus — finish the tutoring loop
 
-- Integration audit: do integrations even work? Confirm what works, what needs setup docs, and what should be removed or hidden. 
-- Self-host troubleshooting cookbook. Document the weird 30-second fixes that otherwise become 30-minute searches: Dovecot cleartext auth for local stacks, ntfy Android Instant Delivery for non-ntfy.sh servers, clipboard limits on plain-HTTP Tailscale URLs, Radicale collection URLs, and similar traps.
-- Cookbook reliability on other computers. This is probably the area most likely to need work across different machines, GPUs, drivers, shells, and Python environments.
-- Cookbook SGLang support across platforms. Make sure SGLang setup/serve works
-  predictably on Linux, Windows/WSL, macOS where possible, Docker, and common
-  NVIDIA/AMD hardware paths.
-- Deep Research model presets by hardware. Recommend approved model/parameter
-  profiles for small, medium, and large local setups so people with different
-  hardware can use Deep Research without guessing. Surface this either in Deep
-  Research settings or as a Cookbook scan/dropdown suggestion.
-- Cookbook model scan/download ranking. Prioritize newer architectures and
-  better hardware-fit models instead of scoring everything almost the same.
-  Ranking should account for architecture age, quant format, VRAM/RAM fit,
-  backend support, vision/mmproj requirements, and likely serve reliability.
-- Cookbook error feedback and logging. Failed downloads, dependency installs,
-  preflights, and serve jobs should show the actual command/output/error in the
-  UI, with copyable logs and clear next steps instead of just "crashed".
-- Agent prompt/context bloat. Agent mode is too heavy for smaller local models:
-  tool schemas, skills, memory, documents, and instructions can eat the context
-  before the user request really starts. We need slimmer prompts, better tool
-  selection, smaller default tool sets, and clearer guidance for models with
-  4k/8k/16k context windows.
-- Skill/tool prompt-injection audit. User-editable skills, notes, documents,
-  fetched pages, and memories should be treated as untrusted data. Keep testing
-  whether models follow malicious instructions from those surfaces.
-- Better degraded-state reporting for ChromaDB, SearXNG, email, ntfy, and provider probes.
-- Email performance audit. Fetching, searching, opening, deleting, and sending
-  email can feel slow, especially over IMAP/SMTP providers with high latency.
-  Need someone who knows mail performance to profile the current flow, identify
-  whether the bottleneck is IMAP folder select/fetch, cache invalidation,
-  attachment/body loading, SMTP handshakes, or frontend refresh behavior, then
-  propose safer caching/prefetch/batching without breaking multi-account state.
-- Provider setup/probing audit for Anthropic, Gemini, Groq, xAI, OpenRouter, OpenAI, and DeepSeek.
+These are the remaining Phase-2 slices (detail + acceptance criteria in the build
+plan). Each is built backend-first, then frontend, with tests and gates kept green.
 
-## Refactor Targets
-- CSS cleanup. `static/style.css` basically Calypso's island atm.
-- Tour core helper. The onboarding tours have too much copy-pasted scaffolding; promote a shared `tour-core.js` helper before adding more tours.
-- Modal/window positioning cleanup. Some window controls have improved, but the
-  underlying popup/dropdown/fixed-position behavior is still too fragile.
-- Mobile media override discoverability. A lot of "CSS did not move" bugs are mobile `@media` overrides of the same selector; comments or linting around desktop/mobile paired rules would help.
-- Dead code pass for old routes, stale feature flags, and unused UI states.
+- **T4 — practice engine.** Review queue, the Gym (weakness-targeted practice that
+  prefers REAL corpus problems and only LLM-generates when the library is dry),
+  calibration, exam simulation, explain-it-back, plus the **periphery context
+  tier** (the Calculus ↔ calc-based-Physics coupling) and coupling mute. Backend is
+  partially scaffolded.
+- **T5 — dashboard + planning.** The login landing surface (today's calendar, due
+  todos, review-queue count, reading recommendations that open the PDF at the exact
+  page, a weak-spot card, a mini-chat). Plus the todo model, the **schedule miner**
+  (syllabus dates → *proposed* calendar events + todos, confirm-first), the persona
+  + adaptivity dial, Cmd-K global search, session-summary notes, and a cost meter.
+- **T6 — worksheet grading + canvas.** Deepen line-referenced worksheet grading
+  (what's right, where the first error is, cite the section, spawn a follow-up
+  review item) and add a Pointer-Events **canvas workspace** (draw with mouse/pad/
+  stylus, one-click "send to tutor" as an image).
+
+## Cross-cutting quality
+
+- **Grounding & citation quality.** The product promise is "never fake a citation;
+  say so when ungrounded." Stress-test it. A golden-set **tutor-eval harness**
+  (planned "Gate 7") for the LLM behaviors the spec promises — citation honesty,
+  extraction precision, weakness-first composition — is the next verifiability gate.
+- **Graph extraction quality.** The after-turn extractor and BKT-lite mastery model
+  decide what the tutor believes about you. False or noisy assertions are the worst
+  failure mode; help hardening extraction precision and the override/challenge flow.
+- **`owner_scoped` enforcement gate.** Gate 5 helper exists and all Phase-2 routes
+  use it, but the *gate* that forbids new ad-hoc `.filter(owner == ...)` filters —
+  and migrates the ~20 legacy ones — is unwritten.
+- **God-file splits.** A handful of frozen large files (`model_routes.py`,
+  `agent_loop.py`, `tool_implementations.py`, `task_routes.py`, …) are at their
+  Gate-6a ceilings with hand-typed UI seams. Splitting them unblocks putting those
+  seams on the real OpenAPI contract.
+
+## Backup / export (raise priority right after T4–T6)
+
+- The student graph is the **first irreplaceable data this app creates** — a
+  scheduled `data/` snapshot + per-course export is high-value.
+- Anki export of review items.
 
 ## Frontend
 
-- Expand the Editor for quicker, more robust everyday use. Better file/document
-  handling, smoother window behavior, clearer save/export flows, stronger image
-  editing affordances, and fewer brittle edge cases.
-- Better AI integration for Notes and Todos. Notes should be easier for the
-  agent to read, update, summarize, and turn into actions. Todos should be
-  assignable to an agent from the UI, possibly through a button, task action,
-  or dedicated skill/tool flow.
-- Mobile gallery/editor polish. Easier to launch/download inpaint model or any missing pieces.
+- Polish the new tutoring screens (Courses, Library, Progress) and capture fresh
+  screenshots for the README.
 - Accessibility pass: keyboard navigation, focus states, contrast, reduced motion.
-- Improve empty states and error messages on fresh installs.
-- Tighten first-run setup, hints, and tours so they do not repeat or fight each other.
-- Vendor CDN assets eventually for a more fully self-hosted/offline mode.
+- Improve empty states and error messages on fresh installs; tighten first-run
+  setup and onboarding so flows don't repeat or fight each other.
+- Mobile PWA (a @later seam): a dashboard + review + mini-chat install target.
 
-## Backend
+## Backend / ops
 
-- More tests around endpoint probing and provider setup.
-- Better task scheduler defaults and visibility.
-- Backup/restore guide and helper flow for `data/`.
-- Security hardening around admin-only tools and clear docs for their risk.
+- Fresh-install smoke tests on Linux (Docker + native venv). Provider setup/probing
+  for Anthropic, Gemini, OpenAI, OpenRouter, Ollama, vLLM, llama.cpp.
+- Better degraded-state reporting for ChromaDB, SearXNG, and provider probes.
+- Skill/tool prompt-injection audit. Treat user-editable skills, notes, documents,
+  fetched pages, uploads, and memories as untrusted — keep testing whether models
+  follow malicious instructions from those surfaces.
+- Agent prompt/context bloat for smaller local models: slimmer prompts, smaller
+  default tool sets, clearer guidance for 4k/8k/16k context windows.
 
-## Not The Focus Right Now
+## Dormant (do not rebuild or delete yet)
 
-I prob shouldnt add more themes.
+The cookbook / local-model-serving cluster (`cookbook_routes.py`, `services/hwfit/`)
+is **deferred**, not deleted — no UI calls it. It carries the residual non-Linux
+code. Leave it alone until the tutoring core is solid; it gets revisited or
+strangled later. Same for any cut-feature backend that no longer has a frontend.
+
+## Not the focus right now
+
+I prob shouldn't add more themes (there are already 18).
+</content>
