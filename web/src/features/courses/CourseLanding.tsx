@@ -2,6 +2,7 @@ import { Spinner } from "../../components/Spinner.tsx";
 import { toast } from "../../components/toast.ts";
 import { useUiStore } from "../../lib/store.ts";
 import { useCreateSession, useSessions } from "../sessions/api.ts";
+import { Materials } from "../library/Materials.tsx";
 import { useCourseSources } from "./api.ts";
 import type { Course } from "../../api/types.ts";
 
@@ -56,6 +57,9 @@ export function CourseLanding({ course }: { course: Course }) {
             </li>
           ))}
         </ul>
+      </section>
+      <section>
+        <Materials courseId={course.id} />
       </section>
     </div>
   );

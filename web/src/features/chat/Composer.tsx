@@ -1,5 +1,6 @@
 import { useRef, useState, type ChangeEvent, type DragEvent, type FormEvent, type KeyboardEvent } from "react";
 import { Switch } from "../../components/Switch.tsx";
+import { CameraCapture } from "../../components/CameraCapture.tsx";
 import { toast } from "../../components/toast.ts";
 import { isImage, thumbUrl, uploadFiles, type UploadedFile } from "./attachments.ts";
 
@@ -74,6 +75,8 @@ export function Composer({ streaming, onSend, onStop, agentMode, setAgentMode, p
         {agentMode && (
           <Switch checked={planMode} onChange={setPlanMode} label="Plan (read-only)" ariaLabel="Plan mode" />
         )}
+        {/* Webcam shot enters the EXACT same path as a picked file (F4). */}
+        <CameraCapture label="Take photo" onAccept={(files) => void addFiles(files)} />
       </div>
 
       {attachments.length > 0 && (

@@ -25,7 +25,7 @@ export function Shell() {
         </div>
         <SessionList />
         <nav className="shell-nav">
-          {WINDOW_TOOLS.map((tool) => {
+          {WINDOW_TOOLS.filter((t) => !t.hidden).map((tool) => {
             const active = windows[tool.key] && !windows[tool.key].minimized;
             return (
               <button

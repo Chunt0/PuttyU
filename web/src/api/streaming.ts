@@ -101,14 +101,47 @@ export interface ChatStreamRequest {
   allow_bash?: boolean;
   allow_web_search?: boolean;
   attachments?: string[];
+  // Course-grounding fallback (F3): the session is normally course-bound server-side, but
+  // sending the active course id makes a course-less session still ground correctly.
+  course_id?: string;
 }
 
-/** A decoded chat-stream event. `control` carries the raw backend object keyed by `event`
- * (its `type`) so screens can react to model_info / tool_start / tool_output / etc. */
+/** One course-grounding citation (SPEC §5.4 typed contract — CorpusSearchItem on the wire).
+ * The chat stream emits the list as a `citations` control event BEFORE token streaming. */
+export interface Citation {
+  chunk_id: string;
+  source_id: string;
+  title: string;
+  heading: string;
+  page_start: number | null;
+  citation: string;
+}
+
+/** A decoded chat-stream event. `citations` is the course-grounding list for the turn;
+ * `control` carries the raw backend object keyed by `event` (its `type`) so screens can
+ * react to model_info / tool_start / tool_output / etc. */
 export type ChatEvent =
   | { kind: "delta"; text: string }
+  | { kind: "citations"; items: Citation[] }
   | { kind: "control"; event: string; payload: Record<string, unknown> }
   | { kind: "done" };
+
+const str = (v: unknown): string => (typeof v === "string" ? v : "");
+
+/** Defensive per-item decode: a malformed entry is dropped, never thrown. */
+function decodeCitation(v: unknown): Citation | null {
+  if (typeof v !== "object" || v === null) return null;
+  const r = v as Record<string, unknown>;
+  if (typeof r.source_id !== "string") return null;
+  return {
+    chunk_id: str(r.chunk_id),
+    source_id: r.source_id,
+    title: str(r.title),
+    heading: str(r.heading),
+    page_start: typeof r.page_start === "number" ? r.page_start : null,
+    citation: str(r.citation),
+  };
+}
 
 /** Decode one SSE `data:` payload into a ChatEvent. Returns null for unrecognised/garbage
  * data (defensive: a malformed line must not kill the stream). */
@@ -123,6 +156,13 @@ export function decodeChatEvent(data: string): ChatEvent | null {
   if (typeof obj !== "object" || obj === null) return null;
   const rec = obj as Record<string, unknown>;
   if (typeof rec.delta === "string") return { kind: "delta", text: rec.delta };
+  // {type:"citations", data:[CorpusSearchItem,...]} — typed, not a generic control event.
+  if (rec.type === "citations" && Array.isArray(rec.data)) {
+    return {
+      kind: "citations",
+      items: rec.data.map(decodeCitation).filter((c): c is Citation => c !== null),
+    };
+  }
   if (typeof rec.type === "string") return { kind: "control", event: rec.type, payload: rec };
   // Backend failure events ({"error": "...", "status": 500}) have no `type` —
   // surface them as an "error" control event instead of dropping them.
@@ -142,6 +182,7 @@ export async function* streamChat(
   form.set("message", req.message);
   form.set("session", req.session);
   if (req.mode) form.set("mode", req.mode);
+  if (req.course_id) form.set("course_id", req.course_id);
   const flags: Record<string, boolean | undefined> = {
     use_web: req.use_web,
     use_rag: req.use_rag,

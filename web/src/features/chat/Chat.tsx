@@ -1,11 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useUiStore } from "../../lib/store.ts";
-import { streamChat } from "../../api/streaming.ts";
+import { streamChat, type Citation } from "../../api/streaming.ts";
+import { useCourseStore } from "../courses/store.ts";
 import { historyKey, useHistory } from "./api.ts";
 import { reduceAgentEvent, emptyAgentState, type AgentState, type ToolStep } from "./agentSteps.ts";
 import { Message } from "./Message.tsx";
 import { Composer } from "./Composer.tsx";
+import { CitationChips } from "./CitationChips.tsx";
 import type { UploadedFile } from "./attachments.ts";
 
 interface Pending {
@@ -69,11 +71,13 @@ function Welcome() {
  */
 export function Chat() {
   const sessionId = useUiStore((s) => s.currentSessionId);
+  const activeCourseId = useCourseStore((s) => s.activeCourseId);
   const qc = useQueryClient();
   const history = useHistory(sessionId);
 
   const [pending, setPending] = useState<Pending | null>(null);
   const [agent, setAgent] = useState<AgentState>(emptyAgentState);
+  const [citations, setCitations] = useState<Citation[]>([]);
   const [streaming, setStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [agentMode, setAgentMode] = useState(false);
@@ -87,6 +91,7 @@ export function Chat() {
   useEffect(() => {
     setPending(null);
     setAgent(emptyAgentState);
+    setCitations([]);
     setError(null);
     stickRef.current = true;
   }, [sessionId]);
@@ -115,6 +120,7 @@ export function Chat() {
     setError(null);
     setPending({ user: text, assistant: "" });
     setAgent(emptyAgentState);
+    setCitations([]);
     setStreaming(true);
     stickRef.current = true;
     const ac = new AbortController();
@@ -125,6 +131,9 @@ export function Chat() {
         message: text,
         session: sessionId,
         attachments: attachments.map((f) => f.id),
+        // Grounding fallback (F3): the session is course-bound server-side; sending the
+        // active course id also covers a course-less session opened inside a course tab.
+        ...(activeCourseId ? { course_id: activeCourseId } : {}),
       };
       const req = agentMode
         ? { ...base, mode: "agent" as const, plan_mode: planMode, allow_bash: true, allow_web_search: true }
@@ -133,6 +142,8 @@ export function Chat() {
       for await (const ev of streamChat(req, ac.signal)) {
         if (ev.kind === "delta") {
           setPending((p) => (p ? { ...p, assistant: p.assistant + ev.text } : p));
+        } else if (ev.kind === "citations") {
+          setCitations(ev.items);
         } else if (ev.kind === "control") {
           if (ev.event === "error") {
             // Backend run died mid-stream; it still terminates with [DONE],
@@ -180,12 +191,15 @@ export function Chat() {
         {messages.map((m, i) => (
           <Message key={i} role={m.role} content={m.content} />
         ))}
-        {/* Footer: the just-completed turn's tool steps (history doesn't persist them). */}
+        {/* Footer: the just-completed turn's tool steps + citation chips (history
+            doesn't persist either; they clear on the next send / session switch). */}
         {!pending && <AgentSteps state={agent} />}
+        {!pending && <CitationChips items={citations} />}
         {pending && (
           <>
             <Message role="user" content={pending.user} />
             <AgentSteps state={agent} />
+            <CitationChips items={citations} />
             {pending.assistant ? (
               <Message role="assistant" content={pending.assistant} />
             ) : (

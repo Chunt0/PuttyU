@@ -786,3 +786,100 @@ label.switch:hover .switch-track { border-color: var(--accent); }
   padding: 10px 12px; cursor: pointer;
 }
 .course-landing-sessions button:hover { border-color: var(--accent); }
+
+/* library panel (F2) */
+.library { max-width: 760px; }
+.library-scope { color: var(--muted); font-size: 13px; margin: -8px 0 12px; }
+.library-empty, .materials-empty { color: var(--muted); font-size: 13px; }
+.library-list, .materials-list { list-style: none; margin: 0 0 18px; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.library-row { background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; }
+.library-row-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.library-title { color: var(--text); font-weight: 500; }
+.library-authors, .library-type { color: var(--muted); font-size: 12px; }
+.source-kind { font-size: 11px; border-radius: 999px; padding: 2px 8px; border: 1px solid var(--border2); color: var(--muted); }
+.source-kind--library { border-color: var(--accent); color: var(--accent); }
+.library-toc-toggle, .library-open, .material-open {
+  margin-left: auto; background: var(--panel2); color: var(--text); border: 1px solid var(--border);
+  border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px;
+}
+.library-open, .material-open { margin-left: 0; }
+.library-toc-toggle:hover, .library-open:hover, .material-open:hover { border-color: var(--accent); }
+.library-toc { margin-top: 8px; border-top: 1px solid var(--border); padding-top: 8px; }
+.toc-tree { list-style: none; margin: 0; padding: 0 0 0 14px; display: flex; flex-direction: column; gap: 2px; }
+.toc-node { display: flex; gap: 8px; align-items: baseline; width: 100%; text-align: left; background: none; border: none; color: var(--text); font: inherit; font-size: 13px; padding: 3px 6px; border-radius: 4px; cursor: pointer; }
+.toc-node:hover { background: var(--panel2); color: var(--accent); }
+.toc-page { color: var(--muted); font-size: 11px; }
+
+/* course materials (F2 second block) */
+.materials h2 { font-size: 15px; }
+.materials-hint { color: var(--muted); font-size: 13px; margin: 0 0 8px; }
+.materials-upload { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; border: 1px dashed var(--border2); border-radius: 8px; padding: 10px 12px; margin-bottom: 10px; }
+.materials-upload--drag { border-color: var(--accent); background: var(--bg2); }
+.materials-filter { margin-bottom: 8px; }
+.materials-filter label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.material-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; }
+.material-title { color: var(--text); font-weight: 500; }
+.material-tags { display: flex; align-items: center; gap: 4px; flex-wrap: wrap; }
+.tag-chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; border: 1px solid var(--border2); border-radius: 999px; padding: 2px 4px 2px 8px; color: var(--text); background: var(--bg2); }
+.tag-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 12px; padding: 0 4px; }
+.tag-remove:hover { color: var(--error); }
+.tag-add { width: 72px; background: var(--bg2); border: 1px solid var(--border); border-radius: 999px; color: var(--text); font-size: 11px; padding: 2px 8px; }
+.material-delete { border-color: var(--border-danger) !important; }
+
+/* PDF viewer window (F2 "citations are doors") */
+.pdf-viewer { display: flex; flex-direction: column; height: 100%; }
+.pdf-head { display: flex; align-items: baseline; gap: 8px; padding: 4px 2px 8px; }
+.pdf-title { color: var(--heading); font-weight: 600; font-size: 14px; }
+.pdf-page { color: var(--muted); font-size: 12px; }
+.pdf-frame { flex: 1; width: 100%; border: 1px solid var(--border); border-radius: 6px; background: var(--bg2); }
+.pdf-empty { color: var(--muted); font-size: 13px; }
+
+/* citation chips (F3 grounded chat) */
+.citation-chips { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin: 2px 0 8px; }
+.citation-count { color: var(--muted); font-size: 12px; }
+.citation-chip {
+  background: var(--panel); color: var(--accent); border: 1px solid var(--border2);
+  border-radius: 999px; padding: 3px 10px; cursor: pointer; font-size: 12px;
+}
+.citation-chip:hover { border-color: var(--accent); }
+
+/* webcam capture (F4 "the webcam is a scanner") */
+.camera { display: inline-flex; align-items: center; gap: 6px; }
+.camera--active { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 10px; }
+.camera-open { background: var(--panel2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 4px 8px; cursor: pointer; font-size: 12px; }
+.camera-open:hover { border-color: var(--accent); }
+.camera-hint { color: var(--muted); font-size: 11px; }
+.camera-error { color: var(--error); font-size: 12px; }
+.camera-video, .camera-preview { max-width: 360px; width: 100%; border-radius: 6px; border: 1px solid var(--border2); background: var(--bg2); }
+.camera-actions { display: flex; align-items: center; gap: 6px; }
+.camera-actions button { background: var(--panel2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 12px; }
+.camera-actions button:hover { border-color: var(--accent); }
+.camera-count { color: var(--muted); font-size: 12px; }
+
+/* routing settings (F7) */
+.routing { margin-top: 24px; border-top: 1px solid var(--border); padding-top: 14px; max-width: 720px; }
+.routing h2 { font-size: 16px; }
+.routing h3 { font-size: 13px; font-weight: 600; color: var(--muted); margin: 14px 0 6px; }
+.routing-hint { color: var(--muted); font-size: 13px; margin: 0 0 10px; }
+.routing-policy { border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
+.routing-policy legend { font-size: 12px; color: var(--muted); padding: 0 4px; }
+.routing-policy label { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text); }
+.routing-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.routing-table th { text-align: left; color: var(--muted); font-weight: 500; font-size: 12px; padding: 4px 8px; border-bottom: 1px solid var(--border); }
+.routing-table td { padding: 5px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.routing-model { font-family: var(--mono); font-size: 12px; }
+.routing-why { color: var(--muted); font-size: 12px; }
+.routing-degraded { color: var(--gold); font-size: 11px; margin-left: 6px; }
+.routing-error { color: var(--error); font-family: var(--sans); }
+.routing-pins { display: flex; flex-direction: column; gap: 6px; }
+.routing-pin { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text); }
+.routing-pin select { min-width: 220px; }
+.routing-capabilities ul, .routing-log ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; }
+.routing-cap-row { display: flex; align-items: center; gap: 14px; font-size: 13px; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 6px 10px; }
+.routing-cap-name { font-weight: 500; }
+.routing-cap-vision, .routing-cap-reasoning { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+.routing-empty { color: var(--muted); font-size: 13px; }
+.routing-log-row { display: flex; gap: 10px; font-size: 12px; align-items: baseline; }
+.routing-log-ts { color: var(--muted); white-space: nowrap; }
+.routing-log-model { font-family: var(--mono); }
+.routing-log-why { color: var(--muted); }

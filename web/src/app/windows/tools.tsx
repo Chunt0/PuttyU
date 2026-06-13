@@ -2,6 +2,8 @@ import type { ReactNode } from "react";
 import { Providers } from "../../features/models/Providers.tsx";
 import { Memory } from "../../features/memory/Memory.tsx";
 import { Corpus } from "../../features/corpus/Corpus.tsx";
+import { Library } from "../../features/library/Library.tsx";
+import { PdfViewer } from "../../features/library/PdfViewer.tsx";
 import { Research } from "../../features/research/Research.tsx";
 import { Tasks } from "../../features/tasks/Tasks.tsx";
 import { Calendar } from "../../features/calendar/Calendar.tsx";
@@ -9,8 +11,10 @@ import { Notes } from "../../features/notes/Notes.tsx";
 import { Documents } from "../../features/documents/Documents.tsx";
 
 /** Every tool that can open as a window. The same components serve the full-page routes
- * (deep links like /calendar still work); the window is just another mount point. */
-export const WINDOW_TOOLS: Array<{ key: string; title: string; node: ReactNode }> = [
+ * (deep links like /calendar still work); the window is just another mount point.
+ * `hidden` tools (the PDF viewer) open programmatically, not from the sidebar nav. */
+export const WINDOW_TOOLS: Array<{ key: string; title: string; node: ReactNode; hidden?: boolean }> = [
+  { key: "library", title: "Library", node: <Library /> },
   { key: "models", title: "Providers", node: <Providers /> },
   { key: "memory", title: "Memory", node: <Memory /> },
   { key: "corpus", title: "Corpus", node: <Corpus /> },
@@ -19,6 +23,7 @@ export const WINDOW_TOOLS: Array<{ key: string; title: string; node: ReactNode }
   { key: "calendar", title: "Calendar", node: <Calendar /> },
   { key: "notes", title: "Notes", node: <Notes /> },
   { key: "documents", title: "Documents", node: <Documents /> },
+  { key: "pdf", title: "PDF", node: <PdfViewer />, hidden: true },
 ];
 
 export const toolByKey = new Map(WINDOW_TOOLS.map((t) => [t.key, t]));

@@ -49,6 +49,29 @@ async function mockBackend(page: Page) {
     return r.fulfill({ json: { key: "default_model", value: def.model } });
   });
 
+  // Router settings (F7) — the Providers screen now hosts the Routing section.
+  const routerCfg: { policy: string; configured: boolean; pins: Record<string, unknown>; capabilities: Record<string, unknown> } =
+    { policy: "local_first", configured: false, pins: {}, capabilities: {} };
+  await page.route("**/api/router/config", (r) => {
+    if (r.request().method() === "PUT") {
+      Object.assign(routerCfg, JSON.parse(r.request().postData() ?? "{}"), { configured: true });
+    }
+    return r.fulfill({ json: routerCfg });
+  });
+  await page.route("**/api/router/resolution", (r) =>
+    r.fulfill({
+      json: {
+        policy: routerCfg.policy,
+        configured: routerCfg.configured,
+        rows: [
+          { tier: "micro", modality: "text", endpoint_id: "ep1", model: "llama3", token_budget: 2048, why: "policy=local_first: tier 'micro' -> 'ep1' (reasoning=standard, local)", degraded: false },
+          { tier: "standard", modality: "vision", error: "No vision-capable model is configured." },
+        ],
+      },
+    }));
+  await page.route("**/api/router/log**", (r) =>
+    r.fulfill({ json: { entries: [{ ts: 1760000000, endpoint_id: "ep1", model: "llama3", why: "policy=local_first: tier 'standard' -> 'ep1'", profile: { tier: "standard" } }] } }));
+
   await page.route("**/api/sessions", (r) => r.fulfill({ json: sessions }));
   await page.route("**/api/session", (r) => {
     const s = { id: "s1", name: "New chat", model: def.model, rag: false, archived: false };
@@ -96,4 +119,31 @@ test("configure a provider, pick a model, and chat", async ({ page }) => {
 
   // The streamed reply renders in the transcript.
   await expect(page.getByText("Hello from llama3")).toBeVisible();
+});
+
+test("routing settings: live resolution table, policy dial, pin a tier", async ({ page }) => {
+  await mockBackend(page);
+
+  await page.goto("/");
+  await page.getByLabel("Username").fill("ada");
+  await page.getByLabel("Password").fill("secret");
+  await page.getByRole("button", { name: "Sign in" }).click();
+
+  await page.getByRole("button", { name: "Providers", exact: true }).click();
+  const win = page.getByTestId("window-models");
+
+  // Observability: the live tier→model table including the vision setup hint.
+  await expect(win.getByText("Live resolution")).toBeVisible();
+  await expect(win.getByText(/tier 'micro' -> 'ep1'/)).toBeVisible();
+  await expect(win.getByText("No vision-capable model is configured.")).toBeVisible();
+  // ...and the recent-decisions log.
+  await expect(win.getByText(/tier 'standard' -> 'ep1'/)).toBeVisible();
+
+  // Policy dial: flip to quality-first; the PUT round-trips and the radio sticks.
+  await win.getByLabel(/quality-first/).click();
+  await expect(win.getByLabel(/quality-first/)).toBeChecked();
+
+  // Pin a tier to a model (choices come from the configured providers).
+  await win.getByLabel("Pin for deep").selectOption("ep1|llama3");
+  await expect(win.getByLabel("Pin for deep")).toHaveValue("ep1|llama3");
 });

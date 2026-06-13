@@ -51,6 +51,44 @@ describe("decodeChatEvent", () => {
     expect(decodeChatEvent("not json")).toBeNull();
     expect(decodeChatEvent("42")).toBeNull();
   });
+  it("maps {type:'citations'} to a typed citations event, dropping malformed entries", () => {
+    const wire = JSON.stringify({
+      type: "citations",
+      data: [
+        {
+          chunk_id: "ch1",
+          source_id: "s1",
+          title: "Intro Stats",
+          heading: "Ch 1 > 1.1 Definitions",
+          page_start: 9,
+          citation: "[Intro Stats §1.1 Definitions, p. 9]",
+        },
+        { no_source_id: true }, // malformed — must be dropped, not thrown
+        { source_id: "s2", page_start: null }, // minimal — defaults fill in
+      ],
+    });
+    expect(decodeChatEvent(wire)).toEqual({
+      kind: "citations",
+      items: [
+        {
+          chunk_id: "ch1",
+          source_id: "s1",
+          title: "Intro Stats",
+          heading: "Ch 1 > 1.1 Definitions",
+          page_start: 9,
+          citation: "[Intro Stats §1.1 Definitions, p. 9]",
+        },
+        { chunk_id: "", source_id: "s2", title: "", heading: "", page_start: null, citation: "" },
+      ],
+    });
+  });
+  it("treats citations without a data array as a plain control event", () => {
+    expect(decodeChatEvent('{"type":"citations"}')).toEqual({
+      kind: "control",
+      event: "citations",
+      payload: { type: "citations" },
+    });
+  });
   it("maps a typeless backend failure payload to an error control event", () => {
     // agent_runs publishes {"error": ..., "status": 500} when a run dies
     // mid-stream — it must surface, not be dropped as unrecognised.
@@ -78,7 +116,7 @@ describe("streamChat", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const events = await collect<ChatEvent>(
-      streamChat({ message: "hi", session: "s1", mode: "chat" }),
+      streamChat({ message: "hi", session: "s1", mode: "chat", course_id: "c1" }),
     );
     expect(events).toEqual([
       { kind: "control", event: "model_info", payload: { type: "model_info", model: "m" } },
@@ -94,6 +132,8 @@ describe("streamChat", () => {
     expect(init.credentials).toBe("same-origin");
     expect((init.body as FormData).get("message")).toBe("hi");
     expect((init.body as FormData).get("session")).toBe("s1");
+    // the F3 grounding fallback rides along when a course tab is active
+    expect((init.body as FormData).get("course_id")).toBe("c1");
   });
 
   it("throws on a non-OK response", async () => {

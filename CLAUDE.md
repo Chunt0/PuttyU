@@ -368,6 +368,34 @@ state from turns, fires an event, persists; scheduler drives spaced repetition).
   router-routes/grounding); vitest 113/113, Playwright 19+1 skipped, tsc/eslint/fitness green.
   Frontend adoption (library panel, citation chips, router settings) is the NEXT slice.
 
+- **Phase-2 T2b done (2026-06-13)** — frontend half of T2 (F2/F3/F4-webcam/F7), zero backend
+  changes. **Library** `web/src/features/library/` (typed seam): `Library.tsx` (sources scoped
+  to the active course via `/api/courses/{id}/sources` ∩ `/api/corpus/sources`, kind badges,
+  lazy TOC tree → node click opens PDF at page) + `Materials.tsx` (upload PDF/images→ONE
+  material w/ `course_id`, drag-drop + picker + **multi-shot webcam**, tag chips → PATCH whole
+  list, tag filter, ConfirmButton delete; also embedded in CourseLanding) + `PdfViewer.tsx`
+  + `pdfStore.ts` — `openPdf(sourceId,title,page)` is the ONE door (library rows, TOC nodes,
+  citation chips); the viewer is a **hidden window tool** (`key: "pdf"`, iframe
+  `/api/corpus/sources/{id}/pdf#page=N`, keyed on src so page-anchor changes re-navigate);
+  tools registry grew `hidden` (Shell nav filters it). Library is nav tool + `/library` route.
+  **Citations** (F3): `streaming.ts` decodes `{type:"citations",data:[...]}` into a typed
+  `{kind:"citations", items: Citation[]}` union member (defensive per-item decode; a
+  data-less `citations` stays a generic control event) + `course_id` field on
+  ChatStreamRequest (sent when a course tab is active); `CitationChips.tsx` renders
+  "grounded in N sources" + per-excerpt chips (title §heading · p. N) for the LIVE turn only
+  (clears on next send/session switch, same contract as agent steps); chip click → PdfViewer
+  at page. **Webcam** (F4): `components/CameraCapture.tsx` — getUserMedia capture→preview→
+  retake/accept, `multi` ("add page" loop → done → one batch), insecure context renders the
+  setup hint instead of a dead button; wired into the chat composer (single shot → existing
+  `/api/upload` attachment path) and Materials (multi → one material). **Routing** (F7):
+  `features/models/Routing.tsx`+`routerApi.ts` (typed seam) in the Providers screen — policy
+  radios (local-first|quality-first), live resolution table (model + why + degraded + vision
+  setup hint), per-tier pin selects (PUT sends the full pins map), per-endpoint vision
+  checkbox + reasoning select (full capabilities map), recent-decisions log. Cost meter is T5.
+  vitest 113→135 (+lib/materials/camera/citations/routing/streaming), Playwright 19→24+1 skip
+  (`library.spec.ts`, `grounded-chat.spec.ts` incl. the no-secure-context hint, router case in
+  provider-chat.spec); tsc/eslint/fitness green; pytest untouched 2122.
+
 **ALL KEEP SCREENS EXIST + Slice 7 demolition complete** → Phase 1 is done. Next: Phase-2
 tutoring UX (see `docs/SPEC-phase-2-tutoring-ux.md`).
 

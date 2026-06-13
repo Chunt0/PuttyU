@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Spinner } from "../../components/Spinner.tsx";
 import { ConfirmButton } from "../../components/ConfirmButton.tsx";
+import { Routing } from "./Routing.tsx";
 import {
   useModelEndpoints,
   useModels,
@@ -135,6 +136,8 @@ export function Providers() {
           ))}
         </ul>
       </div>
+
+      <Routing />
     </section>
   );
 }

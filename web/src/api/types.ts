@@ -31,3 +31,15 @@ export type Note = components["schemas"]["NoteResponse"];
 // Phase-2 T1 — courses (ADR 0004)
 export type Course = components["schemas"]["CourseResponse"];
 export type CourseSources = components["schemas"]["CourseSourcesResponse"];
+
+// Phase-2 T2b — corpus library + course materials (F2)
+export type CorpusSource = components["schemas"]["CorpusSourceItem"];
+export type CorpusTocNode = components["schemas"]["CorpusTocNode"];
+export type CorpusMaterialUpload = components["schemas"]["CorpusMaterialUploadResponse"];
+
+// Phase-2 T2b — model router (F7)
+export type RouterConfig = components["schemas"]["RouterConfigResponse"];
+export type RouterCapability = components["schemas"]["RouterCapability"];
+export type RouterPin = components["schemas"]["RouterPin"];
+export type RouterResolutionRow = components["schemas"]["RouterResolutionRow"];
+export type RouterLogEntry = components["schemas"]["RouterLogEntry"];
