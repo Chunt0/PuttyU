@@ -4,6 +4,7 @@ import { Memory } from "../../features/memory/Memory.tsx";
 import { Corpus } from "../../features/corpus/Corpus.tsx";
 import { Library } from "../../features/library/Library.tsx";
 import { PdfViewer } from "../../features/library/PdfViewer.tsx";
+import { Progress } from "../../features/progress/Progress.tsx";
 import { Research } from "../../features/research/Research.tsx";
 import { Tasks } from "../../features/tasks/Tasks.tsx";
 import { Calendar } from "../../features/calendar/Calendar.tsx";
@@ -15,6 +16,7 @@ import { Documents } from "../../features/documents/Documents.tsx";
  * `hidden` tools (the PDF viewer) open programmatically, not from the sidebar nav. */
 export const WINDOW_TOOLS: Array<{ key: string; title: string; node: ReactNode; hidden?: boolean }> = [
   { key: "library", title: "Library", node: <Library /> },
+  { key: "progress", title: "Progress", node: <Progress /> },
   { key: "models", title: "Providers", node: <Providers /> },
   { key: "memory", title: "Memory", node: <Memory /> },
   { key: "corpus", title: "Corpus", node: <Corpus /> },

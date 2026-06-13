@@ -6,6 +6,7 @@ import { CourseLanding } from "./CourseLanding.tsx";
 import { Home } from "./Home.tsx";
 import { useCourseStore } from "./store.ts";
 import { useUiStore } from "../../lib/store.ts";
+import { useWindowStore } from "../../app/windows/windowStore.ts";
 import { renderWithProviders, jsonResponse, stubFetch, findCall, callInfo } from "../../test/util.tsx";
 import type { Course } from "../../api/types.ts";
 
@@ -13,6 +14,7 @@ beforeEach(() => {
   localStorage.clear();
   useCourseStore.setState({ activeCourseId: null, onboardingSkipped: false });
   useUiStore.setState({ currentSessionId: null });
+  useWindowStore.setState({ windows: {}, nextZ: 1 });
 });
 afterEach(() => vi.unstubAllGlobals());
 
@@ -125,6 +127,7 @@ describe("Home / onboarding", () => {
 describe("CourseLanding", () => {
   it("is honest about empty library coverage and lists the course's chats", async () => {
     stubFetch([
+      ["/api/graph/concepts", () => jsonResponse({ course_id: "c1", concepts: [] })],
       ["/api/courses/c1/sources", () => jsonResponse({ course_id: "c1", source_ids: [] })],
       ["/api/sessions", (url) => {
         expect(url).toContain("course_id=c1");
@@ -140,6 +143,7 @@ describe("CourseLanding", () => {
   it("starts a new chat bound to the course", async () => {
     useCourseStore.setState({ activeCourseId: "c1" });
     const fetchMock = stubFetch([
+      ["/api/graph/concepts", () => jsonResponse({ course_id: "c1", concepts: [] })],
       ["/api/courses/c1/sources", () => jsonResponse({ course_id: "c1", source_ids: ["src-1"] })],
       ["/api/sessions", () => jsonResponse([])],
       ["/api/default-chat", () => jsonResponse({})],
@@ -157,5 +161,30 @@ describe("CourseLanding", () => {
       expect((callInfo(call!).body as FormData).get("course_id")).toBe("c1");
     });
     expect(useUiStore.getState().currentSessionId).toBe("s2");
+  });
+
+  it("shows the 4-state mastery summary strip and opens the Progress tool", async () => {
+    stubFetch([
+      ["/api/graph/concepts", () =>
+        jsonResponse({
+          course_id: "c1",
+          concepts: [
+            { id: "h1", name: "Ch 1", state: "unknown", p_known: null, evidence_count: 0,
+              children: [
+                { id: "n1", name: "CI", state: "mastered", p_known: 0.9, evidence_count: 4, children: [] },
+                { id: "n2", name: "SE", state: "shaky", p_known: 0.4, evidence_count: 2, children: [] },
+              ] },
+          ],
+        })],
+      ["/api/courses/c1/sources", () => jsonResponse({ course_id: "c1", source_ids: ["src-1"] })],
+      ["/api/sessions", () => jsonResponse([])],
+    ]);
+    renderWithProviders(<CourseLanding course={stats} />);
+
+    // Counts per state, no percentages (§6 Q2).
+    const strip = await screen.findByText("1 mastered · 1 shaky · 1 unknown");
+    expect(strip.textContent).not.toMatch(/%/);
+    await userEvent.click(screen.getByRole("button", { name: "View progress" }));
+    expect(useWindowStore.getState().windows["progress"]).toBeTruthy();
   });
 });

@@ -883,3 +883,55 @@ label.switch:hover .switch-track { border-color: var(--accent); }
 .routing-log-ts { color: var(--muted); white-space: nowrap; }
 .routing-log-model { font-family: var(--mono); }
 .routing-log-why { color: var(--muted); }
+
+/* progress panel (F5 — §6 Q2/Q6: 4-state tree, no percentages, no node-graph) */
+.progress { max-width: 860px; }
+.progress-scope { color: var(--muted); font-size: 13px; margin: -8px 0 12px; }
+.progress-empty { color: var(--muted); font-size: 13px; }
+.progress-link { background: none; border: none; color: var(--accent); cursor: pointer; font: inherit; font-size: 13px; padding: 0; text-decoration: underline; }
+.progress-layout { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
+.concept-tree, .concept-children { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 2px; }
+.concept-tree { flex: 1; min-width: 260px; }
+.concept-children { padding-left: 18px; }
+.concept-row { display: flex; align-items: center; gap: 8px; padding: 2px 6px; border-radius: 4px; }
+.concept-row--selected { background: var(--panel2); }
+.concept-toggle { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 11px; padding: 0 2px; }
+.concept-name { background: none; border: none; color: var(--text); font: inherit; font-size: 13px; padding: 2px 0; cursor: pointer; text-align: left; }
+.concept-name:hover { color: var(--accent); }
+.concept-evidence { color: var(--muted); font-size: 11px; white-space: nowrap; }
+/* The 4-state chips: neutral lightness steps; coral is reserved for "shaky". */
+.state-chip { font-size: 11px; border-radius: 999px; padding: 1px 8px; border: 1px solid var(--border); white-space: nowrap; }
+.state-chip--unknown { color: var(--muted); border-color: var(--border); }
+.state-chip--learning { color: var(--text); border-color: var(--border2); }
+.state-chip--shaky { color: var(--accent); border-color: var(--accent); }
+.state-chip--mastered { color: var(--heading); border-color: var(--heading); background: var(--panel2); }
+.concept-detail { flex: 1; min-width: 300px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+.concept-detail-head { display: flex; align-items: center; gap: 8px; }
+.concept-detail-head h2 { margin: 0; font-size: 15px; color: var(--heading); flex: 1; }
+.concept-detail-close { background: none; border: 1px solid var(--border); border-radius: 6px; color: var(--muted); cursor: pointer; font-size: 12px; padding: 2px 8px; }
+.concept-detail-close:hover { border-color: var(--accent); color: var(--text); }
+.concept-detail h3 { margin: 14px 0 4px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.override-row { display: flex; gap: 8px; margin-top: 10px; }
+.override-row button { background: var(--panel2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; cursor: pointer; font-size: 12px; }
+.override-row button:hover { border-color: var(--accent); }
+.override-row .confirm-armed { border-color: var(--border-danger); color: var(--error); }
+.timeline { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.timeline-row { font-size: 13px; display: flex; flex-direction: column; gap: 2px; align-items: flex-start; }
+.timeline-body { color: var(--text); }
+/* Invalidated beliefs stay visible — struck through and dimmed, never hidden. */
+.timeline-row--invalidated .timeline-body { text-decoration: line-through; opacity: 0.55; }
+.timeline-date { color: var(--muted); font-size: 11px; }
+.assertion-quote { margin: 0; padding: 1px 10px; border-left: 2px solid var(--border2); font-style: italic; }
+.qualifier { color: var(--muted); font-size: 11px; }
+.challenge-toggle { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 11px; padding: 0; text-decoration: underline; }
+.challenge-toggle:hover { color: var(--accent); }
+.challenge-form { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+.challenge-form input { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 12px; padding: 4px 8px; min-width: 220px; }
+.challenge-form button { border: 1px solid var(--border); border-radius: 6px; font-size: 12px; padding: 4px 10px; cursor: pointer; background: var(--panel2); color: var(--text); }
+.about-you { margin-top: 22px; border-top: 1px solid var(--border); padding-top: 12px; }
+.about-you h2 { margin: 0 0 8px; font-size: 14px; color: var(--heading); }
+.concept-jump { background: none; border: none; color: var(--accent); cursor: pointer; font-size: 11px; padding: 0; text-decoration: underline; }
+.progress-strip { display: flex; align-items: center; gap: 12px; margin: 0 0 16px; background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; }
+.progress-strip-counts { color: var(--text); font-size: 13px; }
+.progress-strip button { background: var(--panel2); color: var(--text); border: 1px solid var(--border); border-radius: 6px; padding: 4px 10px; cursor: pointer; font-size: 12px; }
+.progress-strip button:hover { border-color: var(--accent); }

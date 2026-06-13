@@ -440,6 +440,30 @@ state from turns, fires an event, persists; scheduler drives spaced repetition).
   vitest 135, Playwright 24+1 skip, tsc/eslint, fitness 6a–6f all green. Progress UI + the
   periphery tier + review queue are T3b/T4.
 
+- **Phase-2 T3b done (2026-06-13)** — Progress UI (F5 read+correct side), frontend-only over
+  the T3a typed seam (zero backend changes). `web/src/features/progress/`: `api.ts` (typed
+  openapi-fetch hooks: concept tree / detail / observations / override / challenge — override
+  invalidates the `["graph-concepts"]` prefix + detail, challenge invalidates detail +
+  observations), `model.ts` (pure: stateCounts/summaryLine 4-state vocabulary, confidenceWord
+  ≥0.7→"likely" else "tentative" — **no percentage or raw number EVER reaches the DOM**,
+  §6 Q2/Q10; fmtDay "Jun 10"; signalLabel humanizes override_* signals), `StateChip.tsx`
+  (chips via tokens: unknown/learning = neutral lightness steps, mastered = heading-white,
+  coral reserved for **shaky** — the one-accent rule), `Progress.tsx` (window tool `progress`
+  + `/progress` route; collapsible state-colored TREE for the active course (Q6: tree, not
+  node-graph; server nests by heading_path) w/ name + chip + evidence count; empty state
+  links to Library; "About you" = stated observations, verbatim quotes + dates, anchored ones
+  jump to their concept), `ConceptDetail.tsx` (merged trajectory timeline newest-first:
+  evidence "correct — gym · Jun 10", stated = blockquote verbatim, inferred = statement +
+  qualifier word + **"That's not right"** → inline correction → POST challenge → row flips to
+  struck-through; invalidated assertions always visible, dimmed + line-through with their
+  invalidated_at — the arc is the value; overrides "I know this" (one click) / "I never
+  learned this" (ConfirmButton two-step)). CourseLanding gains the mastery summary strip
+  ("3 mastered · 2 shaky · 14 unknown", nonzero states only) + "View progress" opening the
+  tool window. Vitest 135→145 (model helpers, tree/no-percentage, collapse, empty state,
+  trajectory incl. invalidated styling, override payloads, challenge flow, observations,
+  landing strip), Playwright 24→25+1 skip (`e2e/progress.spec.ts`); tsc/eslint/fitness
+  6a–6f green; pytest 2188 untouched. Periphery tier + review queue remain T4.
+
 **ALL KEEP SCREENS EXIST + Slice 7 demolition complete** → Phase 1 is done. Next: Phase-2
 tutoring UX (see `docs/SPEC-phase-2-tutoring-ux.md`).
 

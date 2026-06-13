@@ -37,6 +37,14 @@ export type CorpusSource = components["schemas"]["CorpusSourceItem"];
 export type CorpusTocNode = components["schemas"]["CorpusTocNode"];
 export type CorpusMaterialUpload = components["schemas"]["CorpusMaterialUploadResponse"];
 
+// Phase-2 T3b — ensemble graph / Progress panel (F5, ADR 0005)
+export type GraphConceptNode = components["schemas"]["GraphConceptNode"];
+export type GraphConceptDetail = components["schemas"]["GraphConceptDetailResponse"];
+export type GraphAssertion = components["schemas"]["GraphAssertionItem"];
+export type GraphEvidence = components["schemas"]["GraphEvidenceItem"];
+export type GraphOverrideResult = components["schemas"]["GraphOverrideResponse"];
+export type GraphChallengeResult = components["schemas"]["GraphChallengeResponse"];
+
 // Phase-2 T2b — model router (F7)
 export type RouterConfig = components["schemas"]["RouterConfigResponse"];
 export type RouterCapability = components["schemas"]["RouterCapability"];

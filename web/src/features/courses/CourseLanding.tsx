@@ -1,8 +1,11 @@
 import { Spinner } from "../../components/Spinner.tsx";
 import { toast } from "../../components/toast.ts";
 import { useUiStore } from "../../lib/store.ts";
+import { useWindowStore } from "../../app/windows/windowStore.ts";
 import { useCreateSession, useSessions } from "../sessions/api.ts";
 import { Materials } from "../library/Materials.tsx";
+import { useConceptTree } from "../progress/api.ts";
+import { stateCounts, summaryLine } from "../progress/model.ts";
 import { useCourseSources } from "./api.ts";
 import type { Course } from "../../api/types.ts";
 
@@ -16,9 +19,14 @@ export function CourseLanding({ course }: { course: Course }) {
   const { data: sessions, isLoading } = useSessions(course.id);
   const create = useCreateSession();
   const setCurrentSession = useUiStore((s) => s.setCurrentSession);
+  const openWindow = useWindowStore((s) => s.open);
+  const concepts = useConceptTree(course.id);
 
   // Honest about coverage: no linked sources = built-in knowledge only.
   const noSources = sources.data != null && (sources.data.source_ids ?? []).length === 0;
+  // The mastery summary strip (F5): 4-state counts, never a percentage (§6 Q2).
+  const progressLine =
+    concepts.data && concepts.data.length > 0 ? summaryLine(stateCounts(concepts.data)) : "";
 
   async function onNewChat() {
     try {
@@ -39,6 +47,14 @@ export function CourseLanding({ course }: { course: Course }) {
           </span>
         )}
       </header>
+      {progressLine && (
+        <div className="progress-strip">
+          <span className="progress-strip-counts">{progressLine}</span>
+          <button type="button" onClick={() => openWindow("progress")}>
+            View progress
+          </button>
+        </div>
+      )}
       <section>
         <div className="course-landing-row">
           <h3>Chats</h3>

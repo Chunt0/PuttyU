@@ -8,6 +8,7 @@ import { Providers } from "../features/models/Providers.tsx";
 import { Memory } from "../features/memory/Memory.tsx";
 import { Corpus } from "../features/corpus/Corpus.tsx";
 import { Library } from "../features/library/Library.tsx";
+import { Progress } from "../features/progress/Progress.tsx";
 import { Research } from "../features/research/Research.tsx";
 import { Tasks } from "../features/tasks/Tasks.tsx";
 import { Calendar } from "../features/calendar/Calendar.tsx";
@@ -30,6 +31,7 @@ export const router = createBrowserRouter([
           { path: "memory", element: <Memory /> },
           { path: "corpus", element: <Corpus /> },
           { path: "library", element: <Library /> },
+          { path: "progress", element: <Progress /> },
           { path: "research", element: <Research /> },
           { path: "tasks", element: <Tasks /> },
           { path: "calendar", element: <Calendar /> },
