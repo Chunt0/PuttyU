@@ -1,9 +1,7 @@
 # CLAUDE.md — agent context for this repo
 
 **puttyU** ("putty university", slogan *"your patient tutor"*) is a self-hosted
-AI **tutoring app**, forked from an upstream AI workspace (see `ACKNOWLEDGMENTS.md`)
-and being rebuilt into a learning workspace. Single-user in v1; multi-student is a
-prepared seam (Gate 5).
+AI **tutoring app**. Single-user in v1; multi-student is a prepared seam (Gate 5).
 
 **Read order for a new agent:** this file → `docs/PHASE-2-BUILD-PLAN.md` (where we
 are + what's next) → `docs/SPEC-phase-2-tutoring-ux.md` (the frozen v1.0 UX spec,
@@ -112,8 +110,7 @@ switched via `ThemePicker.tsx` + `useThemeStore` (zustand, persists `puttyu-them
 fallback); HTTP headers `X-PuttyU-*`; ChromaDB collections `puttyu_memories`/
 `puttyu_rag`; docker service `puttyu`; systemd `puttyu-ui.service`; CLI
 `scripts/puttyu`/`scripts/puttyu-*`; TOTP issuer "puttyU". Do NOT reintroduce the
-old brand anywhere except the legal attribution in `LICENSE` / `ACKNOWLEDGMENTS.md`
-(MIT notice-preservation).
+old brand anywhere..
 
 ## Architecture map
 
