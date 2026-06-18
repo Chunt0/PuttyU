@@ -64,3 +64,15 @@ GET /api/graph/concepts/{concept_id}
 POST /api/graph/concepts/{concept_id}/override
 GET /api/graph/observations
 POST /api/graph/assertions/{assertion_id}/challenge
+#
+# Phase-2 T4 (practice engine — SPEC F8/F1):
+GET /api/practice/queue
+POST /api/practice/queue/answer
+POST /api/practice/gym/next
+POST /api/practice/gym/answer
+POST /api/practice/calibration/start
+POST /api/practice/calibration/answer
+POST /api/practice/calibration/finish
+POST /api/practice/exam/start
+POST /api/practice/exam/submit
+POST /api/practice/explain/start

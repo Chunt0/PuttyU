@@ -212,6 +212,8 @@ HOUSEKEEPING_DEFAULTS = {
     # Phase-2 T3a (ADR 0005): weekly graph tidy — merge duplicate entities,
     # decay stale inferred confidences. No LLM, so it ships active.
     "graph_consolidation":   {"name": "Graph Consolidation",      "schedule": "cron",  "scheduled_time": None,    "cron_expression": "0 5 * * 0", "legacy_names": []},
+    # Phase-2 T4a (SPEC F8): the daily review-queue nudge. No LLM, ships active.
+    "assemble_review_queue": {"name": "Review Queue",             "schedule": "cron",  "scheduled_time": None,    "cron_expression": "0 7 * * *", "legacy_names": []},
 }
 
 RETIRED_HOUSEKEEPING_ACTIONS = frozenset({

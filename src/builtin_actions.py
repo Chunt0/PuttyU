@@ -1298,6 +1298,10 @@ async def action_cookbook_serve(
 # registered here like every other builtin so the scheduler/UI can run it.
 from src.graph.consolidation import action_graph_consolidation  # noqa: E402
 
+# Phase-2 T4a (SPEC F8): the daily review-queue nudge lives with the practice
+# engine; registered here like every other builtin.
+from src.practice.review_queue import action_assemble_review_queue  # noqa: E402
+
 BUILTIN_ACTIONS = {
     "tidy_sessions": action_tidy_sessions,
     "tidy_documents": action_tidy_documents,
@@ -1314,6 +1318,7 @@ BUILTIN_ACTIONS = {
     "audit_skills": action_audit_skills,
     "cookbook_serve": action_cookbook_serve,
     "graph_consolidation": action_graph_consolidation,
+    "assemble_review_queue": action_assemble_review_queue,
     # ping_notes removed from the registry — runs only inside `_note_pings_loop`.
 }
 
@@ -1330,4 +1335,5 @@ BUILTIN_ACTION_INFO = {
     "test_skills": "Run the per-skill Test on every skill: agent run + LLM judge → records verdict on the skill (pass/needs_work/fail/inconclusive). Advisory only — never rewrites or demotes anything.",
     "audit_skills": "Audit unaudited skills after enough new skills are added: test, narrow metadata, self-edit/retry, optional teacher rewrite, tag duplicates/trivial skills, and publish/draft using the auto-approve threshold.",
     "graph_consolidation": "Tidy the student-memory graph: merge duplicate entity nodes and decay stale inferred insights (no LLM)",
+    "assemble_review_queue": "Assemble the daily review queue: count concepts due for review across active courses and send one calm reminder (no LLM)",
 }

@@ -634,6 +634,10 @@ app.include_router(setup_router_routes())
 from routes.graph_routes import setup_graph_routes
 app.include_router(setup_graph_routes())
 
+# Practice engine (Phase-2 T4a — SPEC F8 practice + F1 calibration)
+from routes.practice_routes import setup_practice_routes
+app.include_router(setup_practice_routes())
+
 from companion import setup_companion_routes
 app.include_router(setup_companion_routes())
 

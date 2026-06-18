@@ -230,6 +230,19 @@ def _recover_empty_session_model(sess, session_id: str, owner: str | None = None
         db.close()
 
 
+def _resolve_effective_mode(do_research: bool, chat_mode: str,
+                            persisted_mode: str | None) -> str:
+    """The session mode to persist this turn (research > agent > explain > chat).
+
+    H3: an explain session (SPEC F8) persists mode='explain' at creation. A plain
+    chat/blank turn must NOT clobber it back to 'chat' (else the curious-student
+    persona, read from Session.mode downstream, never injects); a real escalation
+    to research/agent still wins.
+    """
+    mode = 'research' if do_research else (chat_mode or 'chat')
+    return 'explain' if (mode == 'chat' and persisted_mode == 'explain') else mode
+
+
 def _set_user_time_from_request(request: Request) -> None:
     """Copy browser timezone headers into the per-request context.
 
@@ -489,9 +502,11 @@ def setup_chat_routes(
                 do_research = True
                 logger.info(f"Session {session} in research_pending — auto-triggering research")
 
-        # Persist session mode (research > agent > chat)
-        _effective_mode = 'research' if do_research else (chat_mode or 'chat')
-        if _effective_mode in ('agent', 'research', 'chat'):
+        # Persist session mode (research > agent > explain > chat). H3 preserves
+        # an explain session across ordinary turns — see _resolve_effective_mode.
+        _effective_mode = _resolve_effective_mode(
+            do_research, chat_mode, get_session_mode(session))
+        if _effective_mode in ('agent', 'research', 'chat', 'explain'):
             set_session_mode(session, _effective_mode)
 
         att_ids = []
@@ -869,7 +884,10 @@ def setup_chat_routes(
                 yield "data: [DONE]\n\n"
                 _active_streams.pop(session, None)
                 return
-            elif chat_mode == "chat":
+            elif chat_mode in ("chat", "explain"):
+                # 'explain' (SPEC F8) rides the normal chat path — no tools, no
+                # agent loop; the curious-student persona is injected upstream in
+                # chat_helpers via student_context.course_system_messages.
                 _chat_start = time.time()
                 _answered_by = None  # set if the selected model failed and a fallback answered
                 # ── Chat mode: call stream_llm directly, NO tools, NO document access ──

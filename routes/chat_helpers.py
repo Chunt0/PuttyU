@@ -520,11 +520,10 @@ async def build_chat_context(
     if grounding_msg:
         preface.append(grounding_msg)
 
-    # Student context (ADR 0005/F6): the one-door assembler rides beside grounding.
-    from src.student_context import maybe_student_context
-    sc_msg = None if incognito else maybe_student_context(session_id, user, course_id)
-    if sc_msg:
-        preface.append(sc_msg)
+    # Course system messages (ADR 0005/F6 student context + F8 explain persona):
+    # the one-door combiner rides beside grounding.
+    from src.student_context import course_system_messages
+    preface.extend(course_system_messages(session_id, user, course_id, incognito))
 
     # Inject pre-fetched search context
     if search_context:

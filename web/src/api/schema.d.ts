@@ -3319,6 +3319,213 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/practice/calibration/answer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Calibration Answer
+         * @description Grade or skip the current calibration step and mint the next one.
+         */
+        post: operations["calibration_answer_api_practice_calibration_answer_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/practice/calibration/finish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Calibration Finish
+         * @description End the walk: stamp the course's calibrated_at and summarize the
+         *     walked region's states (sync — pure reads + an owner_scoped write).
+         */
+        post: operations["calibration_finish_api_practice_calibration_finish_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/practice/calibration/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Calibration Start
+         * @description Open a calibration walk; an empty region returns status='no_region'
+         *     and writes nothing (D8).
+         */
+        post: operations["calibration_start_api_practice_calibration_start_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/practice/exam/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Exam Start
+         * @description Assemble a timed, mixed-topic exam (prompts only — reference answers
+         *     stay in the store, D9).
+         */
+        post: operations["exam_start_api_practice_exam_start_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/practice/exam/submit": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Exam Submit
+         * @description Grade the whole exam at once and return the debrief (D9).
+         */
+        post: operations["exam_submit_api_practice_exam_submit_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/practice/explain/start": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Explain Start
+         * @description Create an explain-mode chat session bound to a concept (sync — the
+         *     session manager opens its own SessionLocal).
+         */
+        post: operations["explain_start_api_practice_explain_start_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/practice/gym/answer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Gym Answer
+         * @description Grade a gym item, step the ZPD difficulty, fold the running set
+         *     totals (D5). Running totals ride extra='allow' — read defensively.
+         */
+        post: operations["gym_answer_api_practice_gym_answer_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/practice/gym/next": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Gym Next
+         * @description Mint the next gym item: drill a chosen concept, or coach's-pick the
+         *     shakiest concept with errors (D5).
+         */
+        post: operations["gym_next_api_practice_gym_next_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/practice/queue": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Review Queue
+         * @description Assemble today's review queue: rank due concepts (D3/D4) and mint one
+         *     item each (skipping concepts that can't produce one).
+         */
+        get: operations["review_queue_api_practice_queue_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/practice/queue/answer": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Answer Queue Item
+         * @description Grade a queued review answer and write mastery evidence (D1/D2).
+         */
+        post: operations["answer_queue_item_api_practice_queue_answer_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/prefs": {
         parameters: {
             query?: never;
@@ -5493,6 +5700,49 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * AnswerRequest
+         * @description POST /api/practice/answer — submit an answer to a queued review item.
+         */
+        AnswerRequest: {
+            /** Answer Text */
+            answer_text?: string | null;
+            /** Attachment Ids */
+            attachment_ids?: string[] | null;
+            /** Item Key */
+            item_key: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * AnswerResponse
+         * @description The graded verdict + feedback + resulting mastery state.
+         */
+        AnswerResponse: {
+            /** Concept Id */
+            concept_id?: string | null;
+            /** Concept Name */
+            concept_name?: string | null;
+            /**
+             * Correct
+             * @default false
+             */
+            correct: boolean;
+            /** Effective P */
+            effective_p?: number | null;
+            /**
+             * Feedback Short
+             * @default
+             */
+            feedback_short: string;
+            /** State */
+            state?: string | null;
+            study_citation?: components["schemas"]["Citation"] | null;
+            /** Verdict */
+            verdict: string;
+        } & {
+            [key: string]: unknown;
+        };
         /** AssistantSettingsUpdate */
         AssistantSettingsUpdate: {
             /** Avatar */
@@ -5891,6 +6141,142 @@ export interface components {
              */
             title: string;
         };
+        /**
+         * CalibrationAnswerRequest
+         * @description POST /api/practice/calibration/answer — answer or skip a step.
+         */
+        CalibrationAnswerRequest: {
+            /** Answer Text */
+            answer_text?: string | null;
+            /** Attachment Ids */
+            attachment_ids?: string[] | null;
+            /** Item Key */
+            item_key?: string | null;
+            /** Session Key */
+            session_key: string;
+            /**
+             * Skip
+             * @default false
+             */
+            skip: boolean;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * CalibrationAnswerResponse
+         * @description The graded step + the next item (or a done flag).
+         */
+        CalibrationAnswerResponse: {
+            /** Concept Id */
+            concept_id?: string | null;
+            /** Concept Name */
+            concept_name?: string | null;
+            /**
+             * Correct
+             * @default false
+             */
+            correct: boolean;
+            /**
+             * Done
+             * @default false
+             */
+            done: boolean;
+            /** Effective P */
+            effective_p?: number | null;
+            /**
+             * Feedback Short
+             * @default
+             */
+            feedback_short: string;
+            next_item?: components["schemas"]["PracticeItem"] | null;
+            /**
+             * Position
+             * @default 0
+             */
+            position: number;
+            /** State */
+            state?: string | null;
+            /**
+             * Total
+             * @default 0
+             */
+            total: number;
+            /** Verdict */
+            verdict?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * CalibrationFinishRequest
+         * @description POST /api/practice/calibration/finish — end (or skip) the walk.
+         */
+        CalibrationFinishRequest: {
+            /** Session Key */
+            session_key: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * CalibrationFinishResponse
+         * @description A summary of the calibrated region: per-concept current states.
+         */
+        CalibrationFinishResponse: {
+            /**
+             * Calibrated
+             * @default false
+             */
+            calibrated: boolean;
+            /** Message */
+            message?: string | null;
+            /**
+             * States
+             * @default []
+             */
+            states: unknown[];
+            /**
+             * Status
+             * @default done
+             */
+            status: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * CalibrationStartRequest
+         * @description POST /api/practice/calibration/start.
+         */
+        CalibrationStartRequest: {
+            /** Course Id */
+            course_id: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * CalibrationStartResponse
+         * @description The calibration walk's opening state. status='no_region' (D8) when the
+         *     course has no concepts to calibrate; status='ready' otherwise.
+         */
+        CalibrationStartResponse: {
+            item?: components["schemas"]["PracticeItem"] | null;
+            /** Message */
+            message?: string | null;
+            /**
+             * Position
+             * @default 0
+             */
+            position: number;
+            /** Session Key */
+            session_key?: string | null;
+            /** Status */
+            status: string;
+            /**
+             * Total
+             * @default 0
+             */
+            total: number;
+        } & {
+            [key: string]: unknown;
+        };
         /** ChangePasswordRequest */
         ChangePasswordRequest: {
             /** Current Password */
@@ -5951,6 +6337,33 @@ export interface components {
             prompt?: string | null;
             /** Scheduled Time */
             scheduled_time?: string | null;
+        };
+        /**
+         * Citation
+         * @description The chat-stream citation contract (§5.4): {chunk_id, source_id, title,
+         *     heading, page_start, citation}. Same shape grounding.maybe_ground emits.
+         */
+        Citation: {
+            /** Chunk Id */
+            chunk_id: string;
+            /** Citation */
+            citation: string;
+            /**
+             * Heading
+             * @default
+             */
+            heading: string;
+            /** Page Start */
+            page_start?: number | null;
+            /** Source Id */
+            source_id: string;
+            /**
+             * Title
+             * @default
+             */
+            title: string;
+        } & {
+            [key: string]: unknown;
         };
         /** CorpusMaterialUploadResponse */
         CorpusMaterialUploadResponse: {
@@ -6272,6 +6685,37 @@ export interface components {
             /** Summary */
             summary?: string | null;
         };
+        /**
+         * DueConcept
+         * @description One ranked due concept (the queue is a list of these, items minted on
+         *     demand). Mirrors items.due_concepts dict output.
+         */
+        DueConcept: {
+            /** Concept Id */
+            concept_id: string;
+            /** Course Id */
+            course_id?: string | null;
+            /** Effective P */
+            effective_p?: number | null;
+            /**
+             * Heading Path
+             * @default []
+             */
+            heading_path: string[];
+            /** Name */
+            name: string;
+            /** Score */
+            score: number;
+            /**
+             * Sources
+             * @default []
+             */
+            sources: string[];
+            /** State */
+            state: string;
+        } & {
+            [key: string]: unknown;
+        };
         /** EmbeddingEndpointResponse */
         EmbeddingEndpointResponse: {
             /**
@@ -6384,6 +6828,201 @@ export interface components {
             rrule?: string | null;
             /** Summary */
             summary?: string | null;
+        };
+        /**
+         * ExamAnswer
+         * @description One submitted exam answer.
+         */
+        ExamAnswer: {
+            /** Answer Text */
+            answer_text?: string | null;
+            /** Attachment Ids */
+            attachment_ids?: string[] | null;
+            /** Item Key */
+            item_key: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * ExamItemPrompt
+         * @description An exam item as shown DURING the exam: id + prompt only, no answers.
+         */
+        ExamItemPrompt: {
+            citation?: components["schemas"]["Citation"] | null;
+            /** Concept Id */
+            concept_id: string;
+            /** Concept Name */
+            concept_name?: string | null;
+            /** Item Key */
+            item_key: string;
+            /** Prompt */
+            prompt: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * ExamItemVerdict
+         * @description Per-item debrief entry. Unanswered items report verdict='skipped'.
+         */
+        ExamItemVerdict: {
+            citation?: components["schemas"]["Citation"] | null;
+            /** Concept Id */
+            concept_id: string;
+            /** Concept Name */
+            concept_name?: string | null;
+            /**
+             * Correct
+             * @default false
+             */
+            correct: boolean;
+            /** Effective P */
+            effective_p?: number | null;
+            /**
+             * Feedback Short
+             * @default
+             */
+            feedback_short: string;
+            /** Item Key */
+            item_key: string;
+            /**
+             * Prompt
+             * @default
+             */
+            prompt: string;
+            /** State */
+            state?: string | null;
+            /** Verdict */
+            verdict: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * ExamStartRequest
+         * @description POST /api/practice/exam/start.
+         */
+        ExamStartRequest: {
+            /** Course Id */
+            course_id: string;
+            /**
+             * Duration Seconds
+             * @default 1800
+             */
+            duration_seconds: number;
+            /**
+             * N Items
+             * @default 10
+             */
+            n_items: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * ExamStartResponse
+         * @description The exam: ids + prompts only (reference answers stay in the store, D9),
+         *     the start instant and the duration. Timer is client-side.
+         */
+        ExamStartResponse: {
+            /** Duration Seconds */
+            duration_seconds: number;
+            /** Exam Key */
+            exam_key: string;
+            /**
+             * Items
+             * @default []
+             */
+            items: components["schemas"]["ExamItemPrompt"][];
+            /** Message */
+            message?: string | null;
+            /** Started At */
+            started_at: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * ExamSubmitRequest
+         * @description POST /api/practice/exam/submit — grade the whole exam at once (D9).
+         */
+        ExamSubmitRequest: {
+            /**
+             * Answers
+             * @default []
+             */
+            answers: components["schemas"]["ExamAnswer"][];
+            /** Exam Key */
+            exam_key: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * ExamSubmitResponse
+         * @description The debrief: per-item verdicts + citations + a readiness summary.
+         */
+        ExamSubmitResponse: {
+            /**
+             * Correct
+             * @default 0
+             */
+            correct: number;
+            /**
+             * Incorrect
+             * @default 0
+             */
+            incorrect: number;
+            /**
+             * Partial
+             * @default 0
+             */
+            partial: number;
+            /**
+             * Readiness
+             * @default
+             */
+            readiness: string;
+            /**
+             * Skipped
+             * @default 0
+             */
+            skipped: number;
+            /**
+             * Total
+             * @default 0
+             */
+            total: number;
+            /**
+             * Verdicts
+             * @default []
+             */
+            verdicts: components["schemas"]["ExamItemVerdict"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * ExplainStartRequest
+         * @description POST /api/practice/explain/start.
+         */
+        ExplainStartRequest: {
+            /** Concept Id */
+            concept_id: string;
+            /** Course Id */
+            course_id: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * ExplainStartResponse
+         * @description The created explain-mode session id + the concept being explained.
+         */
+        ExplainStartResponse: {
+            /** Concept Id */
+            concept_id: string;
+            /** Concept Name */
+            concept_name?: string | null;
+            /** Message */
+            message?: string | null;
+            /** Session Id */
+            session_id: string;
+        } & {
+            [key: string]: unknown;
         };
         /**
          * GraphAssertionItem
@@ -6572,6 +7211,120 @@ export interface components {
              * @default unknown
              */
             state: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * GymAnswerRequest
+         * @description POST /api/practice/gym/answer — answer a gym item; carries the set's
+         *     running state so the engine can step difficulty (D5).
+         */
+        GymAnswerRequest: {
+            /** Answer Text */
+            answer_text?: string | null;
+            /** Attachment Ids */
+            attachment_ids?: string[] | null;
+            /** Difficulty */
+            difficulty?: number | null;
+            /** Item Key */
+            item_key: string;
+            /** Streak */
+            streak?: number | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * GymAnswerResponse
+         * @description Graded gym verdict + the updated running set summary + next difficulty.
+         */
+        GymAnswerResponse: {
+            /** Concept Id */
+            concept_id?: string | null;
+            /** Concept Name */
+            concept_name?: string | null;
+            /**
+             * Correct
+             * @default false
+             */
+            correct: boolean;
+            /**
+             * Difficulty
+             * @default 2
+             */
+            difficulty: number;
+            /** Effective P */
+            effective_p?: number | null;
+            /**
+             * Feedback Short
+             * @default
+             */
+            feedback_short: string;
+            /** State */
+            state?: string | null;
+            study_citation?: components["schemas"]["Citation"] | null;
+            summary?: components["schemas"]["GymSetSummary"] | null;
+            /** Verdict */
+            verdict: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * GymItemResponse
+         * @description The next gym item plus the running adaptive difficulty.
+         */
+        GymItemResponse: {
+            /**
+             * Difficulty
+             * @default 2
+             */
+            difficulty: number;
+            item?: components["schemas"]["PracticeItem"] | null;
+            /** Message */
+            message?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * GymNextRequest
+         * @description POST /api/practice/gym/next — get the next gym item. No concept_id =
+         *     coach's pick (the shakiest with errors). difficulty carries the running
+         *     adaptive level across the set.
+         */
+        GymNextRequest: {
+            /** Concept Id */
+            concept_id?: string | null;
+            /** Course Id */
+            course_id: string;
+            /** Difficulty */
+            difficulty?: number | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * GymSetSummary
+         * @description Running tally for the current gym set.
+         */
+        GymSetSummary: {
+            /**
+             * Attempted
+             * @default 0
+             */
+            attempted: number;
+            /**
+             * Correct
+             * @default 0
+             */
+            correct: number;
+            /**
+             * Difficulty
+             * @default 2
+             */
+            difficulty: number;
+            /**
+             * Streak
+             * @default 0
+             */
+            streak: number;
         } & {
             [key: string]: unknown;
         };
@@ -7002,6 +7755,35 @@ export interface components {
             [key: string]: unknown;
         };
         /**
+         * PracticeItem
+         * @description The client-safe minted item. NO `reference_answer` field — ever (the
+         *     grading key stays server-side in store.py).
+         */
+        PracticeItem: {
+            citation?: components["schemas"]["Citation"] | null;
+            /** Concept Id */
+            concept_id: string;
+            /** Concept Name */
+            concept_name: string;
+            /** Course Id */
+            course_id?: string | null;
+            /**
+             * Difficulty
+             * @default 2
+             */
+            difficulty: number;
+            /** Item Key */
+            item_key: string;
+            /** Mode */
+            mode: string;
+            /** Prompt */
+            prompt: string;
+            /** Source */
+            source: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
          * PresetUpdateRequest
          * @description Request model for updating custom preset configuration.
          */
@@ -7048,6 +7830,31 @@ export interface components {
              * @default 1
              */
             temperature: number;
+        };
+        /**
+         * QueueResponse
+         * @description GET /api/practice/queue — the assembled review queue + counts.
+         */
+        QueueResponse: {
+            /**
+             * Count
+             * @default 0
+             */
+            count: number;
+            /** Course Id */
+            course_id?: string | null;
+            /**
+             * Due
+             * @default []
+             */
+            due: components["schemas"]["DueConcept"][];
+            /**
+             * Items
+             * @default []
+             */
+            items: components["schemas"]["PracticeItem"][];
+        } & {
+            [key: string]: unknown;
         };
         /** RenameUserRequest */
         RenameUserRequest: {
@@ -13317,6 +14124,334 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    calibration_answer_api_practice_calibration_answer_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalibrationAnswerRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalibrationAnswerResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    calibration_finish_api_practice_calibration_finish_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalibrationFinishRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalibrationFinishResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    calibration_start_api_practice_calibration_start_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CalibrationStartRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CalibrationStartResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    exam_start_api_practice_exam_start_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExamStartRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamStartResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    exam_submit_api_practice_exam_submit_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExamSubmitRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamSubmitResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    explain_start_api_practice_explain_start_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ExplainStartRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExplainStartResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    gym_answer_api_practice_gym_answer_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GymAnswerRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GymAnswerResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    gym_next_api_practice_gym_next_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["GymNextRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GymItemResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    review_queue_api_practice_queue_get: {
+        parameters: {
+            query?: {
+                course_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["QueueResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    answer_queue_item_api_practice_queue_answer_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AnswerRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AnswerResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

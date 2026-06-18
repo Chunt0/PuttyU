@@ -122,11 +122,119 @@ def _focus_lines(db, owner, course_id: str) -> list[str]:
     return lines
 
 
+def _coupling_mutes(db, owner, course_id: str) -> set:
+    """The focus course's muted coupling list (course.settings.coupling_mutes).
+    Conversational 'stop bringing X into this' appends to it (write side T5);
+    periphery_tier already respects it (CONTRACT D10)."""
+    try:
+        from core.database import Course
+        course = _owned(db.query(Course).filter(Course.id == course_id),
+                        Course, owner).first()
+        if course is None or not course.settings:
+            return set()
+        settings = json.loads(course.settings)
+        mutes = settings.get("coupling_mutes")
+        return set(mutes) if isinstance(mutes, list) else set()
+    except (json.JSONDecodeError, TypeError, Exception):
+        return set()
+
+
+def _frontier_concept(db, ids: list[str], names: dict) -> str:
+    """The first non-mastered concept (region/ordinal order) for a course —
+    'currently on'. ids must already be in book order. Empty string if none."""
+    from src.graph import queries
+    states = queries.states_for(db, ids)
+    for cid in ids:
+        state, _ep, _last = states.get(cid, ("unknown", None, None))
+        if state != "mastered":
+            return names.get(cid, "")
+    return ""
+
+
 def periphery_tier(db, owner, course_id: str, budget_chars: int = 0) -> list[str]:
-    """T2 — coupled courses via shared graph nodes (≤1 line per coupled
-    course, capped ~15% of budget, honoring course.settings.coupling_mutes).
-    Built in T4; the seam returns nothing until then."""
-    return []
+    """T2 — coupled courses via shared graph nodes (CONTRACT D10). Coupling =
+    another ACTIVE owner-scoped course whose region shares a ConceptNode.id
+    with the focus region (primary mechanism), OR a 1-hop assertion between a
+    focus-region node and an other-region node (best-effort). Emits one line
+    per coupled course, honoring course.settings.coupling_mutes, capped to
+    ~budget_chars total. Pure reads, graph only via queries, never raises."""
+    try:
+        from core.database import Course
+        from src.graph import queries
+
+        focus = queries.region_concepts(db, course_id, owner)
+        if not focus:
+            return []
+        focus_ids = {c["id"] for c in focus}
+        focus_names = {c["id"]: c["name"] for c in focus}
+        mutes = _coupling_mutes(db, owner, course_id)
+
+        # Other ACTIVE courses owned by this student (owner_scoped).
+        others = (_owned(db.query(Course), Course, owner)
+                  .filter(Course.status == "active",
+                          Course.id != course_id).all())
+
+        lines: list[str] = []
+        used = 0
+        for other in others:
+            if other.id in mutes:
+                continue
+            try:
+                region = queries.region_concepts(db, other.id, owner)
+            except Exception:
+                continue
+            if not region:
+                continue
+            other_ids = [c["id"] for c in region]
+            other_names = {c["id"]: c["name"] for c in region}
+            shared = focus_ids & set(other_ids)
+            shared_name = ""
+            if shared:
+                # Prefer the shared node earliest in the focus region's order.
+                for c in focus:
+                    if c["id"] in shared:
+                        shared_name = c["name"]
+                        break
+            else:
+                shared_name = _bridge_concept(db, owner, focus_ids,
+                                              set(other_ids), focus_names,
+                                              other_names)
+            if not shared_name:
+                continue
+            frontier = _frontier_concept(db, other_ids, other_names)
+            if not frontier:
+                continue
+            line = (f"also enrolled: {other.name} — currently on {frontier}, "
+                    f"which connects via {shared_name}")
+            if budget_chars and used + len(line) > budget_chars:
+                break
+            lines.append(line)
+            used += len(line)
+        return lines
+    except Exception:
+        logger.debug("student_context: periphery tier read failed", exc_info=True)
+        return []
+
+
+def _bridge_concept(db, owner, focus_ids: set, other_ids: set,
+                    focus_names: dict, other_names: dict) -> str:
+    """Best-effort 1-hop coupling: a non-invalidated concept↔concept assertion
+    with one endpoint in the focus region and the other in the other region.
+    Returns the FOCUS-side concept name (the bridge into this course)."""
+    try:
+        from src.graph.models import Assertion
+        rows = (_owned(db.query(Assertion), Assertion, owner)
+                .filter(Assertion.subject_type == "concept",
+                        Assertion.object_type == "concept",
+                        Assertion.invalidated_at.is_(None)).all())
+        for a in rows:
+            if a.subject_id in focus_ids and a.object_id in other_ids:
+                return focus_names.get(a.subject_id, "")
+            if a.object_id in focus_ids and a.subject_id in other_ids:
+                return focus_names.get(a.object_id, "")
+    except Exception:
+        logger.debug("student_context: bridge lookup failed", exc_info=True)
+    return ""
 
 
 def _ambient_lines(db, owner) -> list[str]:
@@ -223,5 +331,30 @@ def maybe_student_context(session_id: str, owner, course_id=None):
         return None
 
 
+def course_system_messages(session_id: str, owner, course_id=None,
+                            incognito: bool = False) -> list[dict]:
+    """The one-door combiner for course-bound chat system messages: the
+    student-context block (F6) + the explain-persona block (F8). Both are
+    gated on `not incognito`; None/empty results are dropped. Returns a list
+    suitable for `preface.extend(...)` in build_chat_context."""
+    if incognito:
+        return []
+    out: list[dict] = []
+    try:
+        sc_msg = maybe_student_context(session_id, owner, course_id)
+        if sc_msg and sc_msg.get("content"):
+            out.append(sc_msg)
+    except Exception as e:
+        logger.warning("course_system_messages: student context skipped: %s", e)
+    try:
+        from src.explain_persona import maybe_explain_persona
+        ex_msg = maybe_explain_persona(session_id, owner, course_id)
+        if ex_msg and ex_msg.get("content"):
+            out.append(ex_msg)
+    except Exception as e:
+        logger.warning("course_system_messages: explain persona skipped: %s", e)
+    return out
+
+
 __all__ = ["student_context", "maybe_student_context", "periphery_tier",
-           "CONTEXT_OPEN", "CONTEXT_CLOSE"]
+           "course_system_messages", "CONTEXT_OPEN", "CONTEXT_CLOSE"]

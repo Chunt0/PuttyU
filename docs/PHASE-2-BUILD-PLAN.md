@@ -59,7 +59,7 @@ re-running the gates yourself before committing.
 
 | Check | Command | Last known good |
 |---|---|---|
-| Backend tests | `.venv/bin/python -m pytest -q -m "not quarantine"` | **2188 passed, 1 skipped** |
+| Backend tests | `.venv/bin/python -m pytest -q -m "not quarantine"` | **2314 passed, 1 skipped** (T4a backend in) |
 | Fitness gates | `bash .fitness/run-all.sh` | **6a–6f all pass** |
 | TS types | `cd web && bunx tsc --noEmit` | clean |
 | Lint | `cd web && bun run lint` | clean |
@@ -81,7 +81,7 @@ re-running the gates yourself before committing.
 | **T2b** | Library/materials UI, citation chips, **webcam capture**, router settings panel | ✅ done |
 | **T3a** | Ensemble graph backend (ADR 0005): tables, seeding, mastery (BKT-lite), extractor, consolidation, `student_context` assembler (focus tier), `graph_routes`, **Gate 6f** | ✅ done |
 | **T3b** | Progress UI: state-colored concept tree, trajectory timeline, overrides, challenge-an-insight | ✅ done |
-| **T4** | Practice engine: review queue + Gym + calibration + exam sim + explain-it-back + **periphery tier** + coupling mute | 🚧 **in progress** — backend partially scaffolded (§4) |
+| **T4** | Practice engine: review queue + Gym + calibration + exam sim + explain-it-back + **periphery tier** + coupling mute | 🚧 **backend DONE, frontend next** — T4a (items/gym/exam/calibration/explain engines, periphery tier, explain-persona injection, `routes/practice_routes.py`, daily `assemble_review_queue` builtin, typed contract) built + adversarially reviewed (4 high-sev bugs fixed w/ regressions); details + pinned decisions in `docs/T4-CONTRACT.md`. **Remaining: T4b frontend** (Review/Gym/Exam/Calibration/Explain screens + vitest + Playwright). |
 | **T5** | Dashboard + todos + schedule miner + persona/dial + integrity + Cmd-K + cost meter + session-summary notes | ⬜ not started (§5) |
 | **T6** | Worksheet grading contract + graph hook + **canvas workspace** | ⬜ not started (§6) |
 | **X** | Cross-cutting: Gate-7 tutor evals, backend-prep follow-ups, @later seams | ⬜ ongoing (§7) |
