@@ -1,8 +1,0 @@
-# Gate 6e (no-javascript.sh) — path prefixes where legacy/tooling JavaScript is TEMPORARILY
-# tolerated. ADR 0001: the rewrite is TypeScript-only; the END STATE is an EMPTY allowlist
-# (zero JS in the repo). Every entry is on death row — shrink it, never grow it. New JS
-# anywhere NOT matching a prefix below fails CI.
-#
-# static/ (the old vanilla-JS frontend) was deleted in Slice 7. The only JS left is the
-# two CI helper scripts below — port them to .ts and the repo is JS-free.
-.github/scripts/

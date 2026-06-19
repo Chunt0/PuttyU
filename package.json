@@ -1,9 +1,0 @@
-{
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/Chunt0/PuttyU.git"
-  },
-  "dependencies": {
-    "@anthropic-ai/sdk": "^0.98.0"
-  }
-}
