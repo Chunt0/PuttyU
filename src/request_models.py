@@ -354,6 +354,11 @@ class NoteResponse(BaseModel):
     sort_order: int = 0
     image_url: Optional[str] = None
     repeat: str = "none"
+    # Phase-2 (ADR 0004 / T5 F9): course scoping + provenance, so a summary note
+    # lands "in the course" and the UI can tell agent drafts from user notes.
+    course_id: Optional[str] = None
+    session_id: Optional[str] = None
+    source: Optional[str] = None
     created_at: Optional[str] = None
     updated_at: Optional[str] = None
 
@@ -361,6 +366,16 @@ class NoteResponse(BaseModel):
 class NoteListResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
     notes: List[NoteResponse] = Field(default_factory=list)
+
+
+# --- Phase-2 T5 vertical-4 (SPEC F9) — session-summary note ------------------------------
+# routes/session_summary_routes.py POSTs {session_id} and gets back a status + the
+# drafted Note (or None when the session was too short / no model was configured).
+
+class SessionSummaryResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    status: str  # "ok" | "too_short" | "no_llm"
+    note: Optional[NoteResponse] = None
 
 
 # --- Phase-2 T1: courses (ADR 0004) ------------------------------------------------------

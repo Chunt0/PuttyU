@@ -32,6 +32,7 @@ class NoteCreate(BaseModel):
     due_date: Optional[str] = None
     source: str = "user"
     session_id: Optional[str] = None
+    course_id: Optional[str] = None
     image_url: Optional[str] = None
     repeat: Optional[str] = "none"
     sort_order: Optional[int] = None
@@ -85,6 +86,7 @@ def _note_to_dict(note: Note) -> Dict[str, Any]:
         "due_date": note.due_date,
         "source": note.source,
         "session_id": note.session_id,
+        "course_id": note.course_id,
         "sort_order": note.sort_order or 0,
         "image_url": note.image_url,
         "repeat": note.repeat or "none",
@@ -382,6 +384,7 @@ def setup_note_routes(task_scheduler=None):
         request: Request,
         archived: Optional[bool] = None,
         label: Optional[str] = None,
+        course_id: Optional[str] = None,
     ):
         user = _owner(request)
         db = SessionLocal()
@@ -395,6 +398,8 @@ def setup_note_routes(task_scheduler=None):
                 q = q.filter(Note.archived == False)
             if label:
                 q = q.filter(Note.label == label)
+            if course_id:
+                q = q.filter(Note.course_id == course_id)
             # Archived view: most recently archived first. Active view: pin + manual order.
             if archived is True:
                 notes = q.order_by(Note.updated_at.desc()).all()
@@ -423,6 +428,7 @@ def setup_note_routes(task_scheduler=None):
                 due_date=body.due_date,
                 source=body.source,
                 session_id=body.session_id,
+                course_id=body.course_id,
                 image_url=body.image_url,
                 repeat=body.repeat or "none",
                 sort_order=body.sort_order if body.sort_order is not None else 0,

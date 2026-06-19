@@ -498,6 +498,10 @@ from routes.session_routes import setup_session_routes
 session_config = {"REQUEST_TIMEOUT": REQUEST_TIMEOUT, "OPENAI_API_KEY": OPENAI_API_KEY, "SESSIONS_FILE": SESSIONS_FILE}
 app.include_router(setup_session_routes(session_manager, session_config))
 
+# Session-summary notes (Phase-2 T5 F9): on-demand POST /api/sessions/{id}/summary
+from routes.session_summary_routes import setup_session_summary_routes
+app.include_router(setup_session_summary_routes(session_manager))
+
 # Memory
 from routes.memory_routes import setup_memory_routes
 memory_router = setup_memory_routes(memory_manager, session_manager, memory_vector=memory_vector)

@@ -89,3 +89,6 @@ GET /api/dashboard
 # Phase-2 T5 (schedule miner — F2):
 POST /api/schedule/{source_id}/mine
 POST /api/schedule/{source_id}/apply
+#
+# Phase-2 T5 (session-summary note — F9):
+POST /api/sessions/{session_id}/summary

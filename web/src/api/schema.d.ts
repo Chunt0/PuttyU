@@ -4807,6 +4807,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/sessions/{session_id}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Summarize */
+        post: operations["summarize_api_sessions__session_id__summary_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/shell/exec": {
         parameters: {
             query?: never;
@@ -7800,6 +7817,8 @@ export interface components {
             color?: string | null;
             /** Content */
             content?: string | null;
+            /** Course Id */
+            course_id?: string | null;
             /** Due Date */
             due_date?: string | null;
             /** Image Url */
@@ -7856,6 +7875,8 @@ export interface components {
             color?: string | null;
             /** Content */
             content?: string | null;
+            /** Course Id */
+            course_id?: string | null;
             /** Created At */
             created_at?: string | null;
             /** Due Date */
@@ -7883,11 +7904,15 @@ export interface components {
              * @default none
              */
             repeat: string;
+            /** Session Id */
+            session_id?: string | null;
             /**
              * Sort Order
              * @default 0
              */
             sort_order: number;
+            /** Source */
+            source?: string | null;
             /**
              * Title
              * @default
@@ -8556,6 +8581,14 @@ export interface components {
              * @default false
              */
             rag: boolean;
+        };
+        /** SessionSummaryResponse */
+        SessionSummaryResponse: {
+            note?: components["schemas"]["NoteResponse"] | null;
+            /** Status */
+            status: string;
+        } & {
+            [key: string]: unknown;
         };
         /** SetOpenRegistrationRequest */
         SetOpenRegistrationRequest: {
@@ -14052,6 +14085,7 @@ export interface operations {
             query?: {
                 archived?: boolean | null;
                 label?: string | null;
+                course_id?: string | null;
             };
             header?: never;
             path?: never;
@@ -16880,6 +16914,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    summarize_api_sessions__session_id__summary_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                session_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SessionSummaryResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

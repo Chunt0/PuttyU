@@ -3,6 +3,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useUiStore } from "../../lib/store.ts";
 import { streamChat, type Citation } from "../../api/streaming.ts";
 import { useCourseStore } from "../courses/store.ts";
+import { useWindowStore } from "../../app/windows/windowStore.ts";
+import { useSummarizeSession } from "../notes/api.ts";
+import { toast } from "../../components/toast.ts";
 import { historyKey, useHistory } from "./api.ts";
 import { reduceAgentEvent, emptyAgentState, type AgentState, type ToolStep } from "./agentSteps.ts";
 import { Message } from "./Message.tsx";
@@ -72,6 +75,8 @@ function Welcome() {
 export function Chat() {
   const sessionId = useUiStore((s) => s.currentSessionId);
   const activeCourseId = useCourseStore((s) => s.activeCourseId);
+  const openWindow = useWindowStore((s) => s.open);
+  const summarize = useSummarizeSession();
   const qc = useQueryClient();
   const history = useHistory(sessionId);
 
@@ -172,6 +177,27 @@ export function Chat() {
     }
   }
 
+  // F9: draft an editable course note from a finished session (on-demand, calm). The note
+  // is the student's (surfaced gently via toast + Notes window, never an auto-opened modal).
+  async function onSummarize() {
+    if (!sessionId) return;
+    try {
+      const res = await summarize.mutateAsync(sessionId);
+      if (res.status === "ok") {
+        toast.success("Saved a note from this session — edit it in Notes.");
+        openWindow("notes");
+      } else if (res.status === "too_short") {
+        toast.info("Not much to summarize yet — keep going.");
+      } else {
+        toast.info("No model configured for summaries.");
+      }
+    } catch {
+      toast.error("Couldn't draft a note from this session.");
+    }
+  }
+
+  const canSummarize = !!sessionId && !streaming && messages.length > 0;
+
   if (!sessionId) {
     return (
       <section className="chat chat--empty">
@@ -185,6 +211,16 @@ export function Chat() {
       <header className="chat-head">
         <span className="chat-title">{history.data?.name || "Chat"}</span>
         {history.data?.model && <span className="chat-model">{history.data.model}</span>}
+        {canSummarize && (
+          <button
+            type="button"
+            className="chat-head-btn"
+            onClick={() => void onSummarize()}
+            disabled={summarize.isPending}
+          >
+            {summarize.isPending ? "Summarizing…" : "Summarize"}
+          </button>
+        )}
       </header>
       <div className="chat-transcript" data-testid="transcript" ref={transcriptRef} onScroll={onScroll}>
         {messages.length === 0 && !pending && !history.isLoading && <Welcome />}
