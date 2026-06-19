@@ -59,7 +59,7 @@ re-running the gates yourself before committing.
 
 | Check | Command | Last known good |
 |---|---|---|
-| Backend tests | `.venv/bin/python -m pytest -q -m "not quarantine"` | **2348 passed, 1 skipped** (T4 + T5 dashboard + miner in) |
+| Backend tests | `.venv/bin/python -m pytest -q -m "not quarantine"` | **2357 passed, 1 skipped** (T4 + T5 dashboard + miner + persona in) |
 | Fitness gates | `bash .fitness/run-all.sh` | **6a–6f all pass** |
 | TS types | `cd web && bunx tsc --noEmit` | clean |
 | Lint | `cd web && bun run lint` | clean |

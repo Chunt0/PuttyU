@@ -333,13 +333,22 @@ def maybe_student_context(session_id: str, owner, course_id=None):
 
 def course_system_messages(session_id: str, owner, course_id=None,
                             incognito: bool = False) -> list[dict]:
-    """The one-door combiner for course-bound chat system messages: the
-    student-context block (F6) + the explain-persona block (F8). Both are
-    gated on `not incognito`; None/empty results are dropped. Returns a list
-    suitable for `preface.extend(...)` in build_chat_context."""
+    """The one-door combiner for course-bound chat system messages: the tutor
+    persona/dial block (F10) + the student-context block (F6) + the
+    explain-persona block (F8). All gated on `not incognito`; None/empty results
+    are dropped. Returns a list suitable for `preface.extend(...)` in
+    build_chat_context. The persona leads (how to behave), then the student model
+    (who the student is); explain mode, when active, suppresses the base persona."""
     if incognito:
         return []
     out: list[dict] = []
+    try:
+        from src.tutor_persona import maybe_tutor_persona
+        tp_msg = maybe_tutor_persona(session_id, owner, course_id)
+        if tp_msg and tp_msg.get("content"):
+            out.append(tp_msg)
+    except Exception as e:
+        logger.warning("course_system_messages: tutor persona skipped: %s", e)
     try:
         sc_msg = maybe_student_context(session_id, owner, course_id)
         if sc_msg and sc_msg.get("content"):

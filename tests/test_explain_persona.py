@@ -11,6 +11,7 @@ from sqlalchemy.orm import sessionmaker
 import core.database as cdb
 import src.explain_persona as ep
 import src.student_context as sc
+import src.tutor_persona as tp
 from core.database import Course, CourseSource, Session as DBSession
 from src.corpus.models import CorpusSource
 from src.graph.models import ConceptNode
@@ -125,13 +126,16 @@ def test_course_system_messages_composes_both(db, monkeypatch):
 
 
 def test_course_system_messages_drops_none(db, monkeypatch):
-    """A non-explain session yields only the student-context message."""
+    """A non-explain course session yields the tutor persona (F10) + the
+    student-context message; the explain block (None here) is dropped."""
     _world(db, mode="chat")
     sc_msg = {"role": "system", "content": "STUDENT CONTEXT BLOCK"}
     monkeypatch.setattr(sc, "maybe_student_context",
                         lambda sid, owner, course_id=None: sc_msg)
     msgs = sc.course_system_messages("sess-explain", "ada", "c1")
-    assert msgs == [sc_msg]
+    assert sc_msg in msgs
+    assert any(tp.PERSONA_OPEN in m["content"] for m in msgs)  # tutor persona leads
+    assert len(msgs) == 2
 
 
 def test_course_system_messages_respects_incognito(db, monkeypatch):
@@ -150,8 +154,10 @@ def test_course_system_messages_respects_incognito(db, monkeypatch):
 
 
 def test_course_system_messages_empty_when_nothing(db, monkeypatch):
-    """Plain course-bound chat with no student context and not explain -> []."""
+    """When every sub-builder yields nothing, the combiner returns []."""
     _world(db, mode="chat")
     monkeypatch.setattr(sc, "maybe_student_context",
+                        lambda sid, owner, course_id=None: None)
+    monkeypatch.setattr(tp, "maybe_tutor_persona",
                         lambda sid, owner, course_id=None: None)
     assert sc.course_system_messages("sess-explain", "ada", "c1") == []

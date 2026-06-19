@@ -9,8 +9,8 @@ Two thin typed adapters over the engine in ``src/schedule/``:
   POST /api/schedule/{source_id}/apply  → MineApplyResponse — THE ONLY WRITER.
         Creates/updates the user-confirmed, unambiguous proposals.
 
-Born small + typed: response_model on both (Gate 6b), Pydantic body on apply
-(Gate 6c — no raw request.json()), owner resolved once via effective_user, the
+Born small + typed: response_model on both (Gate 6b), a Pydantic body on apply
+(Gate 6c — no raw request-body parsing), owner resolved once via effective_user, the
 SessionLocal try/finally pattern. Reads are owner-scoped; events scope through
 the CalendarCal.owner join inside the engine. Model selection lives entirely in
 the engine via model_router — no model-name literals here. The graph tables are
