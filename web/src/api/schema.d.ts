@@ -888,6 +888,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/cmdk": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Cmdk
+         * @description Global palette search. `q` is matched case-insensitively across six
+         *     kinds; `course_id` narrows materials + concepts to that course's region;
+         *     `limit` caps each kind. Read-only; degrades per bucket; never 500s.
+         */
+        get: operations["cmdk_api_cmdk_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/companion/info": {
         parameters: {
             query?: never;
@@ -7193,6 +7215,40 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** GlobalSearchResponse */
+        GlobalSearchResponse: {
+            /**
+             * Query
+             * @default
+             */
+            query: string;
+            /** Results */
+            results?: components["schemas"]["GlobalSearchResult"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** GlobalSearchResult */
+        GlobalSearchResult: {
+            /** Course Id */
+            course_id?: string | null;
+            /** Id */
+            id: string;
+            /** Kind */
+            kind: string;
+            /** Page */
+            page?: number | null;
+            /** Source Id */
+            source_id?: string | null;
+            /** Subtitle */
+            subtitle?: string | null;
+            /**
+             * Title
+             * @default
+             */
+            title: string;
+        } & {
+            [key: string]: unknown;
+        };
         /**
          * GraphAssertionItem
          * @description One timeline entry — invalidated assertions ride along with their
@@ -10452,6 +10508,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": unknown;
+                };
+            };
+        };
+    };
+    cmdk_api_cmdk_get: {
+        parameters: {
+            query?: {
+                q?: string;
+                limit?: number | null;
+                course_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["GlobalSearchResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

@@ -5,6 +5,7 @@ import { useCourseStore } from "../courses/store.ts";
 import { useCourses } from "../courses/api.ts";
 import type { GraphAssertion, GraphConceptNode } from "../../api/types.ts";
 import { useConceptTree, useObservations } from "./api.ts";
+import { useProgressStore } from "./progressStore.ts";
 import { ConceptDetail } from "./ConceptDetail.tsx";
 import { StateChip } from "./StateChip.tsx";
 import { fmtDay } from "./model.ts";
@@ -105,6 +106,24 @@ export function Progress() {
   const observations = useObservations(courseId);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   useEffect(() => setSelectedId(null), [courseId]);
+
+  // F11 (CONTRACT D7): a Cmd-K concept hit deep-links here via progressForConcept, which
+  // activates the course AND sets a preselect target. Read the target on mount (and when it
+  // changes), select that concept, then CLEAR it so a later manual open starts fresh. This
+  // effect is ordered AFTER the course-reset above so activating the course (which nulls the
+  // selection) doesn't clobber the preselected concept — this wins on the same render.
+  const target = useProgressStore((s) => s.target);
+  const clearTarget = useProgressStore((s) => s.clear);
+  useEffect(() => {
+    // Wait until the course context is resolved before consuming the target — a
+    // late-resolving useCourses() flips courseId null->Y and the [courseId] reset
+    // above would otherwise null the selection AFTER we'd already cleared the
+    // target. Keyed on courseId so this fires (and wins, being declared after the
+    // reset) once the course is ready.
+    if (!target || !courseId) return;
+    setSelectedId(target.conceptId);
+    clearTarget();
+  }, [target, courseId, clearTarget]);
 
   if (!activeCourse) {
     return (

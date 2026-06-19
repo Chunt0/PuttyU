@@ -98,6 +98,11 @@ export type TodoUpdateRequest = components["schemas"]["TodoUpdateRequest"];
 export type TodoListResponse = components["schemas"]["TodoListResponse"];
 export type DashboardResponse = components["schemas"]["DashboardResponse"];
 
+// Phase-2 T5 vertical-5 — Cmd-K global search (CONTRACT D4, SPEC F11 "one keystroke finds anything")
+// global_search_routes.py is born typed → these ride the real OpenAPI seam.
+export type GlobalSearchResponse = components["schemas"]["GlobalSearchResponse"];
+export type GlobalSearchResult = components["schemas"]["GlobalSearchResult"];
+
 // Phase-2 T5 vertical-2 — schedule miner (CONTRACT D8/D9, SPEC F2 "the syllabus autofills")
 // schedule_routes.py is born typed → these ride the real OpenAPI seam. mine is read-only;
 // apply is the only writer (untrusted-content invariant).

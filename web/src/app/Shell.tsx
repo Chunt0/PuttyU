@@ -1,8 +1,10 @@
+import { useEffect, useState } from "react";
 import { Outlet } from "react-router-dom";
 import { useAuthStatus, useLogout } from "../features/auth/api.ts";
 import { CourseTabs } from "../features/courses/CourseTabs.tsx";
 import { SessionList } from "../features/sessions/SessionList.tsx";
 import { Toasts } from "../components/Toasts.tsx";
+import { CommandPalette } from "../features/search/CommandPalette.tsx";
 import { ThemePicker } from "./ThemePicker.tsx";
 import { WindowLayer } from "./windows/WindowLayer.tsx";
 import { WINDOW_TOOLS } from "./windows/tools.tsx";
@@ -15,6 +17,19 @@ export function Shell() {
   const logout = useLogout();
   const windows = useWindowStore((s) => s.windows);
   const open = useWindowStore((s) => s.open);
+
+  // F11: ⌘/Ctrl-K toggles the global search palette (a transient modal, NOT a tool window).
+  const [paletteOpen, setPaletteOpen] = useState(false);
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOpen((o) => !o);
+      }
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, []);
 
   return (
     <div className="shell">
@@ -52,6 +67,7 @@ export function Shell() {
       </main>
       <WindowLayer />
       <Toasts />
+      {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} />}
     </div>
   );
 }

@@ -5,7 +5,7 @@ POST /api/sessions/{session_id}/summary draws the session into an editable
 `source="agent"` course note. On-demand only (the explicit "I finished a
 substantive session" signal) — never after-turn / never a builtin, so there is no
 token churn (calm). Typed seam: response_model, no request body (path param only,
-so no raw request.json()), strict session ownership (404 on a foreign/missing
+so no raw body parsing), strict session ownership (404 on a foreign/missing
 session), owner-scoped writes attributed to the real human (effective_user).
 """
 

@@ -51,6 +51,47 @@ def region_concepts(db, course_id: str, owner) -> list[dict]:
     return out
 
 
+def search_concepts(db, owner, q, *, limit: int = 8, course_id=None) -> list[dict]:
+    """Name-match concepts for the global Cmd-K palette (CONTRACT D3, Gate 6f).
+
+    The ONLY door the global-search route may use to reach concepts — that route
+    is NOT on the Gate-6f allowlist, so it never touches ConceptNode directly.
+
+    ConceptNode.name ilike `%q%`, owner-scoped with the same null-owner-visible
+    rule as concept_brief (owner == owner else owner IS NULL). Returns plain
+    dicts via _concept_dict (id, name, heading_path, sources, …). When course_id
+    is given, results are intersected with that course's source region (the same
+    source-intersection rule region_concepts uses). Blank q → []."""
+    q = (q or "").strip()
+    if not q:
+        return []
+    cap = max(1, int(limit))
+
+    region_ids = None
+    if course_id:
+        from src.corpus.course_search import course_source_ids
+        region_ids = set(course_source_ids(db, course_id, owner))
+        if not region_ids:
+            return []
+
+    query = db.query(ConceptNode).filter(ConceptNode.name.ilike(f"%{q}%"))
+    query = query.filter(ConceptNode.owner == owner) if owner else \
+        query.filter(ConceptNode.owner.is_(None))
+
+    out: list[dict] = []
+    # Over-fetch when a course filter is in play so the region intersection still
+    # fills `limit` (concepts are sparse; the over-fetch is cheap).
+    rows = query.limit(cap * 10 if region_ids is not None else cap).all()
+    for node in rows:
+        d = _concept_dict(node)
+        if region_ids is not None and not (set(d["sources"]) & region_ids):
+            continue
+        out.append(d)
+        if len(out) >= cap:
+            break
+    return out
+
+
 def concept_brief(db, concept_id: str, owner) -> dict | None:
     """One concept as a dict (with current state), or None / not visible."""
     q = db.query(ConceptNode).filter(ConceptNode.id == concept_id)
@@ -178,6 +219,6 @@ def record_evidence(concept_id: str, signal: str, *, weight: float = 1.0,
 
 
 __all__ = [
-    "region_concepts", "concept_brief", "states_for",
+    "region_concepts", "search_concepts", "concept_brief", "states_for",
     "prereq_out_degree", "error_counts", "recent_insights", "record_evidence",
 ]

@@ -709,3 +709,26 @@ class GraphChallengeResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
     invalidated: GraphAssertionItem
     correction: GraphAssertionItem
+
+
+# --- Phase-2 T5 vertical-5 (SPEC F11) — Cmd-K global search -------------------------------
+# Real OpenAPI seam: routes/global_search_routes.py is born small + typed. The palette gets
+# back a FLAT list of results (it groups client-side by `kind`); `extra="allow"` keeps the
+# contract additive. Each result carries only the deep-link fields its kind needs (the rest
+# stay None) — see CONTRACT D2/D4.
+
+class GlobalSearchResult(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    kind: str  # course | note | todo | session | material | concept
+    id: str
+    title: str = ""
+    subtitle: Optional[str] = None
+    course_id: Optional[str] = None
+    source_id: Optional[str] = None  # material → opens the PDF viewer
+    page: Optional[int] = None       # material page deep-link (None in v1)
+
+
+class GlobalSearchResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    query: str = ""
+    results: List[GlobalSearchResult] = Field(default_factory=list)

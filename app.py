@@ -634,6 +634,10 @@ app.include_router(setup_todo_routes())
 from routes.dashboard_routes import setup_dashboard_routes
 app.include_router(setup_dashboard_routes())
 
+# Cmd-K global search (Phase-2 T5 vertical-5 — SPEC F11: one keystroke finds anything)
+from routes.global_search_routes import setup_global_search_routes
+app.include_router(setup_global_search_routes())
+
 # Schedule miner (Phase-2 T5 vertical-2 — SPEC F2: syllabus → proposed events + todos)
 from routes.schedule_routes import setup_schedule_routes
 app.include_router(setup_schedule_routes())
