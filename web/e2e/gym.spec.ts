@@ -94,6 +94,14 @@ test("train the weakness: coach's pick, answer, difficulty adapts", async ({ pag
   // The dial opens at the seed rung (a word, never a raw probability).
   await expect(win.getByTestId("gym-difficulty")).toHaveText("level 2 of 5 · easier");
 
+  // The third input mode (F4): open the equation panel, type LaTeX, see a live KaTeX
+  // preview, and Insert appends delimited block math ($$…$$) into the answer textarea.
+  await win.getByRole("button", { name: "Insert equation" }).click();
+  await win.getByLabel("LaTeX equation").fill("\\sqrt{n}");
+  await expect(win.getByTestId("mathinput-preview").locator(".katex")).toBeVisible();
+  await win.getByRole("button", { name: "Insert", exact: true }).click();
+  await expect(win.getByLabel("Your answer")).toHaveValue("$$\\sqrt{n}$$");
+
   // Answer it correctly.
   await win.getByLabel("Your answer").fill("More observations average out the random noise.");
   await win.getByRole("button", { name: "Check" }).click();

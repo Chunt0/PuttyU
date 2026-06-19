@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ChangeEvent, type FormEvent } from "r
 import { Spinner } from "../../components/Spinner.tsx";
 import { Markdown } from "../../components/Markdown.tsx";
 import { CameraCapture } from "../../components/CameraCapture.tsx";
+import { MathInput } from "../../components/MathInput.tsx";
 import { toast } from "../../components/toast.ts";
 import { useCourseStore } from "../courses/store.ts";
 import { useCourses } from "../courses/api.ts";
@@ -326,6 +327,9 @@ export function Gym() {
                     <CameraCapture
                       label="Take photo"
                       onAccept={(files) => void addFiles(files)}
+                    />
+                    <MathInput
+                      onInsert={(eq) => setAnswerText((s) => (s ? s + " " : "") + eq)}
                     />
                     <button
                       type="submit"

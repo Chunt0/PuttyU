@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Spinner } from "../../components/Spinner.tsx";
 import { Markdown } from "../../components/Markdown.tsx";
 import { CameraCapture } from "../../components/CameraCapture.tsx";
+import { MathInput } from "../../components/MathInput.tsx";
 import { ConfirmButton } from "../../components/ConfirmButton.tsx";
 import { toast } from "../../components/toast.ts";
 import { StateChip } from "../progress/StateChip.tsx";
@@ -100,6 +101,7 @@ function CalibrationItem({
 
       <div className="calib-item-actions">
         <CameraCapture label="Photo of work" onAccept={(files) => void addPhotos(files)} />
+        <MathInput onInsert={(eq) => setText((s) => (s ? s + " " : "") + eq)} />
         <button
           type="button"
           className="calib-skip"

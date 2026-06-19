@@ -7,6 +7,7 @@ import {
 } from "react";
 import { Spinner } from "../../components/Spinner.tsx";
 import { Markdown } from "../../components/Markdown.tsx";
+import { MathInput } from "../../components/MathInput.tsx";
 import { toast } from "../../components/toast.ts";
 import { useCourseStore } from "../courses/store.ts";
 import { useCourses } from "../courses/api.ts";
@@ -245,6 +246,7 @@ export function Explain() {
               aria-label="Your explanation"
               disabled={streaming}
             />
+            <MathInput onInsert={(eq) => setInput((s) => (s ? s + " " : "") + eq)} />
             <button type="submit" className="explain-send" disabled={!input.trim() || streaming}>
               {streaming ? "…" : "Send"}
             </button>

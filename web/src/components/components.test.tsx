@@ -88,6 +88,20 @@ describe("Markdown", () => {
     expect(document.querySelector("img")).toBeNull();
   });
 
+  it("renders block LaTeX math through KaTeX", () => {
+    // Only $$…$$ renders (singleDollarTextMath:false); single-$ no longer triggers math.
+    render(<Markdown>{"$$E=mc^2$$"}</Markdown>);
+    expect(document.querySelector(".katex")).not.toBeNull();
+  });
+
+  it("leaves currency prose literal — two single dollars never render as math", () => {
+    // Regression (FIX 1): "$5 ... $10" must NOT be parsed as inline math, and both
+    // dollar signs must survive verbatim. Pins the no-currency-mangling guarantee.
+    render(<Markdown>{"It cost $5 and $10 total"}</Markdown>);
+    expect(document.querySelector(".katex")).toBeNull();
+    expect(screen.getByText("It cost $5 and $10 total")).toBeInTheDocument();
+  });
+
   it("opens links in a new tab", () => {
     render(<Markdown>{"[site](https://example.com)"}</Markdown>);
     const link = screen.getByRole("link", { name: "site" });

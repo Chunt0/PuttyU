@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Spinner } from "../../components/Spinner.tsx";
 import { Markdown } from "../../components/Markdown.tsx";
 import { CameraCapture } from "../../components/CameraCapture.tsx";
+import { MathInput } from "../../components/MathInput.tsx";
 import { toast } from "../../components/toast.ts";
 import { useCourseStore } from "../courses/store.ts";
 import { useCourses } from "../courses/api.ts";
@@ -112,6 +113,7 @@ function ReviewCard({
 
           <div className="review-actions">
             <CameraCapture label="Take photo" onAccept={(files) => void addPhotos(files)} />
+            <MathInput onInsert={(eq) => setAnswer((s) => (s ? s + " " : "") + eq)} />
             <button
               type="submit"
               disabled={uploading || grade.isPending || (!answer.trim() && attachments.length === 0)}

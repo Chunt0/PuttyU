@@ -197,6 +197,23 @@ describe("Gym", () => {
     expect(screen.getByRole("button", { name: /study: Sampling error · p\. 42/ })).toBeInTheDocument();
   });
 
+  it("inserts a typed equation into the answer as delimited LaTeX (F4)", async () => {
+    mockGym();
+    renderWithProviders(<Gym />);
+    await userEvent.click(await screen.findByRole("button", { name: "Coach's pick" }));
+    await screen.findByText("Define sampling error.");
+
+    const textarea = screen.getByLabelText("Your answer");
+    await userEvent.type(textarea, "sigma over");
+
+    await userEvent.click(screen.getByRole("button", { name: "Insert equation" }));
+    // (userEvent.type treats {} as special keys — use brace-free LaTeX here.)
+    await userEvent.type(screen.getByLabelText("LaTeX equation"), "x^2");
+    await userEvent.click(screen.getByRole("button", { name: "Insert" }));
+
+    expect(textarea).toHaveValue("sigma over $$x^2$$");
+  });
+
   it("renders the coach's-pick-exhausted message (item: null)", async () => {
     mockGym({ itemNull: true });
     renderWithProviders(<Gym />);

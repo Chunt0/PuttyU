@@ -1,7 +1,9 @@
 import { useRef, useState, type ComponentProps } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
 import rehypeHighlight from "rehype-highlight";
+import rehypeKatex from "rehype-katex";
 import { copyText } from "../lib/clipboard.ts";
 
 /** Fenced code block with a hover copy button (legacy-frontend parity). */
@@ -29,15 +31,21 @@ function Pre(props: ComponentProps<"pre">) {
 
 /**
  * Markdown renderer for chat messages (and anywhere else): GitHub-flavored markdown
- * (tables, task lists, strikethrough, autolinks) + syntax-highlighted code blocks.
- * Raw HTML in the source is NOT rendered (react-markdown default) — safe for LLM output.
+ * (tables, task lists, strikethrough, autolinks) + syntax-highlighted code blocks +
+ * LaTeX math rendered with KaTeX (T5/F4). Only block `$$…$$` math renders; single-dollar
+ * inline math is OFF (`singleDollarTextMath: false`) so currency prose like "$5 and $10"
+ * stays literal everywhere. KaTeX is bounded (maxSize/maxExpand) against an untrusted-input
+ * layout bomb; raw HTML in the source is NOT rendered (react-markdown default) — safe for LLM output.
  */
 export function Markdown({ children }: { children: string }) {
   return (
     <div className="markdown">
       <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[[rehypeHighlight, { detect: false, ignoreMissing: true }]]}
+        remarkPlugins={[remarkGfm, [remarkMath, { singleDollarTextMath: false }]]}
+        rehypePlugins={[
+          [rehypeHighlight, { detect: false, ignoreMissing: true }],
+          [rehypeKatex, { maxSize: 50, maxExpand: 1000 }],
+        ]}
         components={{
           pre: Pre,
           // External links open in a new tab; same-page anchors stay put.

@@ -1,0 +1,68 @@
+/* MathInput (T5/F4) — the third input mode: a LaTeX field + live KaTeX preview that
+   returns inline `$…$` math. Mirrors the CameraCapture affordance (idle button → panel).
+   Tokens-only (no hardcoded hex, no gradients) so every theme re-skins it. */
+
+.mathinput { display: inline-flex; align-items: center; gap: 6px; }
+
+.mathinput-open {
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.mathinput-open:hover { border-color: var(--accent); }
+
+/* The open panel — sits inline beside the other input controls. */
+.mathinput-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  max-width: 420px;
+  width: 100%;
+}
+
+.mathinput-textarea {
+  width: 100%;
+  resize: vertical;
+  min-height: 56px;
+  background: var(--bg2);
+  color: var(--text);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  padding: 6px 8px;
+  font-family: var(--mono);
+  font-size: 13px;
+}
+.mathinput-textarea:focus { outline: none; border-color: var(--accent); }
+
+.mathinput-preview-label { color: var(--muted); font-size: 11px; }
+
+.mathinput-preview {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px;
+  min-height: 32px;
+  overflow-x: auto;
+}
+.mathinput-preview--empty { color: var(--muted); font-size: 12px; }
+
+.mathinput-actions { display: flex; align-items: center; gap: 6px; }
+.mathinput-actions button {
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font-size: 12px;
+}
+.mathinput-actions button:hover:not(:disabled) { border-color: var(--accent); }
+.mathinput-actions button:disabled { opacity: 0.5; cursor: default; }

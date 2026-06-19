@@ -8,9 +8,11 @@ interface Props {
 }
 
 /**
- * One transcript message. Assistant turns render as markdown (code blocks, tables, math
- * notation as text); user turns stay verbatim pre-wrap so nothing they typed is mangled.
- * A hover copy action grabs the raw text.
+ * One transcript message. Assistant turns render as markdown (code blocks, tables, KaTeX
+ * block `$$…$$` math); user turns stay verbatim pre-wrap so nothing they typed is mangled
+ * (newlines preserved, prose not markdown-interpreted). A submitted `$$…$$` thus shows as
+ * literal text in the user's own bubble — an accepted v1 tradeoff (the MathInput preview
+ * rendered it pre-submit; the tutor's reply renders math). A hover copy grabs the raw text.
  */
 export function Message({ role, content }: Props) {
   const [copied, setCopied] = useState(false);

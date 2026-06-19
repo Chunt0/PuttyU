@@ -175,6 +175,21 @@ describe("Review", () => {
     expect(screen.getByRole("button", { name: "Done" })).toBeInTheDocument();
   });
 
+  it("inserts a typed equation into the answer as delimited LaTeX (F4)", async () => {
+    mockReview();
+    renderWithProviders(<Review />);
+
+    const textarea = await screen.findByLabelText("Your answer");
+    await userEvent.type(textarea, "Mean is");
+
+    await userEvent.click(screen.getByRole("button", { name: "Insert equation" }));
+    // (userEvent.type treats {} as special keys — use brace-free LaTeX here.)
+    await userEvent.type(screen.getByLabelText("LaTeX equation"), "x^2");
+    await userEvent.click(screen.getByRole("button", { name: "Insert" }));
+
+    expect(textarea).toHaveValue("Mean is $$x^2$$");
+  });
+
   it("shows the calm empty state with the waiting count when the queue is empty", async () => {
     mockReview({ empty: true });
     renderWithProviders(<Review />);
