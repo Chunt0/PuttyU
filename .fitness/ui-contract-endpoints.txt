@@ -76,3 +76,12 @@ POST /api/practice/calibration/finish
 POST /api/practice/exam/start
 POST /api/practice/exam/submit
 POST /api/practice/explain/start
+
+#
+# Phase-2 T5 (todos + dashboard — SPEC F11, ADR 0004 §Q12):
+GET /api/todos
+POST /api/todos
+PATCH /api/todos/{todo_id}
+POST /api/todos/{todo_id}/done
+DELETE /api/todos/{todo_id}
+GET /api/dashboard

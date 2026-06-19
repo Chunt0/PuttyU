@@ -410,6 +410,53 @@ class CourseSourcesResponse(BaseModel):
     note: Optional[str] = None
 
 
+# --- Phase-2 T5: todos + dashboard (ADR 0004 §Q12, SPEC F11) -----------------------------
+# Real OpenAPI seam: todo_routes.py is born small + typed (mirrors the Course* block).
+# `extra="allow"` keeps the contract additive. The dashboard aggregator is read-only and
+# degrades per-section (never 500s the landing page) — its lists stay loosely typed.
+
+class TodoCreateRequest(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    text: str = Field(..., min_length=1, max_length=2000, description="The todo text (required)")
+    course_id: Optional[str] = Field(default=None, description="null = Home / course-less")
+    due_date: Optional[str] = Field(default=None, description="ISO date string")
+
+
+class TodoUpdateRequest(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    text: Optional[str] = Field(default=None, min_length=1, max_length=2000)
+    course_id: Optional[str] = None
+    due_date: Optional[str] = None
+
+
+class TodoResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    id: str
+    owner: Optional[str] = None
+    course_id: Optional[str] = None
+    text: str
+    due_date: Optional[str] = None
+    done_at: Optional[str] = None
+    done: bool = False
+    source: str = "manual"  # manual | miner | tutor
+    provenance: Optional[Dict[str, Any]] = None
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+
+
+class TodoListResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    todos: List[TodoResponse] = Field(default_factory=list)
+
+
+class DashboardResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    review_count: int = 0
+    weak_spots: List[Dict[str, Any]] = Field(default_factory=list)
+    insights: List[Dict[str, Any]] = Field(default_factory=list)
+    reading: List[Dict[str, Any]] = Field(default_factory=list)
+
+
 # --- Phase-2 T2a: corpus library + course materials (SPEC F2, ADR 0003/0004) -------------
 # Real OpenAPI seam: corpus_routes.py is born small + typed. `kind` discriminates the
 # shared read-only library (owner NULL) from the caller's own materials.

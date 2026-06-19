@@ -16,6 +16,7 @@ import type {
   PracticeItem,
 } from "../../api/types.ts";
 import { useGymAnswer, useGymNext } from "./api.ts";
+import { useGymStore } from "./gymStore.ts";
 import {
   SEED_DIFFICULTY,
   clampDifficulty,
@@ -126,6 +127,19 @@ export function Gym() {
     setSummary(emptySummary);
     void requestNext(pickConceptId, SEED_DIFFICULTY);
   }
+
+  // F11: a dashboard weak-spot card opens the Gym preloaded on its concept. Read the
+  // target on mount (and on course switch), preselect+drill it, then CLEAR it so a later
+  // manual open starts fresh. Only honored when the target matches the active course.
+  const gymTarget = useGymStore((s) => s.target);
+  const clearGymTarget = useGymStore((s) => s.setTarget);
+  useEffect(() => {
+    if (!gymTarget || !courseId || gymTarget.courseId !== courseId) return;
+    clearGymTarget(null);
+    start(gymTarget.conceptId);
+    // start() is stable for this render; deps below cover the inputs that matter.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [gymTarget, courseId]);
 
   async function addFiles(files: File[]) {
     if (files.length === 0) return;

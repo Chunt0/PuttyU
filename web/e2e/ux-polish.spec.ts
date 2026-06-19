@@ -60,10 +60,12 @@ test("rename a session inline and delete one with the two-step confirm", async (
   const captured = { rename: [] as string[], deleted: [] as string[] };
   await mockBackend(page, captured);
   await login(page);
-  await expect(page.getByRole("button", { name: "First chat", exact: true })).toBeVisible();
+  // Scope to the sidebar — the Dashboard's Resume card also surfaces a session by name.
+  const sidebar = page.getByRole("complementary");
+  await expect(sidebar.getByRole("button", { name: "First chat", exact: true })).toBeVisible();
 
   // Inline rename via the row's pencil action.
-  await page.getByRole("button", { name: "First chat", exact: true }).hover();
+  await sidebar.getByRole("button", { name: "First chat", exact: true }).hover();
   await page.getByRole("button", { name: "Rename First chat" }).click();
   const input = page.getByLabel("Chat name");
   await input.fill("Linear equations");

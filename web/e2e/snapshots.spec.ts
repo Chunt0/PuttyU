@@ -146,7 +146,11 @@ test("capture UI snapshots", async ({ page }) => {
   await page.getByLabel("Password").fill("secret");
   await page.getByRole("button", { name: "Sign in" }).click();
 
-  // 02 — chat with a markdown reply (table + highlighted code), session header
+  // 02 — chat with a markdown reply (table + highlighted code), session header.
+  // Login lands on the Dashboard (T5); open the first chat from the sidebar. Scope
+  // to the sidebar — the Dashboard's Resume card also renders this session name, so
+  // an unscoped locator is a strict-mode collision.
+  await page.getByRole("complementary").getByRole("button", { name: "Algebra — Sam", exact: true }).click();
   await page.getByRole("heading", { name: "Solving 2x + 6 = 14" }).waitFor();
   await shot(page, "02-chat-markdown");
 
@@ -243,7 +247,7 @@ test("capture UI snapshots", async ({ page }) => {
   await page.getByRole("button", { name: "Close Providers" }).click();
 
   // 21-22 — two alternate themes on the chat screen
-  await page.getByRole("button", { name: "Algebra — Sam", exact: true }).click();
+  await page.getByRole("complementary").getByRole("button", { name: "Algebra — Sam", exact: true }).click();
   await page.getByRole("heading", { name: "Solving 2x + 6 = 14" }).waitFor();
   await page.getByLabel("Theme").selectOption("putty-light");
   await shot(page, "21-theme-putty-light");

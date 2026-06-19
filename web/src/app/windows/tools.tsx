@@ -4,6 +4,7 @@ import { Memory } from "../../features/memory/Memory.tsx";
 import { Corpus } from "../../features/corpus/Corpus.tsx";
 import { Library } from "../../features/library/Library.tsx";
 import { PdfViewer } from "../../features/library/PdfViewer.tsx";
+import { Dashboard } from "../../features/dashboard/Dashboard.tsx";
 import { Progress } from "../../features/progress/Progress.tsx";
 import { Review } from "../../features/practice/Review.tsx";
 import { Gym } from "../../features/practice/Gym.tsx";
@@ -20,6 +21,7 @@ import { Documents } from "../../features/documents/Documents.tsx";
  * (deep links like /calendar still work); the window is just another mount point.
  * `hidden` tools (the PDF viewer) open programmatically, not from the sidebar nav. */
 export const WINDOW_TOOLS: Array<{ key: string; title: string; node: ReactNode; hidden?: boolean }> = [
+  { key: "dashboard", title: "Dashboard", node: <Dashboard /> },
   { key: "library", title: "Library", node: <Library /> },
   { key: "progress", title: "Progress", node: <Progress /> },
   { key: "review", title: "Review", node: <Review /> },

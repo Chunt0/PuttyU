@@ -909,7 +909,7 @@ def _migrate_assign_legacy_owner():
         # exists; the explicit list documents intent.
         tables = [
             "sessions", "memories", "user_tools",
-            "documents", "notes",
+            "documents", "notes", "todos",
             "calendars", "calendar_events", "integrations",
             "scheduled_tasks", "task_runs", "crew_members",
             "user_tool_data", "api_tokens",
@@ -1362,6 +1362,28 @@ class CourseSource(Base):
     course_id = Column(String, ForeignKey("courses.id", ondelete="CASCADE"), primary_key=True)
     source_id = Column(String, primary_key=True)
     added_at  = Column(DateTime, default=utcnow_naive, nullable=False)
+
+
+class Todo(TimestampMixin, Base):
+    """A student todo (ADR 0004 §Q12, T5) — distinct from scheduler tasks
+    (automation) and notes (no due/done). NULL course_id = Home (course-less).
+    Tutor/miner-proposed todos are always confirmed by the user before a row
+    exists (the untrusted-content invariant); v1 builds only source="manual".
+
+    Created by `create_all` in init_db (no `_migrate_*`); pre-auth rows are
+    stamped to the admin owner by `_migrate_assign_legacy_owner` (Gate-5 seam).
+    """
+    __tablename__ = "todos"
+
+    id        = Column(String, primary_key=True, index=True)
+    owner     = Column(String, nullable=True, index=True)   # username; null = legacy (Gate 5 seam)
+    course_id = Column(String, nullable=True, index=True)   # null = Home / course-less
+    text      = Column(Text, nullable=False)
+    due_date  = Column(String, nullable=True)               # ISO date string (mirrors Note.due_date)
+    done_at   = Column(DateTime, nullable=True)             # null = open
+    source    = Column(String, nullable=False, default="manual")  # manual | miner | tutor
+    # JSON-as-text {source_id, page} for miner-created rows (store-then-parse).
+    provenance = Column(Text, nullable=True)
 
 
 class Integration(TimestampMixin, Base):

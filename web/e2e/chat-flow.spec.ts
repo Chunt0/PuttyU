@@ -47,10 +47,11 @@ test("login -> chat -> switch session -> reload keeps history", async ({ page })
   await page.getByLabel("Password").fill("secret");
   await page.getByRole("button", { name: "Sign in" }).click();
 
-  // Lands in the shell; the first session is auto-selected and its history shows.
-  await expect(page.getByText("First chat")).toBeVisible();
-  await expect(page.getByText("answer one")).toBeVisible();
+  // Lands in the shell on the Dashboard (T5); the sidebar lists the chats. Pick the first
+  // to open it — its history shows. Scope to the sidebar (the Resume card names a chat too).
   await expect(page.getByText("ada")).toBeVisible();
+  await page.getByRole("complementary").getByRole("button", { name: "First chat", exact: true }).click();
+  await expect(page.getByText("answer one")).toBeVisible();
 
   // Switch sessions -> the transcript follows the selection (no desync).
   // exact: the row also has "Rename Second chat" / "Delete Second chat" hover actions.
@@ -58,8 +59,9 @@ test("login -> chat -> switch session -> reload keeps history", async ({ page })
   await expect(page.getByText("answer two")).toBeVisible();
   await expect(page.getByText("answer one")).toBeHidden();
 
-  // Reload -> still authenticated, app restored (not bounced to /login).
+  // Reload -> still authenticated, app restored (not bounced to /login). The selected
+  // chat doesn't persist, so this lands back on the Dashboard; the sidebar still lists it.
   await page.reload();
-  await expect(page.getByText("First chat")).toBeVisible();
+  await expect(page.getByRole("complementary").getByText("First chat")).toBeVisible();
   await expect(page).not.toHaveURL(/\/login$/);
 });

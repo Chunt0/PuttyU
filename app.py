@@ -622,6 +622,14 @@ app.include_router(setup_note_routes(task_scheduler))
 from routes.course_routes import setup_course_routes
 app.include_router(setup_course_routes())
 
+# Todos (Phase-2 T5 — ADR 0004 §Q12: student todos, distinct from scheduler tasks)
+from routes.todo_routes import setup_todo_routes
+app.include_router(setup_todo_routes())
+
+# Dashboard aggregator (Phase-2 T5 — SPEC F11: the landing surface, read-only)
+from routes.dashboard_routes import setup_dashboard_routes
+app.include_router(setup_dashboard_routes())
+
 # Corpus library + course materials (Phase-2 T2a — SPEC F2, ADR 0003/0004)
 from routes.corpus_routes import setup_corpus_routes
 app.include_router(setup_corpus_routes())

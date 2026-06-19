@@ -1548,6 +1548,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/dashboard": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Dashboard
+         * @description Compose the landing surface. course_id scopes to one course; omitted
+         *     spans all active courses (the Home dashboard). Read-only; never 500s.
+         */
+        get: operations["dashboard_api_dashboard_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/db/stats": {
         parameters: {
             query?: never;
@@ -5416,6 +5437,72 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/todos": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * List Todos
+         * @description The caller's todos. `course_id` filters to one course (omit → all);
+         *     `done=true` → completed only, `done=false` → open only, omitted → both.
+         */
+        get: operations["list_todos_api_todos_get"];
+        put?: never;
+        /**
+         * Create Todo
+         * @description Create a manual todo. text is required; course_id null = Home.
+         */
+        post: operations["create_todo_api_todos_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/todos/{todo_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /**
+         * Delete Todo
+         * @description Hard delete — todos are ephemeral (unlike courses, which archive).
+         */
+        delete: operations["delete_todo_api_todos__todo_id__delete"];
+        options?: never;
+        head?: never;
+        /** Update Todo */
+        patch: operations["update_todo_api_todos__todo_id__patch"];
+        trace?: never;
+    };
+    "/api/todos/{todo_id}/done": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Toggle Done
+         * @description Mark done (stamps done_at=now) or reopen (clears done_at to null).
+         */
+        post: operations["toggle_done_api_todos__todo_id__done_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/tokens": {
         parameters: {
             query?: never;
@@ -6635,6 +6722,28 @@ export interface components {
             password: string;
             /** Username */
             username: string;
+        };
+        /** DashboardResponse */
+        DashboardResponse: {
+            /** Insights */
+            insights?: {
+                [key: string]: unknown;
+            }[];
+            /** Reading */
+            reading?: {
+                [key: string]: unknown;
+            }[];
+            /**
+             * Review Count
+             * @default 0
+             */
+            review_count: number;
+            /** Weak Spots */
+            weak_spots?: {
+                [key: string]: unknown;
+            }[];
+        } & {
+            [key: string]: unknown;
         };
         /** DeleteUserRequest */
         DeleteUserRequest: {
@@ -8473,6 +8582,79 @@ export interface components {
             trigger_event?: string | null;
             /** Trigger Type */
             trigger_type?: string | null;
+        };
+        /** TodoCreateRequest */
+        TodoCreateRequest: {
+            /**
+             * Course Id
+             * @description null = Home / course-less
+             */
+            course_id?: string | null;
+            /**
+             * Due Date
+             * @description ISO date string
+             */
+            due_date?: string | null;
+            /**
+             * Text
+             * @description The todo text (required)
+             */
+            text: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** TodoListResponse */
+        TodoListResponse: {
+            /** Todos */
+            todos?: components["schemas"]["TodoResponse"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** TodoResponse */
+        TodoResponse: {
+            /** Course Id */
+            course_id?: string | null;
+            /** Created At */
+            created_at?: string | null;
+            /**
+             * Done
+             * @default false
+             */
+            done: boolean;
+            /** Done At */
+            done_at?: string | null;
+            /** Due Date */
+            due_date?: string | null;
+            /** Id */
+            id: string;
+            /** Owner */
+            owner?: string | null;
+            /** Provenance */
+            provenance?: {
+                [key: string]: unknown;
+            } | null;
+            /**
+             * Source
+             * @default manual
+             */
+            source: string;
+            /** Text */
+            text: string;
+            /** Updated At */
+            updated_at?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** TodoUpdateRequest */
+        TodoUpdateRequest: {
+            /** Course Id */
+            course_id?: string | null;
+            /** Due Date */
+            due_date?: string | null;
+            /** Text */
+            text?: string | null;
+        } & {
+            [key: string]: unknown;
         };
         /** ToolsUpdate */
         ToolsUpdate: {
@@ -11035,6 +11217,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["CourseResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    dashboard_api_dashboard_get: {
+        parameters: {
+            query?: {
+                course_id?: string | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["DashboardResponse"];
                 };
             };
             /** @description Validation Error */
@@ -17629,6 +17842,170 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    list_todos_api_todos_get: {
+        parameters: {
+            query?: {
+                course_id?: string | null;
+                done?: boolean | null;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    create_todo_api_todos_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TodoCreateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_todo_api_todos__todo_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                todo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_todo_api_todos__todo_id__patch: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                todo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TodoUpdateRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    toggle_done_api_todos__todo_id__done_post: {
+        parameters: {
+            query?: {
+                done?: boolean;
+            };
+            header?: never;
+            path: {
+                todo_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TodoResponse"];
                 };
             };
             /** @description Validation Error */

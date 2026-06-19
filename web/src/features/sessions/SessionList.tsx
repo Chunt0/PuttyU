@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useState, type FormEvent } from "react";
 import { Spinner } from "../../components/Spinner.tsx";
 import { useNavigate } from "react-router-dom";
 import { useUiStore } from "../../lib/store.ts";
@@ -30,13 +30,9 @@ export function SessionList() {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState("");
 
-  // Auto-select the first session once loaded so the Chat screen isn't empty.
-  // Only on Home: inside a course the landing pane shows until the user picks a chat.
-  useEffect(() => {
-    if (!activeCourseId && !currentSessionId && sessions && sessions.length > 0) {
-      setCurrentSession(sessions[0].id);
-    }
-  }, [activeCourseId, currentSessionId, sessions, setCurrentSession]);
+  // No auto-select: login lands on the Dashboard (Phase-2 T5 / CONTRACT D5), not an
+  // auto-opened chat. A chat becomes active only on an explicit pick — here, the course
+  // landing pane, or the dashboard's Resume card.
 
   // Selecting a chat always returns to the chat screen (e.g. from the Providers page).
   function select(id: string) {

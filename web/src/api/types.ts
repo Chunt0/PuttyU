@@ -85,3 +85,40 @@ export type ExamItemVerdict = components["schemas"]["ExamItemVerdict"];
 // Explain — opens a concept-bound chat session
 export type ExplainStartRequest = components["schemas"]["ExplainStartRequest"];
 export type ExplainStartResponse = components["schemas"]["ExplainStartResponse"];
+
+// Phase-2 T5 — todos + dashboard (CONTRACT D2/D3, SPEC F11 — the landing surface)
+// todo_routes / dashboard_routes are born typed → these ride the real OpenAPI seam.
+export type Todo = components["schemas"]["TodoResponse"];
+export type TodoResponse = components["schemas"]["TodoResponse"];
+export type TodoCreateRequest = components["schemas"]["TodoCreateRequest"];
+export type TodoUpdateRequest = components["schemas"]["TodoUpdateRequest"];
+export type TodoListResponse = components["schemas"]["TodoListResponse"];
+export type DashboardResponse = components["schemas"]["DashboardResponse"];
+
+/**
+ * The dashboard's nested card shapes. The aggregator declares these arrays as
+ * open dicts on the wire (the backend models are `extra="allow"`), so they are
+ * hand-typed against the producers (CONTRACT D3/D4): weak_spots reuse the
+ * existing `DueConcept` alias; insights come from `queries.recent_insights`;
+ * reading from `src.dashboard.reading_recs`.
+ */
+export interface DashboardInsight {
+  id: string;
+  relation: string;
+  literal: string | null;
+  confidence?: number | null;
+  valid_from?: string | null;
+  concept_id?: string | null;
+  concept_name?: string | null;
+}
+
+export interface DashboardReading {
+  concept_id: string;
+  concept_name: string;
+  source_id: string;
+  title: string;
+  heading: string;
+  page_start: number | null;
+  page_end?: number | null;
+  citation: string;
+}

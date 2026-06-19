@@ -40,9 +40,8 @@ test("run an agent turn and see tool steps", async ({ page }) => {
   await page.getByLabel("Password").fill("secret");
   await page.getByRole("button", { name: "Sign in" }).click();
 
-  // The session auto-selects; turn on agent mode and send.
-  // exact role: the name also appears in the chat header title now.
-  await expect(page.getByRole("button", { name: "Agent chat", exact: true })).toBeVisible();
+  // Login lands on the Dashboard (T5); open the chat, then turn on agent mode and send.
+  await page.getByRole("complementary").getByRole("button", { name: "Agent chat", exact: true }).click();
   await page.getByLabel("Agent mode").check();
   await page.getByLabel("Message").fill("list root");
   await page.getByRole("button", { name: "Send" }).click();

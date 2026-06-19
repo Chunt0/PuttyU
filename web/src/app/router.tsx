@@ -4,6 +4,7 @@ import { Placeholder } from "./Placeholder.tsx";
 import { RequireAuth } from "../features/auth/RequireAuth.tsx";
 import { Login } from "../features/auth/Login.tsx";
 import { Home } from "../features/courses/Home.tsx";
+import { Dashboard } from "../features/dashboard/Dashboard.tsx";
 import { Providers } from "../features/models/Providers.tsx";
 import { Memory } from "../features/memory/Memory.tsx";
 import { Corpus } from "../features/corpus/Corpus.tsx";
@@ -32,6 +33,7 @@ export const router = createBrowserRouter([
         element: <Shell />,
         children: [
           { index: true, element: <Home /> },
+          { path: "dashboard", element: <Dashboard /> },
           { path: "models", element: <Providers /> },
           { path: "memory", element: <Memory /> },
           { path: "corpus", element: <Corpus /> },

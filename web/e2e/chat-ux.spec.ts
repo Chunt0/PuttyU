@@ -48,6 +48,8 @@ test("welcome state, markdown reply, code + message copy", async ({ page }) => {
   await mockBackend(page, captured);
   await login(page);
 
+  // Login lands on the Dashboard (T5); open the chat from the sidebar.
+  await page.getByRole("complementary").getByRole("button", { name: "Algebra", exact: true }).click();
   // Fresh session -> the tutor-framed welcome.
   await expect(page.getByText("What are we working on today?")).toBeVisible();
 
@@ -78,6 +80,7 @@ test("attachments upload to chips and ride the send", async ({ page }) => {
   const captured = { stream: [] as string[] };
   await mockBackend(page, captured);
   await login(page);
+  await page.getByRole("complementary").getByRole("button", { name: "Algebra", exact: true }).click();
 
   await page.getByLabel("Attach files").setInputFiles({
     name: "worksheet.png",

@@ -109,6 +109,63 @@ def error_counts(db, concept_ids: list[str], owner) -> dict:
     return out
 
 
+def recent_insights(db, owner, course_id=None, limit: int = 5) -> list[dict]:
+    """Recent INFERRED student insights — the dashboard's 'what the tutor has
+    noticed' card (CONTRACT D4). Mirrors student_context._focus_lines' filter:
+    kind="inferred", subject_type="student", invalidated_at IS NULL, excluding
+    the structural prerequisite_of edges; newest by valid_from. Owner-scoped
+    (Gate 5). When `course_id` is given, only insights whose object concept is
+    in that course's region are kept (course-less call → all of the owner's).
+
+    Returns plain dicts (no ORM leaks): {id, relation, literal, confidence,
+    valid_from, concept_id?, concept_name?}. concept_id/name are filled when the
+    insight points at a concept node (object_type="concept")."""
+    from src.auth_helpers import owner_scoped
+
+    q = owner_scoped(db.query(Assertion), Assertion, owner).filter(
+        Assertion.kind == "inferred",
+        Assertion.subject_type == "student",
+        Assertion.invalidated_at.is_(None),
+        Assertion.relation != "prerequisite_of",
+    ).order_by(Assertion.valid_from.desc())
+
+    region_ids = None
+    if course_id:
+        region_ids = {c["id"] for c in region_concepts(db, course_id, owner)}
+
+    cap = max(1, int(limit))
+    out: list[dict] = []
+    # Pull a generous window so a course filter still fills `limit`; insights are
+    # sparse so the over-fetch is cheap.
+    for a in q.limit(cap * 10 if region_ids is not None else cap).all():
+        concept_id = a.object_id if a.object_type == "concept" else None
+        # The region filter applies ONLY to concept-anchored insights — a
+        # concept-less inferred insight (object_type != "concept") carries no
+        # anchor to filter on, so it is always kept (mirrors
+        # student_context._focus_lines, which applies no region filter here).
+        if (region_ids is not None and concept_id is not None
+                and concept_id not in region_ids):
+            continue
+        concept_name = None
+        if concept_id:
+            node = db.get(ConceptNode, concept_id)
+            concept_name = node.name if node is not None else None
+        d = {
+            "id": a.id,
+            "relation": a.relation,
+            "literal": (a.literal or "").strip() or None,
+            "confidence": a.confidence,
+            "valid_from": a.valid_from.isoformat() if a.valid_from else None,
+        }
+        if concept_id:
+            d["concept_id"] = concept_id
+            d["concept_name"] = concept_name
+        out.append(d)
+        if len(out) >= cap:
+            break
+    return out
+
+
 def record_evidence(concept_id: str, signal: str, *, weight: float = 1.0,
                     episode_ref: dict | None = None, context: dict | None = None,
                     owner=None, db=None) -> tuple[str, float | None]:
@@ -122,5 +179,5 @@ def record_evidence(concept_id: str, signal: str, *, weight: float = 1.0,
 
 __all__ = [
     "region_concepts", "concept_brief", "states_for",
-    "prereq_out_degree", "error_counts", "record_evidence",
+    "prereq_out_degree", "error_counts", "recent_insights", "record_evidence",
 ]
