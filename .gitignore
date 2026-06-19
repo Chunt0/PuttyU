@@ -1,3 +1,7 @@
+ODYSSEUS-REF/
+OLD-REF/
+textbooks/
+
 # Python
 __pycache__/
 *.pyc
