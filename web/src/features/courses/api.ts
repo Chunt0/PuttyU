@@ -36,10 +36,21 @@ export function useCreateCourse() {
 export function useUpdateCourse() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ id, name }: { id: string; name: string }): Promise<Course> => {
+    mutationFn: async (
+      { id, name, settings }: {
+        id: string;
+        name?: string;
+        settings?: Record<string, unknown>;
+      },
+    ): Promise<Course> => {
+      // The PATCH route REPLACES settings wholesale, so callers pass the full
+      // merged object (see CourseSettings) — never a partial dial patch.
+      const body: { name?: string; settings?: Record<string, unknown> } = {};
+      if (name !== undefined) body.name = name;
+      if (settings !== undefined) body.settings = settings;
       const { data, error } = await api.PATCH("/api/courses/{course_id}", {
         params: { path: { course_id: id } },
-        body: { name },
+        body,
       });
       if (error || !data) throw new Error("failed to update course");
       return data;

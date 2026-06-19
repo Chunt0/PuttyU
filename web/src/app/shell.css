@@ -787,6 +787,18 @@ label.switch:hover .switch-track { border-color: var(--accent); }
 }
 .course-landing-sessions button:hover { border-color: var(--accent); }
 
+/* tutor settings dial (F10) */
+.course-dial-intro { color: var(--muted); font-size: 13px; margin: 8px 0 12px; }
+.course-dial-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.course-dial-field { display: flex; flex-direction: column; gap: 4px; }
+.course-dial-label { font-size: 13px; font-weight: 600; color: var(--text); }
+.course-dial-field select {
+  font: inherit; font-size: 13px; color: var(--text);
+  background: var(--panel); border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; cursor: pointer;
+}
+.course-dial-field select:hover { border-color: var(--accent); }
+.course-dial-hint { font-size: 12px; color: var(--muted); }
+
 /* library panel (F2) */
 .library { max-width: 760px; }
 .library-scope { color: var(--muted); font-size: 13px; margin: -8px 0 12px; }

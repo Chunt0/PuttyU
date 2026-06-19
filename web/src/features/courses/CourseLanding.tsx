@@ -7,6 +7,7 @@ import { Materials } from "../library/Materials.tsx";
 import { useConceptTree } from "../progress/api.ts";
 import { stateCounts, summaryLine } from "../progress/model.ts";
 import { useCourseSources } from "./api.ts";
+import { CourseSettings } from "./CourseSettings.tsx";
 import type { Course } from "../../api/types.ts";
 
 /**
@@ -76,6 +77,12 @@ export function CourseLanding({ course }: { course: Course }) {
       </section>
       <section>
         <Materials courseId={course.id} />
+      </section>
+      <section>
+        <div className="course-landing-row">
+          <h3>Tutor settings</h3>
+        </div>
+        <CourseSettings course={course} />
       </section>
     </div>
   );
