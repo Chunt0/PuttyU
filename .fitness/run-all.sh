@@ -5,7 +5,7 @@ set -uo pipefail
 here="$(dirname "$0")"
 
 rc=0
-for gate in file-size route-response-models no-new-raw-json no-cross-feature-import no-javascript graph-one-door; do
+for gate in file-size route-response-models no-new-raw-json no-cross-feature-import no-javascript graph-one-door owner-scoped; do
   echo "── ${gate} ──"
   bash "${here}/${gate}.sh" || rc=1
 done

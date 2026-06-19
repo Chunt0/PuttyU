@@ -41,14 +41,18 @@ means adding the test/contract/model/gate that keeps it honest.
 5. **`owner_scoped(query, Model, user)`** (`src/auth_helpers.py`) — the only way
    to scope user data. Built and used by all Phase-2 routes. Legacy hand-written
    `.filter(owner == ...)` filters still exist; migrate them, never add new ones.
-   (A 6-style fitness gate enforcing this is still unwritten — a follow-up.)
+   **Mechanically enforced by Gate 5g** (`.fitness/owner-scoped.sh`): a `path|count`
+   allowlist (`.fitness/owner-scoped-allowlist.txt`) freezes the current ad-hoc
+   `.filter(Model.owner==...)` filters in `src/`/`routes/`/`core/` — non-allowlisted
+   files must have zero, allowlisted counts can shrink (migrate) but never grow.
 6. **Bash fitness functions** (`.fitness/`, run by `run-all.sh`): **6a** file-size
    ceiling (no god-files; allowlist frozen + non-growing), **6b** every
    UI-consumed route has a `response_model`, **6c** no raw `request.json()` in new
    routes, **6d** no cross-feature imports into the lean core, **6e** no JavaScript
    (TS-only; allowlist down to `.github/scripts/`), **6f** graph tables have one
    door (only `src/graph/`, `src/student_context.py`, `routes/graph_routes.py` may
-   touch them).
+   touch them), **5g** owner_scoped is the only door for new user-data reads
+   (no new ad-hoc owner filters; allowlist freezes the migration backlog).
 
 ## The "one door" invariants (Phase-2 architecture spine)
 

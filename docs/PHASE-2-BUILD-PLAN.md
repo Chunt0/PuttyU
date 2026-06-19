@@ -60,7 +60,7 @@ re-running the gates yourself before committing.
 | Check | Command | Last known good |
 |---|---|---|
 | Backend tests | `.venv/bin/python -m pytest -q -m "not quarantine"` | **2400 passed, 1 skipped** (T4 + T5 complete + T6a worksheet grading) |
-| Fitness gates | `bash .fitness/run-all.sh` | **6a–6f all pass** |
+| Fitness gates | `bash .fitness/run-all.sh` | **6a–6f + 5g all pass** |
 | TS types | `cd web && bunx tsc --noEmit` | clean |
 | Lint | `cd web && bun run lint` | clean |
 | Vitest | `cd web && bun run test` | **251 passed** (T6 complete) |
@@ -284,9 +284,11 @@ Q12 (todo table), Q13 (fixed card layout v1), Q14 (confirm-first miner).
   P-T4 (slim to ~35 agent tools), P-T6 (split `model_routes.py` / `agent_loop.py`
   god-files — unblocks typing those hand-typed seams). P-T3 (cut-feature pollers)
   is largely moot post-demolition.
-- **`owner_scoped` enforcement gate**: a Gate-6-family check that no new ad-hoc
-  `.filter(owner == ...)` is added, and migrate the ~20 legacy ones. Gate 5 helper
-  exists; the *gate* doesn't.
+- **`owner_scoped` enforcement gate** ✅ DONE — Gate 5g (`.fitness/owner-scoped.sh`):
+  freezes the current ad-hoc `.filter(Model.owner==...)` filters in src/routes/core via a
+  `path|count` allowlist so no new one is added; the ~16 routes/services entries are the
+  migration backlog (shrink the count as each moves to owner_scoped). Migration itself is
+  the remaining incremental work.
 - **Providers UX**: edit base_url in place (today: delete + re-add); auto-append
   `/v1` for Ollama.
 - **@later seams** (SPEC F12, only when core is solid): mobile PWA (dashboard +
