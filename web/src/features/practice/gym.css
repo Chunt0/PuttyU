@@ -1,0 +1,277 @@
+/* The Gym (Phase-2 T4 — SPEC F8). Calm, single coral accent, token-only colors. */
+
+.gym {
+  max-width: 720px;
+}
+.gym-scope {
+  color: var(--muted);
+  font-size: 13px;
+  margin: -8px 0 16px;
+}
+.gym-empty {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+/* Picker */
+.gym-picker {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+}
+.gym-picker-or {
+  color: var(--muted);
+  font-size: 12px;
+}
+.gym-coach {
+  background: var(--accent-solid);
+  color: var(--on-accent);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+}
+.gym-coach:hover:not(:disabled) {
+  background: var(--accent-solid-hover);
+}
+.gym-coach:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.gym-concept-select {
+  background: var(--bg2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 13px;
+}
+
+/* The running set */
+.gym-set {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.gym-dials {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+.gym-difficulty {
+  color: var(--accent);
+  font-weight: 600;
+}
+.gym-summary {
+  color: var(--text);
+}
+.gym-quit {
+  margin-left: auto;
+  background: var(--panel2);
+  color: var(--muted);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+}
+.gym-quit:hover {
+  border-color: var(--accent);
+}
+
+/* The item card */
+.gym-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+}
+.gym-card--empty {
+  align-items: flex-start;
+  gap: 10px;
+}
+.gym-prompt-meta {
+  display: flex;
+  gap: 8px;
+}
+.gym-concept-name {
+  color: var(--muted);
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+.gym-prompt {
+  color: var(--text);
+  font-size: 14px;
+}
+
+.gym-answer {
+  width: 100%;
+  box-sizing: border-box;
+  background: var(--bg2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font: inherit;
+  font-size: 14px;
+  resize: vertical;
+}
+.gym-answer:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--focus);
+}
+
+/* Attachments (mirror the chat composer chips) */
+.gym-attachments {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.gym-attachment {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 12px;
+}
+.gym-attachment-thumb {
+  width: 28px;
+  height: 28px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+.gym-attachment-name {
+  color: var(--text);
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gym-attachment-remove {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  padding: 0 2px;
+}
+.gym-attachment-remove:hover {
+  color: var(--accent);
+}
+
+.gym-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.gym-attach {
+  background: var(--panel2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+}
+.gym-attach:hover:not(:disabled) {
+  border-color: var(--accent);
+}
+.gym-submit {
+  margin-left: auto;
+  background: var(--accent-solid);
+  color: var(--on-accent);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 16px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+}
+.gym-submit:hover:not(:disabled) {
+  background: var(--accent-solid-hover);
+}
+.gym-submit:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+/* The graded verdict */
+.gym-verdict {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  border-top: 1px solid var(--border);
+  padding-top: 12px;
+}
+.gym-verdict-line {
+  font-weight: 600;
+  font-size: 14px;
+}
+.gym-verdict--ok .gym-verdict-line {
+  color: var(--green);
+}
+.gym-verdict--struggle .gym-verdict-line {
+  color: var(--accent);
+}
+.gym-feedback {
+  color: var(--text);
+  font-size: 13px;
+}
+.gym-study-chip {
+  background: var(--bg2);
+  color: var(--accent);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 12px;
+}
+.gym-study-chip:hover {
+  border-color: var(--accent);
+}
+.gym-next {
+  background: var(--accent-solid);
+  color: var(--on-accent);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 16px;
+  cursor: pointer;
+  font: inherit;
+  font-size: 13px;
+}
+.gym-next:hover:not(:disabled) {
+  background: var(--accent-solid-hover);
+}
+.gym-next:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

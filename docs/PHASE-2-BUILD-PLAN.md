@@ -63,8 +63,8 @@ re-running the gates yourself before committing.
 | Fitness gates | `bash .fitness/run-all.sh` | **6a–6f all pass** |
 | TS types | `cd web && bunx tsc --noEmit` | clean |
 | Lint | `cd web && bun run lint` | clean |
-| Vitest | `cd web && bun run test` | **145 passed** |
-| Playwright | `cd web && bun run e2e` | **25 passed, 1 skipped** |
+| Vitest | `cd web && bun run test` | **183 passed** (T4b screens in) |
+| Playwright | `cd web && bun run e2e` | **31 passed, 2 skipped** (T4b screens in) |
 | Contract | `python scripts/openapi-export.py && cd web && bun run gen:api` | 269 paths, no drift |
 
 `mkdir -p data` before running backend tests (the data dir must exist).
@@ -81,7 +81,7 @@ re-running the gates yourself before committing.
 | **T2b** | Library/materials UI, citation chips, **webcam capture**, router settings panel | ✅ done |
 | **T3a** | Ensemble graph backend (ADR 0005): tables, seeding, mastery (BKT-lite), extractor, consolidation, `student_context` assembler (focus tier), `graph_routes`, **Gate 6f** | ✅ done |
 | **T3b** | Progress UI: state-colored concept tree, trajectory timeline, overrides, challenge-an-insight | ✅ done |
-| **T4** | Practice engine: review queue + Gym + calibration + exam sim + explain-it-back + **periphery tier** + coupling mute | 🚧 **backend DONE, frontend next** — T4a (items/gym/exam/calibration/explain engines, periphery tier, explain-persona injection, `routes/practice_routes.py`, daily `assemble_review_queue` builtin, typed contract) built + adversarially reviewed (4 high-sev bugs fixed w/ regressions); details + pinned decisions in `docs/T4-CONTRACT.md`. **Remaining: T4b frontend** (Review/Gym/Exam/Calibration/Explain screens + vitest + Playwright). |
+| **T4** | Practice engine: review queue + Gym + calibration + exam sim + explain-it-back + **periphery tier** + coupling mute | ✅ **done** — T4a backend (engines, periphery, explain-persona, 10 typed routes, daily `assemble_review_queue` builtin; adversarially reviewed, 4 high-sev bugs fixed w/ regressions; pinned decisions in `docs/T4-CONTRACT.md`) + T4b frontend (`web/src/features/practice/`: Review/Gym/Exam/Calibration/Explain screens + shared hooks, registered in the window manager + router, vitest + 5 Playwright specs). Follow-ups deferred to §7: explain `mark_explained` after-turn trigger (extractor-side); coupling-mute write UI (T5/persona). |
 | **T5** | Dashboard + todos + schedule miner + persona/dial + integrity + Cmd-K + cost meter + session-summary notes | ⬜ not started (§5) |
 | **T6** | Worksheet grading contract + graph hook + **canvas workspace** | ⬜ not started (§6) |
 | **X** | Cross-cutting: Gate-7 tutor evals, backend-prep follow-ups, @later seams | ⬜ ongoing (§7) |

@@ -9,6 +9,11 @@ import { Memory } from "../features/memory/Memory.tsx";
 import { Corpus } from "../features/corpus/Corpus.tsx";
 import { Library } from "../features/library/Library.tsx";
 import { Progress } from "../features/progress/Progress.tsx";
+import { Review } from "../features/practice/Review.tsx";
+import { Gym } from "../features/practice/Gym.tsx";
+import { Exam } from "../features/practice/Exam.tsx";
+import { Calibration } from "../features/practice/Calibration.tsx";
+import { Explain } from "../features/practice/Explain.tsx";
 import { Research } from "../features/research/Research.tsx";
 import { Tasks } from "../features/tasks/Tasks.tsx";
 import { Calendar } from "../features/calendar/Calendar.tsx";
@@ -32,6 +37,11 @@ export const router = createBrowserRouter([
           { path: "corpus", element: <Corpus /> },
           { path: "library", element: <Library /> },
           { path: "progress", element: <Progress /> },
+          { path: "review", element: <Review /> },
+          { path: "gym", element: <Gym /> },
+          { path: "exam", element: <Exam /> },
+          { path: "calibration", element: <Calibration /> },
+          { path: "explain", element: <Explain /> },
           { path: "research", element: <Research /> },
           { path: "tasks", element: <Tasks /> },
           { path: "calendar", element: <Calendar /> },
