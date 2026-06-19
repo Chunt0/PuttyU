@@ -2,6 +2,7 @@ import { useRef, useState, type ChangeEvent, type DragEvent, type FormEvent, typ
 import { Switch } from "../../components/Switch.tsx";
 import { CameraCapture } from "../../components/CameraCapture.tsx";
 import { MathInput } from "../../components/MathInput.tsx";
+import { Canvas } from "../canvas/Canvas.tsx";
 import { toast } from "../../components/toast.ts";
 import { isImage, thumbUrl, uploadFiles, type UploadedFile } from "./attachments.ts";
 
@@ -80,6 +81,8 @@ export function Composer({ streaming, onSend, onStop, agentMode, setAgentMode, p
         <CameraCapture label="Take photo" onAccept={(files) => void addFiles(files)} />
         {/* The third input mode (F4): typed math appends delimited LaTeX into the message. */}
         <MathInput onInsert={(eq) => setInput((s) => (s ? s + " " : "") + eq)} />
+        {/* The draw surface (F4): a sketch enters the SAME upload path as a photo. */}
+        <Canvas onAccept={(files) => void addFiles(files)} />
       </div>
 
       {attachments.length > 0 && (

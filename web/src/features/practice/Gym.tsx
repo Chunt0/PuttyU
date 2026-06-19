@@ -3,6 +3,7 @@ import { Spinner } from "../../components/Spinner.tsx";
 import { Markdown } from "../../components/Markdown.tsx";
 import { CameraCapture } from "../../components/CameraCapture.tsx";
 import { MathInput } from "../../components/MathInput.tsx";
+import { Canvas } from "../canvas/Canvas.tsx";
 import { toast } from "../../components/toast.ts";
 import { useCourseStore } from "../courses/store.ts";
 import { useCourses } from "../courses/api.ts";
@@ -331,6 +332,7 @@ export function Gym() {
                     <MathInput
                       onInsert={(eq) => setAnswerText((s) => (s ? s + " " : "") + eq)}
                     />
+                    <Canvas onAccept={(files) => void addFiles(files)} />
                     <button
                       type="submit"
                       className="gym-submit"

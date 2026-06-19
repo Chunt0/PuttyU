@@ -2,6 +2,7 @@ import { useRef, useState } from "react";
 import { Spinner } from "../../components/Spinner.tsx";
 import { Markdown } from "../../components/Markdown.tsx";
 import { CameraCapture } from "../../components/CameraCapture.tsx";
+import { Canvas } from "../canvas/Canvas.tsx";
 import { toast } from "../../components/toast.ts";
 import { useCourseStore } from "../courses/store.ts";
 import { useCourses } from "../courses/api.ts";
@@ -186,6 +187,7 @@ export function Worksheet() {
 
           <div className="worksheet-actions">
             <CameraCapture multi label="Take photo" onAccept={(files) => void addPhotos(files)} />
+            <Canvas onAccept={(files) => void addPhotos(files)} />
             <input
               ref={fileRef}
               type="file"
