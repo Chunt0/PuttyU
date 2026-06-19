@@ -1329,6 +1329,10 @@ class CalendarEvent(TimestampMixin, Base):
     origin      = Column(String, nullable=True, index=True)
     # Phase-2 (ADR 0004): nullable course scoping. NULL = course-less / Home.
     course_id   = Column(String, nullable=True, index=True)
+    # Phase-2 T5 (SPEC F2 schedule miner): JSON-as-text provenance for
+    # miner-created rows {source_id, page, line_hash, proposal_key} — the
+    # idempotent re-mine key + the "from syllabus p. N" citation door.
+    provenance  = Column(Text, nullable=True)
 
     calendar = relationship("CalendarCal", back_populates="events")
 
@@ -1446,6 +1450,7 @@ def init_db():
     _migrate_add_calendar_metadata()
     _migrate_add_calendar_is_utc()
     _migrate_add_calendar_origin()
+    _migrate_add_calendar_provenance()
     _migrate_encrypt_endpoint_keys()
     _migrate_drop_cut_feature_tables()
     # Phase-2 T2a: the corpus tables (ADR 0003) join init_db now that the
@@ -1561,6 +1566,28 @@ def _migrate_add_calendar_origin():
         conn.close()
     except Exception as e:
         logging.getLogger(__name__).warning(f"calendar_events.origin migration failed: {e}")
+
+
+def _migrate_add_calendar_provenance():
+    """Add `provenance` to calendar_events so the Phase-2 T5 schedule miner
+    (SPEC F2) can stamp miner-created rows with their source provenance JSON
+    {source_id, page, line_hash, proposal_key} — the idempotent re-mine key and
+    the source-page citation door. Idempotent (mirrors origin migration)."""
+    import sqlite3
+    db_path = DATABASE_URL.replace("sqlite:///", "")
+    if not os.path.exists(db_path):
+        return
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.execute("PRAGMA table_info(calendar_events)")
+        columns = [row[1] for row in cursor.fetchall()]
+        if columns and "provenance" not in columns:
+            conn.execute("ALTER TABLE calendar_events ADD COLUMN provenance TEXT")
+            conn.commit()
+            logging.getLogger(__name__).info("Migrated: added 'provenance' column to calendar_events")
+        conn.close()
+    except Exception as e:
+        logging.getLogger(__name__).warning(f"calendar_events.provenance migration failed: {e}")
 
 
 def _migrate_add_calendar_metadata():

@@ -630,6 +630,10 @@ app.include_router(setup_todo_routes())
 from routes.dashboard_routes import setup_dashboard_routes
 app.include_router(setup_dashboard_routes())
 
+# Schedule miner (Phase-2 T5 vertical-2 — SPEC F2: syllabus → proposed events + todos)
+from routes.schedule_routes import setup_schedule_routes
+app.include_router(setup_schedule_routes())
+
 # Corpus library + course materials (Phase-2 T2a — SPEC F2, ADR 0003/0004)
 from routes.corpus_routes import setup_corpus_routes
 app.include_router(setup_corpus_routes())

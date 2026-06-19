@@ -16,6 +16,7 @@ import { Tasks } from "../../features/tasks/Tasks.tsx";
 import { Calendar } from "../../features/calendar/Calendar.tsx";
 import { Notes } from "../../features/notes/Notes.tsx";
 import { Documents } from "../../features/documents/Documents.tsx";
+import { Miner } from "../../features/schedule/Miner.tsx";
 
 /** Every tool that can open as a window. The same components serve the full-page routes
  * (deep links like /calendar still work); the window is just another mount point.
@@ -38,6 +39,7 @@ export const WINDOW_TOOLS: Array<{ key: string; title: string; node: ReactNode; 
   { key: "notes", title: "Notes", node: <Notes /> },
   { key: "documents", title: "Documents", node: <Documents /> },
   { key: "pdf", title: "PDF", node: <PdfViewer />, hidden: true },
+  { key: "miner", title: "Schedule miner", node: <Miner />, hidden: true },
 ];
 
 export const toolByKey = new Map(WINDOW_TOOLS.map((t) => [t.key, t]));

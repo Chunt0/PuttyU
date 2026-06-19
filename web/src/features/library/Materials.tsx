@@ -6,6 +6,7 @@ import { toast } from "../../components/toast.ts";
 import type { CorpusSource } from "../../api/types.ts";
 import { useCorpusSources, useDeleteMaterial, useReplaceTags, useUploadMaterial } from "./api.ts";
 import { openPdf } from "./pdfStore.ts";
+import { useMinerStore } from "../schedule/minerStore.ts";
 
 /** Inline tag editor: chips with remove, plus a free-form add box (Enter to add).
  * Every change PATCHes the whole list — the backend stores tags atomically. */
@@ -74,6 +75,7 @@ export function Materials({ courseId }: { courseId: string | null }) {
   const sources = useCorpusSources();
   const upload = useUploadMaterial();
   const deleteMaterial = useDeleteMaterial();
+  const openMiner = useMinerStore((s) => s.openMiner);
 
   const [selected, setSelected] = useState<File[]>([]);
   const [tagFilter, setTagFilter] = useState("");
@@ -184,6 +186,15 @@ export function Materials({ courseId }: { courseId: string | null }) {
             {m.has_pdf && (
               <button type="button" className="material-open" onClick={() => openPdf(m.id, m.title)}>
                 Open PDF
+              </button>
+            )}
+            {m.has_pdf && (
+              <button
+                type="button"
+                className="material-mine"
+                onClick={() => openMiner(m.id, m.title)}
+              >
+                Mine schedule
               </button>
             )}
             <ConfirmButton

@@ -95,6 +95,15 @@ export type TodoUpdateRequest = components["schemas"]["TodoUpdateRequest"];
 export type TodoListResponse = components["schemas"]["TodoListResponse"];
 export type DashboardResponse = components["schemas"]["DashboardResponse"];
 
+// Phase-2 T5 vertical-2 — schedule miner (CONTRACT D8/D9, SPEC F2 "the syllabus autofills")
+// schedule_routes.py is born typed → these ride the real OpenAPI seam. mine is read-only;
+// apply is the only writer (untrusted-content invariant).
+export type MineResponse = components["schemas"]["MineResponse"];
+export type ScheduleProposal = components["schemas"]["ScheduleProposal"];
+export type MineApplyRequest = components["schemas"]["MineApplyRequest"];
+export type MineApplyItem = components["schemas"]["MineApplyItem"];
+export type MineApplyResponse = components["schemas"]["MineApplyResponse"];
+
 /**
  * The dashboard's nested card shapes. The aggregator declares these arrays as
  * open dicts on the wire (the backend models are `extra="allow"`), so they are

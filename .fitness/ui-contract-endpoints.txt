@@ -85,3 +85,7 @@ PATCH /api/todos/{todo_id}
 POST /api/todos/{todo_id}/done
 DELETE /api/todos/{todo_id}
 GET /api/dashboard
+#
+# Phase-2 T5 (schedule miner — F2):
+POST /api/schedule/{source_id}/mine
+POST /api/schedule/{source_id}/apply

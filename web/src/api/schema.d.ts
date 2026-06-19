@@ -4191,6 +4191,49 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/schedule/{source_id}/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Apply Proposals
+         * @description Apply the user-confirmed proposals as calendar events + todos. The
+         *     only writer; idempotent (updates miner rows in place by proposal_key).
+         */
+        post: operations["apply_proposals_api_schedule__source_id__apply_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/schedule/{source_id}/mine": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Mine Schedule
+         * @description Propose schedule events + todos from a material. Read-only — nothing
+         *     is written. 404 when the material isn't visible to the caller; 503 when
+         *     no model is configured for schedule mining.
+         */
+        post: operations["mine_schedule_api_schedule__source_id__mine_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/search": {
         parameters: {
             query?: never;
@@ -7632,6 +7675,101 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /**
+         * MineApplyItem
+         * @description A user-confirmed (possibly edited) proposal handed to apply().
+         */
+        MineApplyItem: {
+            /**
+             * Accepted
+             * @default true
+             */
+            accepted: boolean;
+            /**
+             * All Day
+             * @default true
+             */
+            all_day: boolean;
+            /** Date */
+            date?: string | null;
+            /** End Date */
+            end_date?: string | null;
+            /** Existing Id */
+            existing_id?: string | null;
+            /** Key */
+            key: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "event" | "todo";
+            /** Page */
+            page?: number | null;
+            /** Title */
+            title: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** MineApplyRequest */
+        MineApplyRequest: {
+            /**
+             * Items
+             * @default []
+             */
+            items: components["schemas"]["MineApplyItem"][];
+        } & {
+            [key: string]: unknown;
+        };
+        /** MineApplyResponse */
+        MineApplyResponse: {
+            /**
+             * Created Events
+             * @default 0
+             */
+            created_events: number;
+            /**
+             * Created Todos
+             * @default 0
+             */
+            created_todos: number;
+            /**
+             * Skipped
+             * @default 0
+             */
+            skipped: number;
+            /**
+             * Updated
+             * @default 0
+             */
+            updated: number;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * MineResponse
+         * @description The review-sheet payload. Read-only — `mine` persists nothing.
+         */
+        MineResponse: {
+            /**
+             * Proposals
+             * @default []
+             */
+            proposals: components["schemas"]["ScheduleProposal"][];
+            /** Source Id */
+            source_id: string;
+            /**
+             * Summary
+             * @default
+             */
+            summary: string;
+            /**
+             * Title
+             * @default
+             */
+            title: string;
+        } & {
+            [key: string]: unknown;
+        };
         /** ModelDownloadRequest */
         ModelDownloadRequest: {
             /**
@@ -8250,6 +8388,58 @@ export interface components {
              * @default
              */
             why: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * ScheduleProposal
+         * @description One PROPOSED schedule item the miner extracted (nothing is written until
+         *     the user confirms it via apply). `status` is the diff verdict against the
+         *     existing miner-created rows for this source.
+         */
+        ScheduleProposal: {
+            /**
+             * All Day
+             * @default true
+             */
+            all_day: boolean;
+            /**
+             * Ambiguous
+             * @default false
+             */
+            ambiguous: boolean;
+            /** Citation */
+            citation?: string | null;
+            /** Date */
+            date?: string | null;
+            /** End Date */
+            end_date?: string | null;
+            /** Existing Id */
+            existing_id?: string | null;
+            /** Key */
+            key: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "event" | "todo";
+            /** Page */
+            page?: number | null;
+            /** Question */
+            question?: string | null;
+            /**
+             * Status
+             * @default new
+             * @enum {string}
+             */
+            status: "new" | "changed" | "unchanged" | "stale";
+            /** Title */
+            title: string;
+            /**
+             * Type
+             * @default
+             */
+            type: string;
         } & {
             [key: string]: unknown;
         };
@@ -15712,6 +15902,72 @@ export interface operations {
                     "application/json": {
                         [key: string]: unknown;
                     };
+                };
+            };
+        };
+    };
+    apply_proposals_api_schedule__source_id__apply_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["MineApplyRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MineApplyResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    mine_schedule_api_schedule__source_id__mine_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                source_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MineResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };
