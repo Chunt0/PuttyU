@@ -311,10 +311,9 @@ async def extract_after_turn(sess, session_id: str, owner=None) -> dict | None:
         if len(turns) < 2:
             return None
 
-        routed = model_router.resolve(
-            model_router.TaskProfile(tier="light", latency="background",
-                                     output_shape="structured"),
-            owner=owner, legacy_prefix="utility")
+        profile = model_router.TaskProfile(tier="light", latency="background",
+                                           output_shape="structured")
+        routed = model_router.resolve(profile, owner=owner, legacy_prefix="utility")
         if not routed.endpoint_url or not routed.model:
             logger.debug("[graph-extract] no LLM configured, skipping")
             return None
@@ -333,12 +332,20 @@ async def extract_after_turn(sess, session_id: str, owner=None) -> dict | None:
                 "CONVERSATION EXCERPT:\n"
                 + "\n".join(f"{t['role'].upper()}: {t['content']}" for t in turns)
             )
+            messages = [{"role": "system", "content": EXTRACT_SYSTEM_PROMPT},
+                        {"role": "user", "content": user_block}]
             raw = await llm_call_async(
-                routed.endpoint_url, routed.model,
-                [{"role": "system", "content": EXTRACT_SYSTEM_PROMPT},
-                 {"role": "user", "content": user_block}],
+                routed.endpoint_url, routed.model, messages,
                 temperature=0.1, max_tokens=1500, headers=routed.headers,
                 timeout=90)
+            try:  # F7 cost meter — best-effort, never breaks extraction
+                from src.model_context import estimate_tokens
+                model_router.record_usage(profile, routed,
+                    input_tokens=estimate_tokens(messages),
+                    output_tokens=len(raw or "") // 4,
+                    feature="extraction", usage_source="estimated", owner=owner)
+            except Exception:
+                pass
             parsed = parse_extraction(raw)
             if parsed is None:
                 logger.debug("[graph-extract] non-JSON extraction output")

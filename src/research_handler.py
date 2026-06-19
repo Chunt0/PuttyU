@@ -773,8 +773,7 @@ class ResearchHandler:
             )
 
             researcher = DeepResearcher(
-                llm_endpoint=llm_endpoint,
-                llm_model=llm_model,
+                llm_endpoint=llm_endpoint, llm_model=llm_model,
                 llm_headers=llm_headers,
                 max_rounds=max_rounds,
                 min_rounds=min(3, max_rounds),
@@ -790,6 +789,7 @@ class ResearchHandler:
             )
             if _task_entry is not None:
                 _task_entry["researcher"] = researcher
+                researcher.owner = _task_entry.get("owner") or None  # F7 cost scope
 
             start_time = time.time()
             report = await researcher.research(

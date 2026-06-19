@@ -378,14 +378,14 @@ class DeepResearcher:
         """Call the LLM asynchronously and strip thinking tags."""
         from src.llm_core import llm_call_async
         response = await llm_call_async(
-            url=self.llm_endpoint,
-            model=self.llm_model,
-            messages=messages,
-            temperature=temperature,
-            max_tokens=max_tokens,
-            headers=self.llm_headers,
-            timeout=timeout,
-        )
+            url=self.llm_endpoint, model=self.llm_model, messages=messages,
+            temperature=temperature, max_tokens=max_tokens,
+            headers=self.llm_headers, timeout=timeout)
+        from src import model_router  # F7 cost meter (best-effort; never raises)
+        model_router.record_call_usage(
+            tier="deep", endpoint_id="", endpoint_url=self.llm_endpoint,
+            model=self.llm_model, messages=messages,
+            raw=response, feature="deep_research", owner=getattr(self, "owner", None))
         return strip_thinking(response)
 
     # ------------------------------------------------------------------

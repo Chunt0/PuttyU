@@ -71,6 +71,18 @@ async function mockBackend(page: Page) {
     }));
   await page.route("**/api/router/log**", (r) =>
     r.fulfill({ json: { entries: [{ ts: 1760000000, endpoint_id: "ep1", model: "llama3", why: "policy=local_first: tier 'standard' -> 'ep1'", profile: { tier: "standard" } }] } }));
+  // Spend meter (F7 "Spend is visible") — a cloud feature with an estimate and a local-free one.
+  await page.route("**/api/router/cost**", (r) =>
+    r.fulfill({
+      json: {
+        window_days: 7,
+        total_cost_usd: 0.4,
+        by_feature: [
+          { feature: "deep_research", tier: "deep", input_tokens: 800, output_tokens: 400, est_cost_usd: 0.4, local: false, usage_source: "estimated" },
+          { feature: "extraction", tier: "light", input_tokens: 1500, output_tokens: 500, est_cost_usd: 0, local: true, usage_source: "estimated" },
+        ],
+      },
+    }));
 
   await page.route("**/api/sessions", (r) => r.fulfill({ json: sessions }));
   await page.route("**/api/session", (r) => {
@@ -146,4 +158,10 @@ test("routing settings: live resolution table, policy dial, pin a tier", async (
   // Pin a tier to a model (choices come from the configured providers).
   await win.getByLabel("Pin for deep").selectOption("ep1|llama3");
   await expect(win.getByLabel("Pin for deep")).toHaveValue("ep1|llama3");
+
+  // Spend meter (F7): a cloud estimate (~$), a local-free feature, and the running total.
+  // ~$0.40 appears twice (the deep_research row + the total), so match the first.
+  await expect(win.getByText("Spend")).toBeVisible();
+  await expect(win.getByText("~$0.40").first()).toBeVisible();
+  await expect(win.getByText("local, free")).toBeVisible();
 });

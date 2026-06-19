@@ -567,6 +567,10 @@ class RouterCapability(BaseModel):
     reasoning: str = "standard"  # micro | light | standard | deep
     context_window: Optional[int] = None
     local: Optional[bool] = None  # override the base_url heuristic
+    # F7 cost meter: optional per-endpoint list-price overrides (USD per 1M
+    # tokens). Unset -> the DEFAULT_TIER_RATES fallback. A local endpoint is free.
+    cost_in_per_mtok: Optional[float] = None
+    cost_out_per_mtok: Optional[float] = None
 
 
 class RouterConfigResponse(BaseModel):
@@ -617,6 +621,27 @@ class RouterLogEntry(BaseModel):
 class RouterLogResponse(BaseModel):
     model_config = ConfigDict(extra="allow")
     entries: List[RouterLogEntry] = Field(default_factory=list)
+
+
+# --- Phase-2 T5 vertical-6: cost meter (SPEC F7 "spend is visible") -----------------------
+# Estimated, owner-scoped router spend by feature — a GAUGE, not a bill.
+
+class RouterCostFeature(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    feature: str
+    tier: str = ""
+    input_tokens: int = 0
+    output_tokens: int = 0
+    est_cost_usd: float = 0.0
+    local: bool = False
+    usage_source: str = "estimated"  # real | estimated | mixed
+
+
+class RouterCostResponse(BaseModel):
+    model_config = ConfigDict(extra="allow")
+    window_days: int = 7
+    total_cost_usd: float = 0.0
+    by_feature: List[RouterCostFeature] = Field(default_factory=list)
 
 
 # --- Phase-2 T3a: ensemble student-memory graph (SPEC F5/F6, ADR 0005) -------------------

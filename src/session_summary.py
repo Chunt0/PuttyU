@@ -157,10 +157,9 @@ async def summarize_session(
     # --- draft via the router (no model-name literals; no-LLM guard) ----------
     from src import model_router
     from src.llm_core import llm_call_async
-    routed = model_router.resolve(
-        model_router.TaskProfile(tier="light", output_shape="free",
-                                 latency="background"),
-        owner=owner, legacy_prefix="utility")
+    profile = model_router.TaskProfile(tier="light", output_shape="free",
+                                       latency="background")
+    routed = model_router.resolve(profile, owner=owner, legacy_prefix="utility")
     if not routed.endpoint_url or not routed.model:
         logger.debug("[session-summary] no LLM configured, skipping")
         return {"status": "no_llm", "note": None}
@@ -172,11 +171,11 @@ async def summarize_session(
         user_block += context_block + "\n\n"
     user_block += "TRANSCRIPT:\n" + transcript
 
+    messages = [{"role": "system", "content": SUMMARY_SYSTEM_PROMPT},
+                {"role": "user", "content": user_block}]
     try:
         raw = await llm_call_async(
-            routed.endpoint_url, routed.model,
-            [{"role": "system", "content": SUMMARY_SYSTEM_PROMPT},
-             {"role": "user", "content": user_block}],
+            routed.endpoint_url, routed.model, messages,
             temperature=0.3, max_tokens=1200, headers=routed.headers,
             timeout=120)
     except Exception as e:
@@ -185,6 +184,15 @@ async def summarize_session(
         # path (writes nothing) instead of a hard 5xx — mirrors the extractor.
         logger.debug("[session-summary] LLM call failed: %s", e)
         return {"status": "no_llm", "note": None}
+
+    try:  # F7 cost meter — best-effort, never breaks the summary
+        from src.model_context import estimate_tokens
+        model_router.record_usage(profile, routed,
+            input_tokens=estimate_tokens(messages),
+            output_tokens=len(raw or "") // 4,
+            feature="session_summary", usage_source="estimated", owner=owner)
+    except Exception:
+        pass
 
     from src.text_helpers import strip_think
     draft = strip_think(raw or "", prose=True).strip()

@@ -3,11 +3,12 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { api } from "../../api/client.ts";
 import type { components } from "../../api/schema";
-import type { RouterConfig, RouterLogEntry, RouterResolutionRow } from "../../api/types.ts";
+import type { RouterConfig, RouterCost, RouterLogEntry, RouterResolutionRow } from "../../api/types.ts";
 
 export const routerConfigKey = ["router-config"] as const;
 export const routerResolutionKey = ["router-resolution"] as const;
 export const routerLogKey = ["router-log"] as const;
+export const routerCostKey = ["router-cost"] as const;
 
 export const TIERS = ["micro", "light", "standard", "deep"] as const;
 
@@ -42,6 +43,19 @@ export function useRouterLog(limit = 20) {
       });
       if (error || !data) throw new Error("failed to load routing log");
       return data.entries ?? [];
+    },
+  });
+}
+
+/** Router spend (SPEC F7 "Spend is visible"): tokens + estimated cost per feature over
+ * the default window. A gauge, not a bill — see CONTRACT D8. Rides the real OpenAPI seam. */
+export function useRouterCost() {
+  return useQuery({
+    queryKey: routerCostKey,
+    queryFn: async (): Promise<RouterCost> => {
+      const { data, error } = await api.GET("/api/router/cost");
+      if (error || !data) throw new Error("failed to load routing spend");
+      return data;
     },
   });
 }

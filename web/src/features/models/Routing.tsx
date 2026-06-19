@@ -5,6 +5,7 @@ import { useModelEndpoints, useModels, modelChoices } from "./api.ts";
 import {
   TIERS,
   useRouterConfig,
+  useRouterCost,
   useRouterLog,
   useRouterResolution,
   useUpdateRouterConfig,
@@ -24,6 +25,12 @@ function tsLabel(ts: number): string {
   return new Date(ts * 1000).toLocaleString();
 }
 
+/** Compact token count (e.g. 1234 -> "1.2k"); used in the Spend table's combined in+out cell. */
+function tokenLabel(n: number): string {
+  if (n < 1000) return String(n);
+  return `${(n / 1000).toFixed(1)}k`;
+}
+
 /**
  * Routing settings (SPEC F7): the policy dial, the LIVE tier→model resolution table
  * (observable, including degradation notes), per-tier pins, per-endpoint capability
@@ -33,6 +40,7 @@ function tsLabel(ts: number): string {
 export function Routing() {
   const config = useRouterConfig();
   const resolution = useRouterResolution();
+  const cost = useRouterCost();
   const log = useRouterLog();
   const update = useUpdateRouterConfig();
   const endpoints = useModelEndpoints();
@@ -133,6 +141,56 @@ export function Routing() {
                       </td>
                     </tr>
                   ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          <div className="routing-spend">
+            <h3>Spend</h3>
+            <p className="routing-hint">
+              Estimated from token counts and list prices — a gauge, not a bill.
+            </p>
+            {cost.isLoading && <Spinner label="Tallying spend…" />}
+            {cost.data && (cost.data.by_feature ?? []).length === 0 && (
+              <p className="routing-empty">No cloud spend yet — everything ran locally.</p>
+            )}
+            {cost.data && (cost.data.by_feature ?? []).length > 0 && (
+              <table className="routing-table">
+                <thead>
+                  <tr>
+                    <th>Feature</th>
+                    <th>Tokens</th>
+                    <th>Est. cost (last {cost.data.window_days}d)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(cost.data.by_feature ?? []).map((row) => (
+                    <tr key={row.feature}>
+                      <td>{row.feature}</td>
+                      <td className="routing-spend-num">
+                        {tokenLabel(row.input_tokens + row.output_tokens)}
+                      </td>
+                      <td className="routing-spend-num">
+                        {row.local ? (
+                          <span className="routing-spend-free">local, free</span>
+                        ) : (
+                          `~$${row.est_cost_usd.toFixed(2)}`
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                  <tr className="routing-spend-total">
+                    <td>Total</td>
+                    <td />
+                    <td className="routing-spend-num">
+                      {cost.data.total_cost_usd > 0 ? (
+                        `~$${cost.data.total_cost_usd.toFixed(2)}`
+                      ) : (
+                        <span className="routing-spend-free">free</span>
+                      )}
+                    </td>
+                  </tr>
                 </tbody>
               </table>
             )}

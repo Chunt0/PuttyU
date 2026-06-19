@@ -29,6 +29,15 @@ const LOG = {
   ],
 };
 
+const SPEND = {
+  window_days: 7,
+  total_cost_usd: 0.4,
+  by_feature: [
+    { feature: "deep_research", tier: "deep", input_tokens: 800, output_tokens: 400, est_cost_usd: 0.4, local: false, usage_source: "estimated" },
+    { feature: "extraction", tier: "light", input_tokens: 1500, output_tokens: 500, est_cost_usd: 0, local: true, usage_source: "estimated" },
+  ],
+};
+
 const ENDPOINTS = [
   { id: "ep1", name: "Ollama box", base_url: "http://localhost:11434/v1", has_key: false, is_enabled: true, models: ["qwen3:4b"], pinned_models: [], hidden_count: 0, online: true, status: "online", ping_error: null, model_type: "chat", supports_tools: true, endpoint_kind: "openai", category: "local" },
 ];
@@ -46,6 +55,7 @@ function mockRouting() {
     ["/api/router/config", () => jsonResponse(CONFIG)],
     ["/api/router/resolution", () => jsonResponse(RESOLUTION)],
     ["/api/router/log", () => jsonResponse(LOG)],
+    ["/api/router/cost", () => jsonResponse(SPEND)],
     ["/api/model-endpoints", () => jsonResponse(ENDPOINTS)],
     ["/api/models", () => jsonResponse(MODELS)],
   ]);
@@ -67,6 +77,46 @@ describe("Routing (F7)", () => {
     expect(screen.getByText("No vision-capable model is configured.")).toBeInTheDocument();
     // recent decisions render too
     expect(screen.getByText("pinned for tier 'micro'")).toBeInTheDocument();
+  });
+
+  it("renders the Spend section: a feature row, an estimated ~$ cost, local-free, and a running total", async () => {
+    mockRouting();
+    renderWithProviders(<Routing />);
+
+    expect(await screen.findByText("Spend")).toBeInTheDocument();
+    // honest framing: estimated, a gauge not a bill
+    expect(screen.getByText(/a gauge, not a bill/)).toBeInTheDocument();
+    // a metered cloud feature shows a tilde-prefixed dollar estimate (the feature row +
+    // the total row both read ~$0.40 here, since the single cloud feature IS the total)
+    expect(screen.getByText("deep_research")).toBeInTheDocument();
+    expect(screen.getAllByText("~$0.40").length).toBe(2);
+    // a local feature reads "local, free" — never "$0.00"
+    expect(screen.getByText("local, free")).toBeInTheDocument();
+    // and the running total row
+    expect(screen.getByText("Total")).toBeInTheDocument();
+    // window label surfaced in the header
+    expect(screen.getByText(/Est\. cost \(last 7d\)/)).toBeInTheDocument();
+  });
+
+  it("an all-local week shows the total as 'free', never ~$0.00 (D8)", async () => {
+    stubFetch([
+      ["/api/router/config", () => jsonResponse(CONFIG)],
+      ["/api/router/resolution", () => jsonResponse(RESOLUTION)],
+      ["/api/router/log", () => jsonResponse(LOG)],
+      ["/api/router/cost", () => jsonResponse({
+        window_days: 7, total_cost_usd: 0,
+        by_feature: [{ feature: "extraction", tier: "light", input_tokens: 1500,
+                       output_tokens: 500, est_cost_usd: 0, local: true,
+                       usage_source: "estimated" }],
+      })],
+      ["/api/model-endpoints", () => jsonResponse(ENDPOINTS)],
+      ["/api/models", () => jsonResponse(MODELS)],
+    ]);
+    renderWithProviders(<Routing />);
+    expect(await screen.findByText("Spend")).toBeInTheDocument();
+    expect(screen.getByText("Total")).toBeInTheDocument();
+    expect(screen.getByText("free")).toBeInTheDocument();     // the total cell
+    expect(screen.queryByText("~$0.00")).not.toBeInTheDocument();
   });
 
   it("changes the policy dial via PUT", async () => {

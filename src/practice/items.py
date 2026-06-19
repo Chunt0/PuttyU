@@ -225,10 +225,9 @@ async def _generate_item(owner, concept: dict, *, mode: str, difficulty: int):
         from src import model_router
         from src.graph.extractor import parse_extraction
         from src.llm_core import llm_call_async
-        routed = model_router.resolve(
-            model_router.TaskProfile(tier="standard", output_shape="structured",
-                                     latency="interactive"),
-            owner=owner, legacy_prefix="utility")
+        profile = model_router.TaskProfile(tier="standard", output_shape="structured",
+                                           latency="interactive")
+        routed = model_router.resolve(profile, owner=owner, legacy_prefix="utility")
         if not routed.endpoint_url or not routed.model:
             return None
         system = (
@@ -241,11 +240,19 @@ async def _generate_item(owner, concept: dict, *, mode: str, difficulty: int):
             f"Topic path: {' > '.join(_heading_prefix(concept)) or '(none)'}\n"
             f"Difficulty (1 easy .. 5 hard): {difficulty}\n"
             "Write one self-contained practice question testing this concept.")
+        messages = [{"role": "system", "content": system},
+                    {"role": "user", "content": user}]
         raw = await llm_call_async(
-            routed.endpoint_url, routed.model,
-            [{"role": "system", "content": system},
-             {"role": "user", "content": user}],
+            routed.endpoint_url, routed.model, messages,
             temperature=0.2, max_tokens=600, headers=routed.headers, timeout=60)
+        try:  # F7 cost meter — best-effort, never breaks item generation
+            from src.model_context import estimate_tokens
+            model_router.record_usage(profile, routed,
+                input_tokens=estimate_tokens(messages),
+                output_tokens=len(raw or "") // 4,
+                feature="practice", usage_source="estimated", owner=owner)
+        except Exception:
+            pass
         parsed = parse_extraction(raw)
         if not isinstance(parsed, dict):
             return None
@@ -402,11 +409,10 @@ async def _grade_llm(owner, item: dict, answer_text, image_blocks):
 
     vision = bool(image_blocks)
     try:
-        routed = model_router.resolve(
-            model_router.TaskProfile(
-                tier="micro", output_shape="structured", latency="interactive",
-                modality="vision" if vision else "text"),
-            owner=owner, legacy_prefix="utility")
+        profile = model_router.TaskProfile(
+            tier="micro", output_shape="structured", latency="interactive",
+            modality="vision" if vision else "text")
+        routed = model_router.resolve(profile, owner=owner, legacy_prefix="utility")
     except model_router.RouterError as e:
         # No VL model configured — surface the setup hint, never grade blind.
         return {"verdict": "ungraded", "feedback_short": str(e), "_setup_hint": True}
@@ -428,15 +434,23 @@ async def _grade_llm(owner, item: dict, answer_text, image_blocks):
         user_content = [{"type": "text", "text": user_text}, *image_blocks]
     else:
         user_content = user_text
+    messages = [{"role": "system", "content": system},
+                {"role": "user", "content": user_content}]
     try:
         raw = await llm_call_async(
-            routed.endpoint_url, routed.model,
-            [{"role": "system", "content": system},
-             {"role": "user", "content": user_content}],
+            routed.endpoint_url, routed.model, messages,
             temperature=0.1, max_tokens=400, headers=routed.headers, timeout=60)
     except Exception as e:
         logger.debug("[practice] grade LLM call failed: %s", e)
         return None
+    try:  # F7 cost meter — best-effort, never breaks grading
+        from src.model_context import estimate_tokens
+        model_router.record_usage(profile, routed,
+            input_tokens=estimate_tokens(messages),
+            output_tokens=len(raw or "") // 4,
+            feature="practice", usage_source="estimated", owner=owner)
+    except Exception:
+        pass
     parsed = parse_extraction(raw)
     if not isinstance(parsed, dict):
         return None

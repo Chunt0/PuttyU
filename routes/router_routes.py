@@ -14,12 +14,14 @@ from src.auth_helpers import require_user
 from src.model_router import (
     POLICIES,
     RouterConfig,
+    cost_summary,
     recent_resolutions,
     resolution_table,
 )
 from src.request_models import (
     RouterConfigResponse,
     RouterConfigUpdateRequest,
+    RouterCostResponse,
     RouterLogResponse,
     RouterResolutionResponse,
 )
@@ -72,5 +74,12 @@ def setup_router_routes() -> APIRouter:
     def get_log(request: Request, limit: int = Query(50, ge=1, le=200)):
         require_user(request)
         return {"entries": recent_resolutions(limit)}
+
+    @router.get("/cost", response_model=RouterCostResponse)
+    def get_cost(request: Request, window_days: int = Query(7, ge=1, le=90)):
+        """Estimated router spend by feature within the window (F7 'spend is
+        visible'). Owner-scoped; a GAUGE, not a bill — local endpoints are free."""
+        user = require_user(request)
+        return cost_summary(owner=user or None, window_days=window_days)
 
     return router

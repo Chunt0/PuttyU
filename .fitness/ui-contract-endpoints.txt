@@ -57,6 +57,7 @@ GET /api/router/config
 PUT /api/router/config
 GET /api/router/resolution
 GET /api/router/log
+GET /api/router/cost
 #
 # Phase-2 T3a (ensemble graph — SPEC F5, ADR 0005):
 GET /api/graph/concepts

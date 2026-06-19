@@ -901,6 +901,9 @@ label.switch:hover .switch-track { border-color: var(--accent); }
 .routing-log-ts { color: var(--muted); white-space: nowrap; }
 .routing-log-model { font-family: var(--mono); }
 .routing-log-why { color: var(--muted); }
+.routing-spend-num { font-family: var(--mono); }
+.routing-spend-free { color: var(--muted); }
+.routing-spend-total td { color: var(--muted); }
 
 /* progress panel (F5 — §6 Q2/Q6: 4-state tree, no percentages, no node-graph) */
 .progress { max-width: 860px; }

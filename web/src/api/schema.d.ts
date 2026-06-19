@@ -4158,6 +4158,27 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/router/cost": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Get Cost
+         * @description Estimated router spend by feature within the window (F7 'spend is
+         *     visible'). Owner-scoped; a GAUGE, not a bill — local endpoints are free.
+         */
+        get: operations["get_cost_api_router_cost_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/router/log": {
         parameters: {
             query?: never;
@@ -8327,6 +8348,10 @@ export interface components {
         RouterCapability: {
             /** Context Window */
             context_window?: number | null;
+            /** Cost In Per Mtok */
+            cost_in_per_mtok?: number | null;
+            /** Cost Out Per Mtok */
+            cost_out_per_mtok?: number | null;
             /** Local */
             local?: boolean | null;
             /**
@@ -8377,6 +8402,60 @@ export interface components {
             } | null;
             /** Policy */
             policy?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** RouterCostFeature */
+        RouterCostFeature: {
+            /**
+             * Est Cost Usd
+             * @default 0
+             */
+            est_cost_usd: number;
+            /** Feature */
+            feature: string;
+            /**
+             * Input Tokens
+             * @default 0
+             */
+            input_tokens: number;
+            /**
+             * Local
+             * @default false
+             */
+            local: boolean;
+            /**
+             * Output Tokens
+             * @default 0
+             */
+            output_tokens: number;
+            /**
+             * Tier
+             * @default
+             */
+            tier: string;
+            /**
+             * Usage Source
+             * @default estimated
+             */
+            usage_source: string;
+        } & {
+            [key: string]: unknown;
+        };
+        /** RouterCostResponse */
+        RouterCostResponse: {
+            /** By Feature */
+            by_feature?: components["schemas"]["RouterCostFeature"][];
+            /**
+             * Total Cost Usd
+             * @default 0
+             */
+            total_cost_usd: number;
+            /**
+             * Window Days
+             * @default 7
+             */
+            window_days: number;
         } & {
             [key: string]: unknown;
         };
@@ -15943,6 +16022,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RouterConfigResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_cost_api_router_cost_get: {
+        parameters: {
+            query?: {
+                window_days?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RouterCostResponse"];
                 };
             };
             /** @description Validation Error */

@@ -55,6 +55,10 @@ export type RouterPin = components["schemas"]["RouterPin"];
 export type RouterResolutionRow = components["schemas"]["RouterResolutionRow"];
 export type RouterLogEntry = components["schemas"]["RouterLogEntry"];
 
+// Phase-2 T5 vertical-6 — router spend / cost meter (F7 "Spend is visible", CONTRACT D7/D8)
+export type RouterCost = components["schemas"]["RouterCostResponse"];
+export type RouterCostFeature = components["schemas"]["RouterCostFeature"];
+
 // Phase-2 T4 — practice engine (F3/F4, the 5 screens: Review, Gym, Exam, Calibration, Explain)
 // Shared item + citation shapes (a PracticeItem carries an optional study Citation).
 export type PracticeItem = components["schemas"]["PracticeItem"];

@@ -207,21 +207,28 @@ async def mine(db, owner, source_id) -> dict | None:
     if src is None:
         return False  # sentinel: not visible → the route raises 404
 
-    routed = model_router.resolve(
-        model_router.TaskProfile(tier="standard", output_shape="structured",
-                                 latency="background"),
-        owner=owner, legacy_prefix="utility")
+    profile = model_router.TaskProfile(tier="standard", output_shape="structured",
+                                       latency="background")
+    routed = model_router.resolve(profile, owner=owner, legacy_prefix="utility")
     if not routed.endpoint_url or not routed.model:
         logger.debug("[schedule-miner] no LLM configured, skipping")
         return None
 
     text = _material_text(db, source_id)
     user_block = f"MATERIAL: {src.title}\n\n{text or '(empty)'}"
+    messages = [{"role": "system", "content": MINER_SYSTEM_PROMPT},
+                {"role": "user", "content": user_block}]
     raw = await llm_call_async(
-        routed.endpoint_url, routed.model,
-        [{"role": "system", "content": MINER_SYSTEM_PROMPT},
-         {"role": "user", "content": user_block}],
+        routed.endpoint_url, routed.model, messages,
         temperature=0.1, max_tokens=2000, headers=routed.headers, timeout=120)
+    try:  # F7 cost meter — best-effort, never breaks mining
+        from src.model_context import estimate_tokens
+        model_router.record_usage(profile, routed,
+            input_tokens=estimate_tokens(messages),
+            output_tokens=len(raw or "") // 4,
+            feature="schedule_miner", usage_source="estimated", owner=owner)
+    except Exception:
+        pass
     parsed = parse_extraction(raw)
     if parsed is None:
         logger.debug("[schedule-miner] non-JSON extraction output")
