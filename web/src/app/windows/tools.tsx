@@ -11,6 +11,7 @@ import { Gym } from "../../features/practice/Gym.tsx";
 import { Exam } from "../../features/practice/Exam.tsx";
 import { Calibration } from "../../features/practice/Calibration.tsx";
 import { Explain } from "../../features/practice/Explain.tsx";
+import { Worksheet } from "../../features/worksheet/Worksheet.tsx";
 import { Research } from "../../features/research/Research.tsx";
 import { Tasks } from "../../features/tasks/Tasks.tsx";
 import { Calendar } from "../../features/calendar/Calendar.tsx";
@@ -30,6 +31,7 @@ export const WINDOW_TOOLS: Array<{ key: string; title: string; node: ReactNode; 
   { key: "exam", title: "Exam", node: <Exam /> },
   { key: "calibration", title: "Calibration", node: <Calibration /> },
   { key: "explain", title: "Explain", node: <Explain /> },
+  { key: "worksheet", title: "Worksheet", node: <Worksheet /> },
   { key: "models", title: "Providers", node: <Providers /> },
   { key: "memory", title: "Memory", node: <Memory /> },
   { key: "corpus", title: "Corpus", node: <Corpus /> },

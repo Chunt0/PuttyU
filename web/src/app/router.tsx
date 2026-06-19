@@ -15,6 +15,7 @@ import { Gym } from "../features/practice/Gym.tsx";
 import { Exam } from "../features/practice/Exam.tsx";
 import { Calibration } from "../features/practice/Calibration.tsx";
 import { Explain } from "../features/practice/Explain.tsx";
+import { Worksheet } from "../features/worksheet/Worksheet.tsx";
 import { Research } from "../features/research/Research.tsx";
 import { Tasks } from "../features/tasks/Tasks.tsx";
 import { Calendar } from "../features/calendar/Calendar.tsx";
@@ -44,6 +45,7 @@ export const router = createBrowserRouter([
           { path: "exam", element: <Exam /> },
           { path: "calibration", element: <Calibration /> },
           { path: "explain", element: <Explain /> },
+          { path: "worksheet", element: <Worksheet /> },
           { path: "research", element: <Research /> },
           { path: "tasks", element: <Tasks /> },
           { path: "calendar", element: <Calendar /> },

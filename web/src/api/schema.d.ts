@@ -3569,6 +3569,28 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/practice/worksheet": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Grade Worksheet
+         * @description Grade photographed/scanned handwritten work: per-problem verdicts that
+         *     reference the student's actual lines, writing mastery evidence per
+         *     resolved concept (D1-D3). No VL model -> setup_hint, never grade blind.
+         */
+        post: operations["grade_worksheet_api_practice_worksheet_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/prefs": {
         parameters: {
             query?: never;
@@ -9069,6 +9091,96 @@ export interface components {
             msg: string;
             /** Error Type */
             type: string;
+        };
+        /**
+         * WorksheetGradeRequest
+         * @description POST /api/practice/worksheet — grade photographed/scanned handwritten
+         *     work. attachment_ids are the uploaded image ids; guide=True withholds the
+         *     corrected answer and gives a nudging question instead (D1).
+         */
+        WorksheetGradeRequest: {
+            /**
+             * Attachment Ids
+             * @default []
+             */
+            attachment_ids: string[];
+            /** Course Id */
+            course_id: string;
+            /**
+             * Guide
+             * @default true
+             */
+            guide: boolean;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * WorksheetGradeResponse
+         * @description The per-problem debrief + the concepts that received evidence. setup_hint
+         *     is set (problems empty) when no VL model is configured — never grade blind.
+         */
+        WorksheetGradeResponse: {
+            /**
+             * Concepts Touched
+             * @default []
+             */
+            concepts_touched: string[];
+            /**
+             * Problems
+             * @default []
+             */
+            problems: components["schemas"]["WorksheetProblemVerdict"][];
+            /** Setup Hint */
+            setup_hint?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /**
+         * WorksheetProblemVerdict
+         * @description One graded problem from the worksheet. Feedback references the student's
+         *     ACTUAL work: what's right, the FIRST error, a nudge question (guide mode).
+         *     concept_id/name + state/effective_p are filled when the named concept
+         *     resolved to a real region node and evidence was written (D2/D3).
+         */
+        WorksheetProblemVerdict: {
+            /** Concept Id */
+            concept_id?: string | null;
+            /** Concept Name */
+            concept_name?: string | null;
+            /** Effective P */
+            effective_p?: number | null;
+            /** Error Pattern */
+            error_pattern?: string | null;
+            /**
+             * First Error
+             * @default
+             */
+            first_error: string;
+            /**
+             * Nudge Question
+             * @default
+             */
+            nudge_question: string;
+            /**
+             * Problem Label
+             * @default
+             */
+            problem_label: string;
+            /** State */
+            state?: string | null;
+            study_citation?: components["schemas"]["Citation"] | null;
+            /**
+             * Verdict
+             * @default
+             */
+            verdict: string;
+            /**
+             * Whats Right
+             * @default
+             */
+            whats_right: string;
+        } & {
+            [key: string]: unknown;
         };
         /** SetupRequest */
         routes__auth_routes__SetupRequest: {
@@ -15048,6 +15160,39 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["AnswerResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    grade_worksheet_api_practice_worksheet_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["WorksheetGradeRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["WorksheetGradeResponse"];
                 };
             };
             /** @description Validation Error */

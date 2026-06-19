@@ -77,6 +77,9 @@ POST /api/practice/calibration/finish
 POST /api/practice/exam/start
 POST /api/practice/exam/submit
 POST /api/practice/explain/start
+#
+# Phase-2 T6a (worksheet grading depth — SPEC F4):
+POST /api/practice/worksheet
 
 #
 # Phase-2 T5 (todos + dashboard — SPEC F11, ADR 0004 §Q12):

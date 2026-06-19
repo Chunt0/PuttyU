@@ -40,6 +40,8 @@ from src.practice.schemas import (
     GymItemResponse,
     GymNextRequest,
     QueueResponse,
+    WorksheetGradeRequest,
+    WorksheetGradeResponse,
 )
 
 # The daily review push caps at this many minted items (SPEC F8 — the queue is a
@@ -195,6 +197,24 @@ def setup_practice_routes() -> APIRouter:
         db = SessionLocal()
         try:
             return await exam.submit(db, user, body.exam_key, body.answers)
+        finally:
+            db.close()
+
+    # --- WORKSHEET (photograph handwritten work -> graded depth, F4) -----
+    @router.post("/worksheet", response_model=WorksheetGradeResponse)
+    async def grade_worksheet(request: Request, body: WorksheetGradeRequest):
+        """Grade photographed/scanned handwritten work: per-problem verdicts that
+        reference the student's actual lines, writing mastery evidence per
+        resolved concept (D1-D3). No VL model -> setup_hint, never grade blind."""
+        user = effective_user(request)
+        if not (body.course_id or "").strip():
+            raise HTTPException(400, "course_id is required")
+        db = SessionLocal()
+        try:
+            return await items.grade_worksheet(
+                db, user, body.course_id,
+                attachment_ids=body.attachment_ids,
+                guide=body.guide)
         finally:
             db.close()
 

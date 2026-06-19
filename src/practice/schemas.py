@@ -348,6 +348,53 @@ class ExamSubmitResponse(BaseModel):
 
 
 # --------------------------------------------------------------------------- #
+# Worksheet (photograph handwritten work -> graded feedback, F4 / T6a)         #
+# --------------------------------------------------------------------------- #
+class WorksheetGradeRequest(BaseModel):
+    """POST /api/practice/worksheet — grade photographed/scanned handwritten
+    work. attachment_ids are the uploaded image ids; guide=True withholds the
+    corrected answer and gives a nudging question instead (D1)."""
+
+    model_config = ConfigDict(extra="allow")
+
+    course_id: str
+    attachment_ids: list[str] = []
+    guide: bool = True
+
+
+class WorksheetProblemVerdict(BaseModel):
+    """One graded problem from the worksheet. Feedback references the student's
+    ACTUAL work: what's right, the FIRST error, a nudge question (guide mode).
+    concept_id/name + state/effective_p are filled when the named concept
+    resolved to a real region node and evidence was written (D2/D3)."""
+
+    model_config = ConfigDict(extra="allow")
+
+    problem_label: str = ""
+    verdict: str = ""              # correct | partial | incorrect
+    whats_right: str = ""
+    first_error: str = ""
+    nudge_question: str = ""
+    concept_id: str | None = None
+    concept_name: str | None = None
+    study_citation: Citation | None = None
+    error_pattern: str | None = None
+    state: str | None = None
+    effective_p: float | None = None
+
+
+class WorksheetGradeResponse(BaseModel):
+    """The per-problem debrief + the concepts that received evidence. setup_hint
+    is set (problems empty) when no VL model is configured — never grade blind."""
+
+    model_config = ConfigDict(extra="allow")
+
+    problems: list[WorksheetProblemVerdict] = []
+    concepts_touched: list[str] = []
+    setup_hint: str | None = None
+
+
+# --------------------------------------------------------------------------- #
 # Explain (explain-it-back chat sessions — curious-student persona)           #
 # --------------------------------------------------------------------------- #
 class ExplainStartRequest(BaseModel):
@@ -381,4 +428,5 @@ __all__ = [
     "ExamItemPrompt", "ExamStartRequest", "ExamStartResponse",
     "ExamAnswer", "ExamSubmitRequest", "ExamItemVerdict", "ExamSubmitResponse",
     "ExplainStartRequest", "ExplainStartResponse",
+    "WorksheetGradeRequest", "WorksheetProblemVerdict", "WorksheetGradeResponse",
 ]

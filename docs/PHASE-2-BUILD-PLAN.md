@@ -59,12 +59,12 @@ re-running the gates yourself before committing.
 
 | Check | Command | Last known good |
 |---|---|---|
-| Backend tests | `.venv/bin/python -m pytest -q -m "not quarantine"` | **2389 passed, 1 skipped** (T4 + T5 dashboard/miner/persona/summary/cmdk/cost in) |
+| Backend tests | `.venv/bin/python -m pytest -q -m "not quarantine"` | **2400 passed, 1 skipped** (T4 + T5 complete + T6a worksheet grading) |
 | Fitness gates | `bash .fitness/run-all.sh` | **6a–6f all pass** |
 | TS types | `cd web && bunx tsc --noEmit` | clean |
 | Lint | `cd web && bun run lint` | clean |
-| Vitest | `cd web && bun run test` | **232 passed** (T5 complete: + dashboard/miner/dial/summary/cmdk/cost/math) |
-| Playwright | `cd web && bun run e2e` | **36 passed, 2 skipped** (T5 complete) |
+| Vitest | `cd web && bun run test` | **237 passed** (T5 complete + T6a worksheet view) |
+| Playwright | `cd web && bun run e2e` | **37 passed, 2 skipped** (T5 complete + T6a) |
 | Contract | `python scripts/openapi-export.py && cd web && bun run gen:api` | 269 paths, no drift |
 
 `mkdir -p data` before running backend tests (the data dir must exist).
@@ -92,7 +92,7 @@ Review, Gym, Exam, Calibration, Explain). Backend untouched. Adversarially revie
 **T5 (all 7 verticals) COMPLETE.**
 
 **Vertical 6 (cost meter, F7) done** — a `record_usage()`/`record_call_usage()` one-door in `src/model_router.py` (best-effort, never breaks a feature) wired into the router adopters (extractor/session-summary/miner/practice/research) with estimated tokens; rates are data (per-endpoint `cost_*_per_mtok` in router.json + a tier-default fallback; local=free, detected from the endpoint url host); a new `GET /api/router/cost` aggregates spend by feature over a window; a calm "Spend" panel in `Routing.tsx` (tokens + est. `~$` cost, "local, free", "free" total, gauge-not-a-bill). Adversarially reviewed (2 reviewers: 1 high fixed — local research no longer billed as cloud; + rotated-file + all-local-total fixes). Fast-follow: research-spend owner attribution on the non-UI direct-call path (F3, low). **Remaining T5 vertical:** typed math (F4). |
-| **T6** | Worksheet grading contract + graph hook + **canvas workspace** | ⬜ not started (§6) |
+| **T6** | Worksheet grading contract + graph hook + **canvas workspace** | 🚧 **T6a done, canvas next** — `grade_worksheet` (multi-problem, line-referenced: what's right / FIRST error / nudge in guide mode / cite the concept; closed-world concept resolution; writes `source="worksheet"` evidence w/ error-pattern via the graph one-door → the weakness bump IS the declarative follow-up review item; never grades blind — no image → no LLM/evidence) + `POST /api/practice/worksheet` + a calm "Worksheet" view (photo/upload → per-problem feedback + citation doors). Adversarially reviewed (1 high fixed: blind-grade guard). Pinned: `docs/T6-WORKSHEET-CONTRACT.md`. **Remaining: the canvas workspace** (T6b). |
 | **X** | Cross-cutting: Gate-7 tutor evals, backend-prep follow-ups, @later seams | ⬜ ongoing (§7) |
 
 ---

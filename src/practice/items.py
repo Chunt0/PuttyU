@@ -569,4 +569,177 @@ async def grade_answer(db, owner, item_key: str, *, answer_text=None,
     return result
 
 
-__all__ = ["due_concepts", "item_for_concept", "grade_answer"]
+# --------------------------------------------------------------------------- #
+# grade_worksheet — photograph handwritten work -> graded depth (F4, T6a)      #
+# --------------------------------------------------------------------------- #
+# The worksheet grader's verdict vocabulary (no 'ungraded' — a problem the model
+# couldn't read is simply omitted from its list).
+_WORKSHEET_VERDICTS = ("correct", "partial", "incorrect")
+
+_WORKSHEET_SYSTEM_GUIDE = (
+    "You are a patient tutor grading a student's HANDWRITTEN worksheet from a "
+    "photo. Read the page, identify each problem, and grade the student's "
+    "ACTUAL work. For each problem return what is right, the FIRST place it goes "
+    "wrong, and a short SOCRATIC nudge question that points at the next step — "
+    "do NOT state the corrected answer (the student should find it). Be calm and "
+    "specific; never invent work that isn't on the page.")
+_WORKSHEET_SYSTEM_DIRECT = (
+    "You are a patient tutor grading a student's HANDWRITTEN worksheet from a "
+    "photo. Read the page, identify each problem, and grade the student's "
+    "ACTUAL work. For each problem return what is right, the FIRST place it goes "
+    "wrong, and the correct fix. Be calm and specific; never invent work that "
+    "isn't on the page.")
+_WORKSHEET_JSON_SPEC = (
+    " Return ONLY a JSON object: {\"problems\": [{\"problem_label\": \"<e.g. "
+    "1a>\", \"verdict\": \"correct\"|\"partial\"|\"incorrect\", \"whats_right\": "
+    "\"<short>\", \"first_error\": \"<the FIRST mistake, or empty if correct>\", "
+    "\"nudge_question\": \"<a guiding question, or empty>\", \"concept\": \"<the "
+    "concept this problem tests — copy a COURSE CONCEPTS name exactly>\", "
+    "\"error_pattern\": \"<a 1-4 word tag for the mistake, or empty>\", "
+    "\"study_citation\": \"<optional: what section to review>\"}]}. No markdown "
+    "fences, no commentary.")
+
+
+async def grade_worksheet(db, owner, course_id: str, *, attachment_ids=None,
+                          guide: bool = True) -> dict:
+    """Grade a photographed/scanned worksheet (F4 / T6a, CONTRACT D1-D3).
+
+    Resolves the uploaded images via the practice engine's owner-aware image
+    door (_resolve_image_data_uris — document_processor is NOT touched), routes a
+    vision call (TaskProfile tier=standard, modality=vision, structured), and
+    parses ONLY a JSON object of per-problem verdicts.
+
+    RouterError (no VL model) -> {problems:[], concepts_touched:[], setup_hint:
+    <msg>} — NEVER grade blind. No-LLM (empty endpoint/model) or a parse failure
+    -> {problems:[], concepts_touched:[]} gracefully.
+
+    Each problem's named `concept` is mapped CLOSED-WORLD to a real ConceptNode
+    via course_concept_shortlist + normalize_name (mirrors persist_extraction);
+    problems whose concept doesn't match a region node are DROPPED. For each
+    resolved problem with a non-correct/partial/incorrect filter, evidence is
+    written through the one graph door (queries.record_evidence) with
+    context={"source":"worksheet","error_pattern":...} and an "upload"
+    episode_ref. The weakness bump IS the declarative review-queue follow-up.
+    """
+    from src import model_router
+    from src.graph.extractor import (
+        course_concept_shortlist, normalize_name, parse_extraction,
+    )
+    from src.llm_core import llm_call_async
+
+    attachment_ids = list(attachment_ids or [])
+
+    # 1) Router — vision is a hard requirement; RouterError -> setup hint, never
+    #    grade blind. tier=standard (a worksheet is a real multi-problem read,
+    #    not a one-token check — heavier than grade_answer's tier=micro).
+    try:
+        profile = model_router.TaskProfile(
+            tier="standard", modality="vision", output_shape="structured",
+            latency="interactive")
+        routed = model_router.resolve(profile, owner=owner, legacy_prefix="utility")
+    except model_router.RouterError as e:
+        return {"problems": [], "concepts_touched": [], "setup_hint": str(e)}
+
+    if not routed.endpoint_url or not routed.model:
+        return {"problems": [], "concepts_touched": []}
+
+    # 2) Resolve the images (owner-aware; reuses the practice image door).
+    image_blocks = _resolve_image_data_uris(owner, attachment_ids)
+    if not image_blocks:
+        # NEVER grade blind: a VL model is configured but no image resolved (empty
+        # attachment_ids, or wrong-owner/missing/non-image uploads). Without the
+        # worksheet image the model would fabricate verdicts and write phantom
+        # evidence. Bail with nothing graded + nothing written (mirrors grade_answer).
+        return {"problems": [], "concepts_touched": [],
+                "setup_hint": "Couldn't read a worksheet image — attach a photo and try again."}
+
+    # 3) The closed-world concept region — the names the model may classify onto.
+    concepts = course_concept_shortlist(db, course_id, owner)
+    by_name = {normalize_name(n.name): n for n in concepts}
+    concept_names = "\n".join(f"- {n.name}" for n in concepts)
+
+    system = (_WORKSHEET_SYSTEM_GUIDE if guide else _WORKSHEET_SYSTEM_DIRECT) \
+        + _WORKSHEET_JSON_SPEC
+    user_text = (
+        "COURSE CONCEPTS (closed list — copy names exactly into `concept`):\n"
+        f"{concept_names or '(none — leave concept empty)'}\n\n"
+        "Grade the attached worksheet image(s).")
+    user_content = [{"type": "text", "text": user_text}, *image_blocks]
+    messages = [{"role": "system", "content": system},
+                {"role": "user", "content": user_content}]
+
+    try:
+        raw = await llm_call_async(
+            routed.endpoint_url, routed.model, messages,
+            temperature=0.1, max_tokens=1500, headers=routed.headers, timeout=90)
+    except Exception as e:
+        logger.debug("[worksheet] grade LLM call failed: %s", e)
+        return {"problems": [], "concepts_touched": []}
+
+    try:  # F7 cost meter — best-effort, never breaks grading
+        from src.model_context import estimate_tokens
+        model_router.record_usage(
+            profile, routed, input_tokens=estimate_tokens(messages),
+            output_tokens=len(raw or "") // 4, feature="worksheet",
+            usage_source="estimated", owner=owner)
+    except Exception:
+        pass
+
+    parsed = parse_extraction(raw)
+    if not isinstance(parsed, dict):
+        return {"problems": [], "concepts_touched": []}
+
+    # 4) Per-problem: resolve concept (closed-world drop), write evidence.
+    ep_ref = episode_ref("upload", attachment_ids[0] if attachment_ids else None)
+    out_problems: list[dict] = []
+    touched: list[str] = []
+    seen_touched: set[str] = set()
+
+    for item in (parsed.get("problems") or []):
+        if not isinstance(item, dict):
+            continue
+        verdict = str(item.get("verdict") or "").strip().lower()
+        if verdict not in _WORKSHEET_VERDICTS:
+            continue
+        node = by_name.get(normalize_name(str(item.get("concept") or "")))
+        if node is None:
+            continue  # closed world: unmatched concept drops (D2)
+
+        error_pattern = str(item.get("error_pattern") or "").strip()
+        signal = _VERDICT_SIGNAL.get(verdict)
+        state, eff_p = None, None
+        if signal:                        # all three worksheet verdicts map 1:1
+            try:
+                state, eff_p = queries.record_evidence(
+                    node.id, signal, weight=1.0, episode_ref=ep_ref,
+                    context={"source": "worksheet", "error_pattern": error_pattern},
+                    owner=owner, db=db)
+            except Exception as e:
+                logger.warning("[worksheet] record_evidence failed: %s", e)
+
+        sc = item.get("study_citation")
+        study_citation = sc if _is_valid_citation(sc) else None
+
+        out_problems.append({
+            "problem_label": str(item.get("problem_label") or "").strip(),
+            "verdict": verdict,
+            "whats_right": str(item.get("whats_right") or "").strip(),
+            "first_error": str(item.get("first_error") or "").strip(),
+            # guide mode: the model is asked to withhold the fix and give a nudge;
+            # the field rides through regardless of mode (empty in direct mode).
+            "nudge_question": str(item.get("nudge_question") or "").strip(),
+            "concept_id": node.id,
+            "concept_name": node.name,
+            "study_citation": study_citation,
+            "error_pattern": error_pattern or None,
+            "state": state,
+            "effective_p": eff_p,
+        })
+        if signal and node.name not in seen_touched:
+            seen_touched.add(node.name)
+            touched.append(node.name)
+
+    return {"problems": out_problems, "concepts_touched": touched}
+
+
+__all__ = ["due_concepts", "item_for_concept", "grade_answer", "grade_worksheet"]

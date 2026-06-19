@@ -93,6 +93,12 @@ export type ExamItemVerdict = components["schemas"]["ExamItemVerdict"];
 export type ExplainStartRequest = components["schemas"]["ExplainStartRequest"];
 export type ExplainStartResponse = components["schemas"]["ExplainStartResponse"];
 
+// Phase-2 T6a — worksheet grading (F4, CONTRACT D6): photograph/scan handwritten work
+// → per-problem graded feedback (what's right, the FIRST error, a nudge in guide mode).
+export type WorksheetGradeRequest = components["schemas"]["WorksheetGradeRequest"];
+export type WorksheetGradeResponse = components["schemas"]["WorksheetGradeResponse"];
+export type WorksheetProblemVerdict = components["schemas"]["WorksheetProblemVerdict"];
+
 // Phase-2 T5 — todos + dashboard (CONTRACT D2/D3, SPEC F11 — the landing surface)
 // todo_routes / dashboard_routes are born typed → these ride the real OpenAPI seam.
 export type Todo = components["schemas"]["TodoResponse"];
