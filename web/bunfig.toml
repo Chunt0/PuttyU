@@ -1,0 +1,3 @@
+[test]
+# Register a DOM (happy-dom) before component tests run.
+preload = ["./bunfig-test-setup.ts"]

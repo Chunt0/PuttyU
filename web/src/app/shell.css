@@ -1,0 +1,78 @@
+/* Minimal Odysseus-shaped shell, on putty-ai tokens. The real dockable window
+   manager, palette, and slash commands land in M0.3 (SPEC §6 fidelity). */
+
+#root {
+  height: 100vh;
+}
+
+.pa-shell {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  height: 100vh;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+}
+
+.pa-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+}
+
+.pa-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--heading);
+  font-weight: 600;
+}
+
+.pa-brand img {
+  width: 22px;
+  height: 22px;
+}
+
+.pa-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pa-navitem {
+  padding: 6px 8px;
+  border-radius: var(--radius);
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.pa-main {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.pa-topbar {
+  display: flex;
+  align-items: center;
+  height: 48px;
+  padding: 0 16px;
+  border-bottom: 1px solid var(--border);
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.pa-content {
+  flex: 1;
+  padding: 24px;
+  overflow: auto;
+}
+
+.pa-content h1 {
+  color: var(--heading);
+  font-weight: 600;
+}
