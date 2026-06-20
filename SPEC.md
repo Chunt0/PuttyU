@@ -16,7 +16,8 @@
 
 **Companion docs (the "how"):** `docs/adr/0001`–`0004` (foundation & auth · gates ·
 corpus + catalog + embeddings · course & data model), `docs/DESIGN-M0-M1.md`
-(schema, API, streaming, shell), `docs/DESIGN-SYSTEM.md` (the putty-ai-design kit
+(schema, API, streaming, shell), `docs/M0-PLAN.md` (the chunked M0 build plan +
+cross-cutting tech decisions), `docs/DESIGN-SYSTEM.md` (the putty-ai-design kit
 — authoritative visual system), `docs/LEARNING-SCIENCE.md` (best practices for
 tutoring, distilled from the resources library — the evidence base for the
 pedagogy), `docs/TUTOR-PROMPT-ARCHITECTURE.md` (pedagogy-as-prompts — how the
@@ -177,7 +178,7 @@ PuttyU/
       components/       # shared kit (Markdown+KaTeX, ConfirmButton, CameraCapture, …)
       api/              # generated schema.d.ts + typed client + streaming.ts (SSE)
       lib/              # utils + zustand stores
-    tests/ e2e/         # vitest + playwright
+    tests/ e2e/         # bun test + playwright
   .fitness/             # bash fitness-function gates (see §7)
   .github/workflows/    # CI: python tests, web typecheck/lint/test/e2e, gates
   textbooks/            # LOCAL content data — gitignored (~12 GB), ingested to corpus
@@ -317,7 +318,7 @@ The CI gate set (carried forward from OLD-REF's proven design, established at M0
    ride this real seam.
 2. **pytest required** (blocking in CI). Flaky tests get a `quarantine` marker
    (informational job), never `continue-on-error`.
-3. **Vitest + Playwright.** No screen merges without a critical-flow e2e.
+3. **Bun test + Playwright.** No screen merges without a critical-flow e2e.
    Playwright specs adopt the feature scenario names from §10.
 4. **`tsc --noEmit --strict` + ESLint.** No `any` in `web/src/api`.
 5. **`owner_scoped` is the only door** for user-data reads (fitness check; an
@@ -426,7 +427,7 @@ exit criteria below hold (its key §10 scenarios pass as Playwright e2e).
 - Plain streaming chat end-to-end (SSE); sessions persist / rename / archive /
   reload; stop-generation leaves clean history.
 - Typed OpenAPI client generated with **no drift**; `tsc` strict + ESLint clean;
-  pytest + vitest + an e2e (login → send a message → stream renders) green.
+  pytest + bun test + an e2e (login → send a message → stream renders) green.
 
 **M1**
 - Course create / edit / archive + tabs + first-login course setup (free-form,
@@ -446,6 +447,12 @@ exit criteria below hold (its key §10 scenarios pass as Playwright e2e).
 **M2–M6** — DoD = the feature's §10 scenarios pass as e2e + the milestone's new
 gate(s) land + all gates stay green. Detailed exit criteria are written at the
 *start* of each milestone (don't over-specify far milestones — §12).
+
+> **M3 and M4 are large — sub-slice each into reviewable chunks at milestone
+> start**, the way M0 is chunked (`docs/M0-PLAN.md`). Indicative: **M3a** graph +
+> seeding + evidence log · **M3b** BKT + Progress UI · **M3c** extraction +
+> assembler; **M4a** review queue · **M4b** Gym · **M4c** calibration / exam /
+> explain-it-back.
 
 ---
 
@@ -833,19 +840,18 @@ invariants, and the design identity.
 - **O1 (resolved):** the **putty-ai-design** kit is the design system
   (`docs/DESIGN-SYSTEM.md`) — tokens, 16+1 themes, fonts, mascot, and the `pa-`
   component library ported into `web/` at M0.
-- **O7 (M0):** product wordmark/brand — confirm "puttyU" on the putty-ai visual
-  identity (keep the putty-blob mascot), and whether to keep a tagline ("your
-  patient tutor") or none. Affects only the Login + sidebar header.
-- **O2 (M0):** Bun-only test running vs. keep Vitest+Playwright (default: keep
-  Vitest+Playwright — proven).
+- **O7 (resolved):** product wordmark = **"puttyU"** (in the putty-ai type, with
+  the putty-blob mascot); **no tagline** on the login/header.
+- **O2 (resolved):** frontend tests = **Bun test** (unit/component, via
+  `@testing-library/react` + happy-dom) + **Playwright** (e2e). Bun is the whole
+  toolchain; no Vitest.
 - **O3 (M1):** which textbooks to ingest first for the worked example (default:
   statistics + calculus + one science book).
 - **O4 (M1):** PDF viewer library (pdf.js) integration details.
 - **O5 (M3):** ADR-0005 for the graph schema + mastery update rule, written
   *after* the Graphiti spike (§13.1), before M3 code.
-- **O6 (general):** do we keep an MCP server surface (expose PuttyU tools to
-  external agents) or drop it from v1 scope? (Default: drop — not core to
-  tutoring; revisit.)
+- **O6 (resolved):** **MCP server surface dropped from v1** (not core to
+  tutoring); revisit later — Odysseus's MCP patterns remain a reference if we add it.
 - **O8 (M3, ADR-0005):** **cross-course KC identity.** Two stats courses both have
   "confidence intervals" — same concept node or two? Cross-course transfer (F6)
   needs KC *identity* across sources, but structural seeding creates per-source

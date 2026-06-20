@@ -93,6 +93,22 @@ confirmation.
   F3); `src/agent/` + `src/tools/` are not built until that milestone. When they
   land, tools run under explicit allowlist + confirmation, specced here first.
 
+### S9 — Runaway cost / provider abuse
+- **Risk:** a loop or a malicious input drives unbounded LLM calls → a surprise
+  cloud bill (especially deep/vision tiers), or hammers a local model.
+- **Mitigations:** per-request and per-day **call/token budgets** in the model
+  router; a **max-iterations cap** on any agentic loop (when it lands); the cost
+  meter (SPEC F7) surfaces spend; sensible request timeouts. Local-first policy
+  keeps background work (extraction) off paid APIs by default.
+
+### S10 — Loss of `PUTTYU_SECRET_KEY`
+- **Risk:** the key signs sessions and Fernet-encrypts provider keys at rest; if
+  it's lost/rotated, stored provider keys are unreadable and all sessions
+  invalidate.
+- **Mitigations:** document "back this up" (ADR-0001); on key change, the app
+  detects undecryptable keys and prompts the owner to re-enter them rather than
+  failing silently.
+
 ## v1 decisions (security-relevant)
 
 - **No web access / no agentic tool execution** in M0–M2.

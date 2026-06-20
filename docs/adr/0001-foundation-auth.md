@@ -47,6 +47,9 @@ PuttyU v1 has exactly one human: the **owner**, who is also the **student**
 - **Env prefix `PUTTYU_*`** only (no legacy fallbacks). A committed
   `.env.example` documents every variable. Key ones:
   - `PUTTYU_SECRET_KEY` — signs sessions and encrypts secrets at rest (Fernet).
+    **Back it up:** if lost/changed, stored provider keys become unreadable and
+    all sessions invalidate; the app should detect undecryptable keys and prompt
+    re-entry rather than fail silently (THREAT_MODEL S10).
   - `PUTTYU_LIBRARY_PATH` — absolute path to the content library (default
     `./textbooks`). The library is **not** in git (SPEC §5.2).
   - `PUTTYU_DATA_DIR` — where `app.db`, `data/chroma/`, uploads, and JSON

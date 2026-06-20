@@ -16,7 +16,7 @@ gates run in CI (`.github/workflows/`) and locally via `bash .fitness/run-all.sh
 |---|---|---|---|
 | 1 | **Typed OpenAPI client** | `scripts/openapi-export.py` emits `openapi.json`; `cd web && bun run gen:api` regenerates `web/src/api/schema.d.ts`; CI re-runs both and **fails if the committed output drifts**. UI-consumed routes ride this seam via `openapi-fetch`. | M0 |
 | 2 | **pytest required** | `pytest -m "not quarantine"` blocks CI. Flaky tests get the `quarantine` marker → informational job, **never** `continue-on-error`. | M0 |
-| 3 | **Vitest + Playwright** | `bun run test` (vitest unit/component) blocks; **no screen merges without a critical-flow Playwright e2e**. E2e specs adopt the scenario names from SPEC §10 / the milestone DoD. | M0 |
+| 3 | **Bun test + Playwright** | `bun test` (unit/component, via `@testing-library/react` + happy-dom) blocks; **no screen merges without a critical-flow Playwright e2e**. E2e specs adopt the scenario names from SPEC §10 / the milestone DoD. | M0 |
 | 4 | **tsc strict + ESLint** | `bunx tsc --noEmit` (strict) + `bun run lint` block. **No `any` in `web/src/api`.** | M0 |
 | 5 | **`owner_scoped` one-door** | `.fitness/owner-scoped.sh`: only `owner_scoped(query, Model, user)` may scope user data. A `path|count` allowlist freezes any legacy `.filter(Model.owner==...)`; allowlisted counts may shrink, never grow; non-allowlisted files must be zero. | M1 (first user-data tables) |
 | 6a | **File-size ceiling** | `.fitness/file-size.sh`: no god-files. A frozen, **non-growing** allowlist of any over-ceiling files. New modules are born small. | M0 |

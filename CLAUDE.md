@@ -41,14 +41,16 @@ over-scoped and got out of hand.
    of Done (§9.1), resolved/open decisions (§13)
 3. `docs/DESIGN-M0-M1.md` — the concrete first build: schema, API, SSE contract,
    chat loop, ingestion, frontend shell, failure modes, build order
-4. `docs/adr/0001`–`0004` — foundation & auth · verifiability gates · corpus +
+4. `docs/M0-PLAN.md` — **the chunked M0 build plan** (start here to build) + the
+   cross-cutting tech decisions (SSE typing, LLM test mocks, serving, pinning)
+5. `docs/adr/0001`–`0004` — foundation & auth · verifiability gates · corpus +
    catalog + embeddings · course & data model
-5. `docs/LEARNING-SCIENCE.md` — best practices for tutoring (the evidence base; BKT,
+6. `docs/LEARNING-SCIENCE.md` — best practices for tutoring (the evidence base; BKT,
    spacing, validity, viz) distilled from `resources/`
-6. `docs/TUTOR-PROMPT-ARCHITECTURE.md` — pedagogy-as-prompts (how the science is
+7. `docs/TUTOR-PROMPT-ARCHITECTURE.md` — pedagogy-as-prompts (how the science is
    baked into every tutor prompt, verified by Gate 7)
-7. `docs/DESIGN-SYSTEM.md` — the **putty-ai-design** visual system (authoritative)
-8. `THREAT_MODEL.md` — security surfaces & the untrusted-content invariant
+8. `docs/DESIGN-SYSTEM.md` — the **putty-ai-design** visual system (authoritative)
+9. `THREAT_MODEL.md` — security surfaces & the untrusted-content invariant
 
 ## The reference folders are a knowledge base — mine them, don't ship them
 
@@ -98,7 +100,7 @@ streaming, or any workspace surface, **grep `ODYSSEUS-REF/` first** (and
   selection → `src/model_router` (call sites declare a *task profile*, never a
   model name).
 - **Gates from M0** (ADR-0002): typed OpenAPI contract (CI fails on drift),
-  pytest, vitest + Playwright, `tsc --strict` + ESLint, file-size ceiling,
+  pytest, bun test + Playwright, `tsc --strict` + ESLint, file-size ceiling,
   `response_model` on UI routes, no raw `request.json()`, no cross-feature
   imports, **TS-only (no new JS)**, graph one-door, router one-door, and Gate 7
   tutor-evals.
