@@ -11,6 +11,11 @@
 - **Provenance:** the kit is a TypeScript/React recreation of the same workspace
   whose UI/UX we replicate (its themes are lifted from the Odysseus source app).
   So "use the Odysseus UI/UX" and "use this kit" are the same instruction.
+- **The split (SPEC §6 fidelity directive):** this kit is the **visual skin**;
+  the **UX/interaction model is a clone of `ODYSSEUS-REF/`** (layout, dockable
+  window manager, slash commands, Cmd-K palette, streaming feel). The kit already
+  ships Odysseus-shaped chat components in the putty skin; for surfaces it doesn't
+  cover, replicate Odysseus's behavior using the kit's primitives + tokens.
 
 ## Identity (the rules — from `putty-ai-design/SKILL.md`)
 

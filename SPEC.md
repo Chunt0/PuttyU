@@ -231,12 +231,31 @@ Each subsystem has exactly one entry point, mechanically enforced (§7):
 
 ---
 
-## 6. UI/UX — the Odysseus workspace, rebuilt
+## 6. UI/UX — a UX clone of Odysseus, skinned with putty-ai-design
 
-The owner loves the **Odysseus** UI/UX and wants it. We replicate its *feel and
-functionality* — rebuilt in React + TypeScript — then layer the tutoring
-surfaces into it. The OLD-REF frontend is explicitly *not* the model; Odysseus
-is.
+**Fidelity directive (non-negotiable):** the frontend is **essentially a clone of
+Odysseus in look, feel, and interaction** — *skinned* with the putty-ai-design
+kit. Two halves, both required:
+
+- **UX / interaction = clone `ODYSSEUS-REF`.** The layout, the multi-panel +
+  **dockable window manager**, navigation, **slash commands**, the **Cmd/Ctrl-K
+  command palette**, **streaming** behavior, keyboard interactions, empty/loading
+  states, motion — it should *feel like Odysseus to use*. When building any
+  surface, **study how Odysseus does it in `ODYSSEUS-REF/` and match it.**
+- **Visual skin = the `putty-ai-design` kit** (tokens, themes, fonts, components,
+  mascot — `docs/DESIGN-SYSTEM.md`).
+
+These already align: the putty-ai-design kit is itself a **React recreation of the
+Odysseus workspace** (its `Sidebar`/`Composer`/`Messages` mirror Odysseus; its
+themes are lifted from it) — so the kit hands us Odysseus-shaped components already
+in the putty skin. Build the shell from the kit; for surfaces the kit doesn't
+cover, replicate Odysseus's UX using the kit's primitives + tokens.
+
+**Scope of the clone:** we clone the **chrome and interaction model, NOT the
+feature set.** Odysseus's productivity features (email, cookbook, gallery,
+model-serving) are out of scope (§11); the tutoring surfaces (below) take their
+place *inside the same workspace, behaving the same way*. The OLD-REF frontend is
+explicitly **not** the model — Odysseus is.
 
 **What we carry from Odysseus (the workspace shell):**
 
@@ -401,6 +420,9 @@ exit criteria below hold (its key §10 scenarios pass as Playwright e2e).
   renders; a vision-required-but-absent call **fails loud** (no silent text-only).
 - Shell: sidebar + dockable tool windows + theme picker + Cmd/Ctrl-K palette +
   slash-command composer.
+- **UX fidelity:** the shell looks and behaves like Odysseus, skinned with
+  putty-ai-design — verified **side-by-side against `ODYSSEUS-REF/`** (layout,
+  panel/window behavior, palette, slash commands, streaming feel). §6 directive.
 - Plain streaming chat end-to-end (SSE); sessions persist / rename / archive /
   reload; stop-generation leaves clean history.
 - Typed OpenAPI client generated with **no drift**; `tsc` strict + ESLint clean;

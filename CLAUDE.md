@@ -54,14 +54,19 @@ over-scoped and got out of hand.
 
 All are **gitignored, local-only, reference material** (not part of the build):
 
-- **`ODYSSEUS-REF/`** — the self-hosted AI workspace whose UI/UX we replicate, and
-  a **wealth of working implementations to learn from.** *Before building a
-  feature, read how Odysseus did it.* It has battle-tested patterns for the
-  **agent loop / harness**, **agentic tool abilities + MCP**, **SSE streaming**,
-  **slash commands / command palette**, and full feature backends —
-  **calendar, notes, tasks/todos, documents, research, sessions, settings**.
-  Reuse the *approach* (re-implemented typesafe in our React/TS + FastAPI stack),
-  not code verbatim. (It's FastAPI + a vanilla-JS SPA — map its ideas onto ours.)
+- **`ODYSSEUS-REF/`** — the self-hosted AI workspace we **clone for UX**, and a
+  **wealth of working implementations to learn from.** **Frontend fidelity is a
+  hard rule:** the UI must be *essentially a clone of Odysseus in look, feel, and
+  interaction* (layout, dockable window manager, slash commands, Cmd-K palette,
+  streaming feel, keyboard interactions), **skinned with the putty-ai-design kit**
+  — we clone the *chrome and interaction model, not the feature set* (SPEC §6).
+  *Before building any surface, open `ODYSSEUS-REF/` and match how it behaves.*
+  It also has battle-tested patterns for the **agent loop / harness**, **agentic
+  tool abilities + MCP**, **SSE streaming**, **slash commands / command palette**,
+  and full feature backends — **calendar, notes, tasks/todos, documents,
+  research, sessions, settings**. Reuse the *approach* (re-implemented typesafe in
+  our React/TS + FastAPI stack), not code verbatim. (It's FastAPI + a vanilla-JS
+  SPA — map its ideas onto ours.)
 - **`OLD-REF/`** — the previous tutoring build: rich vision docs **plus real
   implementations** of the **corpus importer, ensemble graph, practice engine,
   schedule miner, and student-context assembler**. Mine it for the
