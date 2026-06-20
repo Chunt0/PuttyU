@@ -1,6 +1,7 @@
 ODYSSEUS-REF/
 OLD-REF/
 textbooks/
+resources/
 
 # Python
 __pycache__/
