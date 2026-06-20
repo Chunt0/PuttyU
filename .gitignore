@@ -131,3 +131,6 @@ output/
 
 # Design-system skill working dir — not part of the app (was committed by accident).
 /putty-ai-design/
+
+# Python test/build caches
+.pytest_cache/
