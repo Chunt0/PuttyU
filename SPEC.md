@@ -166,7 +166,7 @@ PuttyU/
   backend/
     app.py              # slim orchestrator: middleware → routers → lifespan
     core/               # database.py (SQLAlchemy), auth.py, middleware.py, atomic_io.py
-    src/                # engines: llm/, corpus/, graph/, practice/, schedule/,
+    engines/            # domain logic: llm/, corpus/, graph/, practice/, schedule/,
                         #   student_context.py, model_router.py, agent/, tools/
     routes/             # thin HTTP adapters (typed; response_model on UI routes)
     tests/              # pytest
