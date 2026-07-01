@@ -197,7 +197,7 @@ PuttyU/
   scheduler lands at M4, MCP is deferred — §13 O6). No business logic.
 - `core/` — `database.py` (SQLAlchemy models + idempotent startup migrations),
   `auth.py`, `middleware.py`.
-- `src/` — engines, each a focused module: `llm/`, `model_router.py`,
+- `engines/` — domain logic, each a focused module: `llm/`, `model_router.py`,
   `corpus/` (records / chunker / importers / indexer / retriever / grounding),
   `graph/` (the ensemble graph public API), `student_context.py`, `practice/`,
   `schedule/`, `agent/`, `tools/`. Modules appear **as their milestone lands**
@@ -222,11 +222,11 @@ Each subsystem has exactly one entry point, mechanically enforced (§7):
 1. **User data → `owner_scoped(query, Model, user)`.** The only way to scope
    user data. No ad-hoc `.filter(Model.owner == ...)`. (Prepared seam for
    multi-student.)
-2. **Graph → `src/graph/` public API.** Non-graph code reads/writes the student
-   model through `src/graph/queries.py` / `src/student_context.py`, never raw SQL
+2. **Graph → `engines/graph/` public API.** Non-graph code reads/writes the student
+   model through `engines/graph/queries.py` / `engines/student_context.py`, never raw SQL
    on graph tables. This is also what makes the memory *engine* swappable
    (SQLite-native in v1; Graphiti is the flip-target — §13.1).
-3. **Model selection → `src/model_router.py`.** Call sites declare a *task
+3. **Model selection → `engines/model_router.py`.** Call sites declare a *task
    profile*; the router resolves it against configured providers. No call site
    hardcodes a model name. Unconfigured tiers fall back transparently.
 
@@ -329,7 +329,7 @@ The CI gate set (carried forward from OLD-REF's proven design, established at M0
    - **6c — no raw `request.json()`** in new routes.
    - **6d — no cross-feature imports** into the lean core.
    - **6e — TypeScript only:** no new `.js/.jsx/.mjs/.cjs`.
-   - **6f — graph one-door:** only `src/graph/`, `src/student_context.py`, and
+   - **6f — graph one-door:** only `engines/graph/`, `engines/student_context.py`, and
      `routes/graph_routes.py` may touch graph tables.
    - **6g — model-router one-door:** no model name hardcoded at a call site.
 7. **Gate 7 — tutor evals.** A golden-set eval harness for the LLM *behaviors* the
@@ -385,7 +385,7 @@ The CI gate set (carried forward from OLD-REF's proven design, established at M0
   expand context via SQLite (`source_id`, `ordinal ± N`) → return
   `{chunk_id, citation, page_start, source_id}` to the LLM; the PDF page link
   goes to the student.
-- CLI-first admin import: `python -m src.corpus <dir> [--no-embed]`.
+- CLI-first admin import: `python -m engines.corpus <dir> [--no-embed]`.
 
 ---
 
@@ -486,7 +486,7 @@ gate(s) land + all gates stay green. Detailed exit criteria are written at the
 
 **Intent:** a curated, cited source of truth, plus the student's own materials beside it.
 
-- *(admin, CLI)* Import a Marker-format textbook: `python -m src.corpus <dir>` →
+- *(admin, CLI)* Import a Marker-format textbook: `python -m engines.corpus <dir>` →
   `corpus_source` with **content-hash idempotency**; pedagogical blocks atomic;
   re-running imports nothing new.
 - Extensible source types: textbook, literature/classic, **paper**, (later) video
@@ -864,7 +864,7 @@ invariants, and the design identity.
 ### 13.1 Memory engine: SQLite-native now, Graphiti as flip-target
 
 **Decision (2026-06-19):** build the student graph on **SQLite** behind the
-`src/graph/` one-door API for v1; **Graphiti is the named flip-target**, evaluated
+`engines/graph/` one-door API for v1; **Graphiti is the named flip-target**, evaluated
 by a spike at M3.
 
 **Why this isn't just "Graphiti yes/no."** PuttyU's "student graph" is two
@@ -886,7 +886,7 @@ So adopting Graphiti would cover (B) and leave (A) to us anyway.
 
 **Why SQLite-native for v1:**
 
-- **One door makes it swappable.** `src/graph/` is the only entry point (§5.5), so
+- **One door makes it swappable.** `engines/graph/` is the only entry point (§5.5), so
   the engine can change later without touching a single call site. Choosing SQLite
   now costs nothing later.
 - **No graph-DB server.** As of 2026 Graphiti's backends are servers (Neo4j /
@@ -912,7 +912,7 @@ in ADR-0005.
 large shared corpus (its hybrid retrieval + maintained engine earn their keep at
 scale); the embedded `falkordblite` backend stabilizes (removes the server cost);
 or our custom temporal layer becomes a maintenance burden. The flip touches only
-`src/graph/` internals.
+`engines/graph/` internals.
 
 ---
 

@@ -9,7 +9,7 @@ set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 BACKEND_DIRS=("$ROOT/backend/app.py" "$ROOT/backend/core" "$ROOT/backend/routes")
-[ -d "$ROOT/backend/src" ] && BACKEND_DIRS+=("$ROOT/backend/src")
+[ -d "$ROOT/backend/engines" ] && BACKEND_DIRS+=("$ROOT/backend/engines")
 
 if grep -rnE '\.(filter|where)\([^)]*\bowner' "${BACKEND_DIRS[@]}" --include='*.py' 2>/dev/null; then
   fail "owner-scoped: owner filters found but the one-door gate is still a stub — implement owner_scoped() and this gate (ADR-0002 Gate 5)"

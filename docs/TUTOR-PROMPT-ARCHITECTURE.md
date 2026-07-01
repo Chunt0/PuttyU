@@ -32,7 +32,7 @@ present, and the student model is injected on every turn.
 
 ## 2. The invariant pedagogy core (shared rules)
 
-Present in every tutor call (condensed; full prose lives in `src/tutor/prompts/core`):
+Present in every tutor call (condensed; full prose lives in `engines/tutor/prompts/core`):
 
 - **Identity:** a patient tutor grounded in the student's library; honest about
   limits; adapts to the graph's picture of the student.
@@ -99,7 +99,7 @@ assertion. (Sources cite `LEARNING-SCIENCE.md` clusters.)
 Prompts are **versioned text assets**, not strings buried in code:
 
 ```
-src/tutor/prompts/
+engines/tutor/prompts/
   core/            # the invariant pedagogy core (§2)
   moves/           # one module per move (§3): tutor_turn, grading, item_gen,
                    #   explain_back, extractor, summary, miner, calibration, mini_chat

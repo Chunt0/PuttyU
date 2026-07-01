@@ -24,8 +24,8 @@ gates run in CI (`.github/workflows/`) and locally via `bash .fitness/run-all.sh
 | 6c | **No raw `request.json()`** | new routes parse via typed Pydantic bodies, not raw JSON. | M0 |
 | 6d | **No cross-feature imports** into the lean core | feature modules don't reach into each other; shared code lives in shared modules. | M0 |
 | 6e | **TypeScript only** | no new `.js/.jsx/.mjs/.cjs` under `web/` (allowlist for unavoidable infra). | M0 |
-| 6f | **Graph one-door** | only `src/graph/`, `src/student_context.py`, `routes/graph_routes.py` may touch graph tables. | M3 |
-| 6g | **Model-router one-door** | no model name is hardcoded at a call site; calls declare a task profile and go through `src/model_router.py`. | M0 (router v1) / tightened as call sites grow |
+| 6f | **Graph one-door** | only `engines/graph/`, `engines/student_context.py`, `routes/graph_routes.py` may touch graph tables. | M3 |
+| 6g | **Model-router one-door** | no model name is hardcoded at a call site; calls declare a task profile and go through `engines/model_router.py`. | M0 (router v1) / tightened as call sites grow |
 | 7 | **Tutor evals** | a golden-set harness for the LLM *behaviors* the spec promises — and the **learning-science pedagogy** encoded in the tutor prompts (`docs/TUTOR-PROMPT-ARCHITECTURE.md`): never fake a citation; mark ungrounded; Socratic-not-spoiler unless asked; weakness-first; calm/no-comparison; resists injection; extraction precision; grading agreement. **Informational first** (Gate-2 quarantine playbook), blocking as it matures. See methodology below. | M1 informational (grounding/honesty) → M2 (grading) → M3 (extraction) |
 
 ### Rules

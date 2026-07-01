@@ -92,8 +92,8 @@ streaming, or any workspace surface, **grep `ODYSSEUS-REF/` first** (and
 
 ## The spine: one-door invariants + mechanical gates
 
-- **Three one-doors:** user data → `owner_scoped`; the graph → `src/graph/`; model
-  selection → `src/model_router` (call sites declare a *task profile*, never a
+- **Three one-doors:** user data → `owner_scoped`; the graph → `engines/graph/`; model
+  selection → `engines/model_router` (call sites declare a *task profile*, never a
   model name).
 - **Gates from M0** (ADR-0002): typed OpenAPI contract (CI fails on drift),
   pytest, bun test + Playwright, `tsc --strict` + ESLint, file-size ceiling,
@@ -107,11 +107,11 @@ streaming, or any workspace surface, **grep `ODYSSEUS-REF/` first** (and
 
 ## Architecture (target)
 
-- `backend/` — Python 3.11+, FastAPI. `app.py` (slim orchestrator), `core/`
-  (db/auth/middleware), `src/` (engines: `llm/`, `model_router.py`, `corpus/`,
-  `graph/`, `student_context.py`, `practice/`, `schedule/`, `tutor/prompts/`),
-  `routes/`, `tests/`, `scripts/`. **Doc references to `src/…` mean
-  `backend/src/…`; the corpus CLI runs from `backend/` (`python -m src.corpus …`).**
+- `backend/` — Python 3.11+, FastAPI. `app.py` (slim orchestrator), `routes/`
+  (HTTP layer), `core/` (db/auth/middleware), `engines/` (domain logic: `llm/`,
+  `model_router.py`, `corpus/`, `graph/`, `student_context.py`, `practice/`,
+  `schedule/`, `tutor/prompts/`), `tests/`, `scripts/`. The corpus CLI runs
+  from `backend/` (`python -m engines.corpus …`).
 - `web/` — React 19 + TS (strict) + Vite, toolchain **Bun**. `src/app` (shell,
   router, window manager, theme), `src/features` (one folder per screen),
   `src/components`, `src/api` (generated client + SSE helpers).

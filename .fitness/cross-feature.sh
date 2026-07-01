@@ -2,8 +2,8 @@
 # Gate 6d — no cross-feature imports (ADR-0002): feature modules don't reach
 # into each other; shared code moves to shared modules.
 #
-# Backend: a package backend/src/<feat>/ may not import from a sibling
-# package backend/src/<other>/. Top-level modules directly under src/
+# Backend: a package backend/engines/<feat>/ may not import from a sibling
+# package backend/engines/<other>/. Top-level modules directly under engines/
 # (e.g. model_router.py, student_context.py) are shared by design.
 # Web: web/src/features/<a> may not import from features/<b>.
 set -euo pipefail
@@ -11,15 +11,22 @@ source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
 
 violations=0
 
+# Layout guard: domain logic lives in backend/engines/ (renamed from the
+# earlier planned backend/src/ — see CLAUDE.md architecture).
 if [ -d "$ROOT/backend/src" ]; then
-  for featdir in "$ROOT/backend/src"/*/; do
+  echo "backend/src/ exists — domain logic belongs in backend/engines/" >&2
+  violations=1
+fi
+
+if [ -d "$ROOT/backend/engines" ]; then
+  for featdir in "$ROOT/backend/engines"/*/; do
     [ -d "$featdir" ] || continue
     feat=$(basename "$featdir")
-    for otherdir in "$ROOT/backend/src"/*/; do
+    for otherdir in "$ROOT/backend/engines"/*/; do
       other=$(basename "$otherdir")
       [ "$other" = "$feat" ] && continue
-      if grep -rnE "^\s*(from|import)\s+src\.$other(\.|\s|$)" "$featdir" --include='*.py'; then
-        echo "backend: src/$feat imports sibling feature src/$other" >&2
+      if grep -rnE "^\s*(from|import)\s+engines\.$other(\.|\s|$)" "$featdir" --include='*.py'; then
+        echo "backend: engines/$feat imports sibling feature engines/$other" >&2
         violations=1
       fi
     done

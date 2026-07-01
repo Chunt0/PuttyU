@@ -90,7 +90,7 @@ confirmation.
 ### S8 — Local code execution / dependencies
 - **Risk:** supply-chain or an agentic tool running shell.
 - **Mitigations:** **no agent/tool execution in v1** (agent mode is later, SPEC
-  F3); `src/agent/` + `src/tools/` are not built until that milestone. When they
+  F3); `engines/agent/` + `engines/tools/` are not built until that milestone. When they
   land, tools run under explicit allowlist + confirmation, specced here first.
 
 ### S9 — Runaway cost / provider abuse

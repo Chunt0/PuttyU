@@ -149,7 +149,7 @@ citation; mark ungrounded answers.
    `library_catalog.ingested_source_id`. On failure → `status=failed` (visible,
    not silent — SPEC §12).
 3. The UI polls `GET /api/sources/{id}/status` and enables the source when ready.
-4. Idempotent by `content_hash`; the admin CLI (`python -m src.corpus …`) shares
+4. Idempotent by `content_hash`; the admin CLI (`python -m engines.corpus …`) shares
    the exact same pipeline.
 
 ## 8. Frontend shell (Odysseus-style, SPEC §6)

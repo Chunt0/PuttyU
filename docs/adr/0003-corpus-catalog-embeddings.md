@@ -18,7 +18,7 @@ A clean separation the SPEC previously conflated:
   metadata only (title, author, subject, type, on-disk path, gutenberg_id), **no
   chunks, no vectors**. ~6k rows; trivial for SQLite. This is what F1's "suggest
   matching sources" searches. Built/refreshed by an explicit one-time
-  `python -m src.corpus catalog` (a full library scan — not done on every boot).
+  `python -m engines.corpus catalog` (a full library scan — not done on every boot).
 - **Corpus** — the **ingested** subset: `corpus_source` + `corpus_chunk` rows +
   Chroma vectors. Only sources that have actually been chunked and embedded.
 
@@ -29,7 +29,7 @@ A clean separation the SPEC previously conflated:
   `corpus_chunk` rows → set `library_catalog.ingested_source_id`.
 - **Idempotent** by `content_hash` (re-linking/re-running imports nothing new).
 - Admin CLI remains available for pre-ingesting:
-  `python -m src.corpus ingest <path> [--no-embed]` (the `--no-embed` SQLite-only
+  `python -m engines.corpus ingest <path> [--no-embed]` (the `--no-embed` SQLite-only
   fast path for tests).
 - A small curated set (O3: statistics + calculus + one science book) is
   pre-ingested for the M1 worked example; everything else is lazy.
