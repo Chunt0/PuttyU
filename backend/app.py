@@ -47,5 +47,11 @@ if __name__ == "__main__":
     settings = get_settings()
     # Bind to the configured host/port (default 127.0.0.1:7000) so no CLI flag
     # is needed and PUTTYU_HOST/PUTTYU_PORT actually take effect. Import string
-    # form keeps --reload working.
-    uvicorn.run("app:app", host=settings.host, port=settings.port, reload=True)
+    # form keeps --reload working. Test mode (e2e/CI) skips the reloader —
+    # determinism over convenience there.
+    uvicorn.run(
+        "app:app",
+        host=settings.host,
+        port=settings.port,
+        reload=not settings.test_mode,
+    )

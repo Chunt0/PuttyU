@@ -47,6 +47,10 @@ services/data/
 # Test capture artifacts (browser session dumps may contain personal content)
 .playwright-mcp/
 
+# Playwright e2e artifacts (Gate 3b)
+test-results/
+playwright-report/
+
 # OS
 .DS_Store
 Thumbs.db

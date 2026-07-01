@@ -1,0 +1,48 @@
+# PuttyU CI — the deterministic gate set (ADR-0002), same entrypoint as local:
+# bash .fitness/run-all.sh. Gate 7 (tutor evals) needs a configured model and
+# never runs here.
+name: gates
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  gates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Install Bun
+        uses: oven-sh/setup-bun@v2
+
+      - name: Sync backend (locked)
+        run: uv sync --locked
+        working-directory: backend
+
+      - name: Install web deps (locked)
+        run: bun install --frozen-lockfile
+        working-directory: web
+
+      - name: Install Playwright chromium
+        run: bunx playwright install --with-deps chromium
+        working-directory: web
+
+      - name: Run all gates
+        run: bash .fitness/run-all.sh
+
+      - name: Upload Playwright report on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: web/playwright-report/
+          retention-days: 7
+          if-no-files-found: ignore

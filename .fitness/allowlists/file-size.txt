@@ -1,0 +1,3 @@
+# Gate 6a — files allowed over the 400-line ceiling (ADR-0002).
+# Frozen: this list may only SHRINK. A listed file back under the ceiling
+# must be removed. Currently empty — keep it that way.

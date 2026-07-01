@@ -1,0 +1,2 @@
+# Gate 6e — JS files under web/ that are unavoidable infra (ADR-0002).
+# Frozen: this list may only SHRINK. Currently empty — keep it that way.

@@ -9,7 +9,8 @@
     "gen:api": "openapi-typescript src/api/openapi.json -o src/api/schema.d.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
-    "test": "bun test"
+    "test": "bun test src",
+    "e2e": "playwright test"
   },
   "dependencies": {
     "openapi-fetch": "^0.13.0",
@@ -19,6 +20,7 @@
   "devDependencies": {
     "@eslint/js": "^9.18.0",
     "@happy-dom/global-registrator": "^15.0.0",
+    "@playwright/test": "^1.61.1",
     "@testing-library/dom": "^10.0.0",
     "@testing-library/react": "^16.1.0",
     "@types/bun": "latest",

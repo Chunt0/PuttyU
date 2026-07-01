@@ -27,3 +27,6 @@ package = false
 testpaths = ["tests"]
 pythonpath = ["."]
 asyncio_mode = "auto"
+markers = [
+    "quarantine: flaky test — excluded from the blocking Gate 2 run (ADR-0002)",
+]
