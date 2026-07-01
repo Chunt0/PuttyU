@@ -8,9 +8,9 @@
 
 ## Status
 
-**Greenfield — in planning→build transition (2026-06).** The planning layer is
-complete and committed; **no application code exists yet.** The first build is
-**M0** (foundation & spine).
+**M0 (foundation & spine) is underway** — built in small, reviewed chunks with
+a mechanical gate harness (typed OpenAPI contract, tests, structural checks)
+green at every step, locally and in CI. Live state: [`docs/STATUS.md`](./docs/STATUS.md).
 
 ## Where to start reading
 

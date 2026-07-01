@@ -6,17 +6,13 @@ source of truth (RAG with page citations), a per-student **memory graph** that
 tracks mastery over time, course-scoped study, practice, and an Odysseus-grade,
 typesafe UI. Single-student in v1.
 
-## Status — read this first
+## Status — read `docs/STATUS.md` first
 
-- **Greenfield. Planning is complete; there is NO application code yet.** The
-  first thing to build is **M0** (foundation & spine).
-- The repo currently holds the **planning docs** + **stale CI** in `.github/`
-  carried from a prior project: `.github/workflows/ci.yml` byte-compiles
-  `app.py core routes src …` that don't exist here, and `.github/scripts/*.js`
-  exist. **It will fail and it violates our TS-only plan.** **M0 replaces
-  `.github/` with our own gate set** (ADR-0002) and removes the leftover JS.
-- If the planning docs aren't in `git ls-files`, they're **uncommitted** —
-  committing them (and this file) is what makes the repo ready for a fresh clone.
+**Live state (current chunk, what's done, what's next) lives in
+`docs/STATUS.md`** and is updated in the same commit as each chunk — this file
+states only stable truths. The build proceeds milestone by milestone (SPEC §9),
+chunk by chunk (`docs/M0-PLAN.md`); the planning docs are the spec, the gate
+harness (`.fitness/`, ADR-0002) is the enforcement.
 
 ## The prime directive: build in digestible chunks
 
@@ -36,7 +32,7 @@ over-scoped and got out of hand.
 
 ## Read order (for a new session)
 
-1. **this file**
+1. **this file**, then `docs/STATUS.md` — where the build actually is
 2. `SPEC.md` — vision, hard rules, features F1–F12, milestone roadmap + Definition
    of Done (§9.1), resolved/open decisions (§13)
 3. `docs/DESIGN-M0-M1.md` — the concrete first build: schema, API, SSE contract,
@@ -122,23 +118,23 @@ streaming, or any workspace surface, **grep `ODYSSEUS-REF/` first** (and
 - SQLite (canonical) + **embedded** Chroma (vectors); model router over Anthropic
   (Claude) + local Ollama. **Linux only.** Single process, single owner.
 
-## Running / testing (once M0 scaffolds — none of this exists yet)
+## Running / testing
 
-- Backend: `cd backend && uv run python app.py` (binds `PUTTYU_HOST`/`PUTTYU_PORT`,
-  default `127.0.0.1:7000`; needs `PUTTYU_DATA_DIR` and a provider configured).
-- Web: `cd web && bun install && bun run dev` (Vite proxies `/api`).
-- Contract: `python scripts/openapi-export.py && cd web && bun run gen:api` after
-  any UI-consumed route change.
-- All gates: `bash .fitness/run-all.sh`. **Deterministic gates block CI; LLM/tutor
-  evals (Gate 7) run on-demand against a configured model** (no API keys in CI →
-  informational/local, never a blocking CI job).
-- Git: branch off `main`; push via SSH (`git@github.com:Chunt0/PuttyU.git`).
-  `OLD-REF/`, `ODYSSEUS-REF/`, `putty-ai-design/`, `resources/`, `textbooks/` are
-  gitignored.
+The root **`Makefile` is the executable documentation** — commands live there,
+docs point here:
 
-## Current next step
+- `make dev-backend` / `make dev-web` — the two dev processes (Vite proxies `/api`).
+- `make gates` — every deterministic gate (`bash .fitness/run-all.sh`); same
+  entrypoint CI runs. **Deterministic gates block CI; LLM/tutor evals (Gate 7)
+  run on-demand against a configured model** (no API keys in CI → never a
+  blocking CI job).
+- `make contract` — regenerate `openapi.json` + `schema.d.ts` after any
+  UI-consumed route change (Gate 1 fails on drift otherwise).
+- Git: push via SSH (`git@github.com:Chunt0/PuttyU.git`). Reference dirs
+  (`OLD-REF/`, `ODYSSEUS-REF/`, `putty-ai-design/`, `resources/`, `textbooks/`)
+  are gitignored.
 
-1. Resolve **O7** (product wordmark/brand — `DESIGN-SYSTEM.md` §"Brand
-   reconciliation").
-2. Start **M0** per `docs/DESIGN-M0-M1.md` §10 — in digestible, reviewed chunks,
-   all gates green — beginning by replacing the stale `.github/` CI with our own.
+## Next step
+
+See **`docs/STATUS.md`** — always the current chunk of `docs/M0-PLAN.md`,
+built in digestible, reviewed increments with all gates green.
