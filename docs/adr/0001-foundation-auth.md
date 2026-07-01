@@ -24,11 +24,13 @@
 ### Authentication (v1: single owner)
 
 PuttyU v1 has exactly one human: the **owner**, who is also the **student**
-(SPEC §3). Auth is built so multi-student is a later seam, not a v1 feature.
+(SPEC §3) — and the product is **permanently single-student** (SPEC §2). The
+auth model leaves room for exactly one later addition: a privileged
+**admin/tutor (parent) role** (SPEC F12/O15) — never a second student.
 
 - **One `user` row = the owner.** All user data is scoped to it via
-  `owner_scoped` (ADR-0002 Gate 5, ADR-0004). The table supports many rows; v1
-  creates one.
+  `owner_scoped` (ADR-0002 Gate 5, ADR-0004). The table supports multiple rows
+  only so an admin/tutor role can be added cleanly later; v1 creates one.
 - **First-run setup.** If no `user` exists, the app serves a setup screen
   (`POST /api/auth/setup`) that creates the owner with a chosen password. After
   that, setup is closed.
@@ -72,7 +74,8 @@ PuttyU v1 has exactly one human: the **owner**, who is also the **student**
 ## Consequences
 
 - A trivially simple auth surface (one account) keeps M0 small while
-  `owner_scoped` keeps the multi-student door open at zero present cost.
+  `owner_scoped` keeps user-data queries disciplined and the admin/tutor-role
+  door open at zero present cost.
 - Embedded everything (SQLite + Chroma in-process) means "clone, set two env
   vars, run" — matching the "start slow / no extra servers" stance that also
   drove the memory-engine decision (SPEC §13.1).

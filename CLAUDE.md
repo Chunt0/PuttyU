@@ -4,7 +4,9 @@
 **tutoring workspace**: a curated textbook/classics **library** as a grounded
 source of truth (RAG with page citations), a per-student **memory graph** that
 tracks mastery over time, course-scoped study, practice, and an Odysseus-grade,
-typesafe UI. Single-student in v1.
+typesafe UI. **Permanently single-student** — one student per instance; a
+privileged admin/tutor (parent) role may come later, a second student never
+(SPEC §2).
 
 ## Status — read `docs/STATUS.md` first
 
@@ -81,6 +83,9 @@ streaming, or any workspace surface, **grep `ODYSSEUS-REF/` first** (and
 
 ## Hard product rules (owner directives — do not relitigate)
 
+- **One student, permanently** — never multi-student; a privileged admin/tutor
+  (parent) role may be added later (SPEC §2, F12/O15). Depth for one, not
+  breadth for many.
 - **Reading is the medium** — no TTS/STT, ever.
 - **Untrusted-content invariant** — every model-derived write (events, todos,
   tags, graph assertions) is a **proposal the user confirms**, never silent.

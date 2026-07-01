@@ -62,6 +62,11 @@ Don't fool ourselves when measuring the tutor's models/behaviors:
   CI has no API keys/local model, so the deterministic gates (1–6) block CI while
   the LLM evals run locally/manually and are tracked over time (the quarantine
   playbook). This is the one gate that cannot live purely in CI.
+- **Single-student scope (SPEC §2 / O10):** student-level splits and the
+  AUC/RMSE mastery-metric bundle presume cross-student data this product
+  permanently lacks. In practice, v1 Gate 7 = **behavioral pass/fail golden
+  scenarios** + **Cohen's κ against owner-graded samples**; the fuller bundle
+  applies only where labeled data actually exists. Final scoping in ADR-0005.
 
 ## Consequences
 

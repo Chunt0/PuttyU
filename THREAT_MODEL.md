@@ -112,8 +112,9 @@ confirmation.
 ## v1 decisions (security-relevant)
 
 - **No web access / no agentic tool execution** in M0–M2.
-- **Single owner**, no multi-tenant isolation yet (`owner_scoped` is the prepared
-  seam; it becomes load-bearing at multi-student — F12).
+- **Permanently single-student** (SPEC §2) — no multi-tenant isolation needed,
+  ever. `owner_scoped` is query discipline plus the seam for a possible
+  privileged admin/tutor role (F12/O15), not multi-tenant preparation.
 - **Local-first by default** (router policy): background extraction (M3) never
   leaves the box unless the owner chooses quality-first.
 

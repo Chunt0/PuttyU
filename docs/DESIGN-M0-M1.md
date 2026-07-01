@@ -187,6 +187,7 @@ citation; mark ungrounded answers.
 | Chroma / embeddings unavailable | Retrieval falls back to SQLite FTS5 keyword; UI notes reduced grounding; never hard-fail. |
 | Retrieval returns nothing | Answer proceeds ungrounded with the honesty marker (`grounded:false`). |
 | Ingestion fails | `corpus_source.status=failed`, surfaced in the library panel; the link stays but the source shows "failed — retry". |
+| App restarts mid-ingest | Background ingest tasks don't survive restart. On startup, sweep stale `corpus_source.status=ingesting` → `failed` so status stays honest (surfaced as retryable, same as above). |
 | PDF missing for a citation | Chip still opens the section (TOC); "PDF unavailable" instead of a dead viewer. |
 | Generation stopped mid-stream | Server finalizes the partial assistant message; history stays consistent. |
 

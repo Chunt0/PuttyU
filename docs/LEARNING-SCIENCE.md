@@ -88,8 +88,9 @@ parameters and a per-student latent `P(L)`:
 - **Multi-KC items:** decompose into single-KC steps (preferred); keep **PFA/LKT**
   (`P=σ(β + Σ γ·successes + ρ·failures)`) as an optional second engine for items
   that genuinely tag several KCs.
-- **Defer DKT** (RNN/LSTM): needs large cross-student data, is uninterpretable and
-  swing-prone, and adds little after ~2 practices. Revisit post-multi-student.
+- **DKT is permanently out** (RNN/LSTM): needs large cross-student data PuttyU
+  will never have (permanently single-student — SPEC §2), is uninterpretable and
+  swing-prone, and adds little after ~2 practices.
 - **Elo** is a lightweight online per-item difficulty estimator if we want adaptive
   item selection without full IRT. Classical IRT assumes *no learning* → wrong for a tutor.
 
@@ -156,7 +157,10 @@ parameters and a per-student latent `P(L)`:
 
 ### 2.6 Proving it works — evaluation & causal rigor (Clusters C + F/H) · Gate 7, post-M5
 
-**Model-evaluation discipline (Botelho) — bake into Gate 7:**
+**Model-evaluation discipline (Botelho) — bake into Gate 7** *(scoped for a
+permanently single-student product in ADR-0002 / SPEC O10: v1 = behavioral
+scenarios + κ on owner-graded samples; the fuller bundle only where labeled data
+exists)*:
 - **Student-level cross-validation** (all of a student's rows in one fold). Row-level
   splits with multi-row-per-student data silently inflate "new-student" performance
   — the single most likely way our numbers could lie.
@@ -216,7 +220,8 @@ parameters and a per-student latent `P(L)`:
   patterns** (z-scored, rows=attempts) to surface recurring misconceptions; a
   concept×session heat-map (red/blue, **white=missing**) is a strong Progress-UI
   artifact.
-- **Later, multi-student:** learner-profile clustering needs a population — prefer
+- **Not applicable to PuttyU** (permanently single-student — SPEC §2); kept for
+  science completeness: learner-profile clustering needs a population — prefer
   **latent class/profile analysis (LCA/LPA)** over k-means when you need defensible
   "real distinct types" with significance; HCA heat-maps for exploration. Always
   z-score; prefer average linkage (missing-data robust); keep it deterministic.
@@ -249,7 +254,9 @@ parameters and a per-student latent `P(L)`:
 
 ## 3. SPEC updates (the punch-list this doc feeds)
 
-Proposed edits, ready to apply on your go-ahead:
+> **Status: APPLIED (2026-06).** All ten items below are folded into
+> SPEC / ADR-0002 / ADR-0003 / ADR-0004 / DESIGN-SYSTEM. Kept for provenance —
+> **do not re-apply.**
 
 1. **§13 / ADR-0005 (M3 mastery):** change "BKT-lite" → **real per-concept BKT**
    with the four params, the update equations, and the **degeneracy clamps

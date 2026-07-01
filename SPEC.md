@@ -8,7 +8,7 @@
 
 - **Status:** v0.1 — DRAFT for review (2026-06-19). North-star vision is frozen;
   build is incremental, one milestone at a time (§9).
-- **Owner:** solo maintainer (agent-built), single-student v1.
+- **Owner:** solo maintainer (agent-built); **permanently single-student** (§2).
 - **This is a fresh start.** `OLD-REF/` (a previous attempt that over-scoped) and
   `ODYSSEUS-REF/` (the workspace whose UI/UX we replicate) are **reference-only**
   and will be removed once fully mined. No code is carried over verbatim; the
@@ -81,6 +81,12 @@ in a typesafe React + TypeScript stack.
 
 These are owner directives. Do not relitigate them; build with them.
 
+- **One student, permanently.** PuttyU serves exactly **one student per
+  instance** — multi-student is not deferred scope; it is **out of the product**.
+  A privileged **admin/tutor role** (e.g. a parent: view progress, curate the
+  library, set dials) may be added later (F12/O15) — an added *role*, never a
+  second *student*. Every design choice optimizes **depth for one** over breadth
+  for many.
 - **Reading is the medium.** No TTS, no STT — **ever**. The tutor's output is
   text the student reads; the student's input is typed, drawn, or photographed.
   This is deliberate pedagogy, not a missing feature.
@@ -114,7 +120,9 @@ These are owner directives. Do not relitigate them; build with them.
 | **The owner/admin** | Curates the library, configures providers, runs the box. | Same human as the user in v1. Admin actions stay out of the daily surface. |
 | **The tutor** (the product) | The AI persona across every course tab. | Patient, Socratic-leaning, grounded in the library, honest about its limits, adapts to the graph's picture of the student. |
 
-Multi-student is a prepared seam (the `owner_scoped` invariant), not a v1 feature.
+PuttyU is **permanently single-student** (§2). `owner_scoped` is query
+discipline and the clean seam for a possible admin/tutor role (O15) — **not**
+multi-student preparation.
 
 ---
 
@@ -220,8 +228,9 @@ sidecars (auth, settings, router config) where a table is overkill.
 Each subsystem has exactly one entry point, mechanically enforced (§7):
 
 1. **User data → `owner_scoped(query, Model, user)`.** The only way to scope
-   user data. No ad-hoc `.filter(Model.owner == ...)`. (Prepared seam for
-   multi-student.)
+   user data. No ad-hoc `.filter(Model.owner == ...)`. (Query discipline + the
+   seam for a possible privileged admin/tutor role — §2; **not** multi-student
+   preparation.)
 2. **Graph → `engines/graph/` public API.** Non-graph code reads/writes the student
    model through `engines/graph/queries.py` / `engines/student_context.py`, never raw SQL
    on graph tables. This is also what makes the memory *engine* swappable
@@ -404,7 +413,7 @@ the discipline that OLD-REF lacked (§12).
 | **M4 — Practice** | **Review queue** (**half-life-regression scheduling**, expanding intervals, calendar-aware weighting, Review UI); **the Gym** (graph-calibrated, weakness-first, ZPD difficulty); **calibration** flow; **exam simulation** (timed, silent, scope-weighted) + readiness; **explain-it-back**; **periphery tier + coupling mute**. | F1 (calibration), F8, F6 (periphery) |
 | **M5 — Dashboard & planning** | **Dashboard** (cards, all doors); **todo** model + CRUD; **Cmd-K global search** (front door); **schedule miner** (syllabus → event/todo proposals, idempotent, confirm-first); **persona + adaptivity dial + integrity stance**; **session-summary notes**; calendar/notes course-binding; **cost meter** + routing observability; **typed math input**. | F2 (miner), F9, F10, F11 |
 | **M6 — Canvas & born-digital work** | **Canvas workspace** (Pointer Events + pressure; blank/ruled/grid/axes templates; one-click submit-as-image; feedback → revise → resubmit; stroke-data persistence so saved canvases reopen editable). | F4 (canvas) |
-| **Later** | Multi-student (`owner_scoped` becomes blocking); video sources; mobile PWA; ntfy nudges; backup/export; Anki export. | F12 |
+| **Later** | An **admin/tutor (parent) role** with added privileges (an added role, never a second student — §2/O15); video sources; mobile PWA; ntfy nudges; backup/export; Anki export. | F12 |
 
 > **M0 is the unavoidable scaffolding** beneath the M1 slice you chose; together
 > they are the first two steps. Nothing past M1 is built until M0 and M1 are
@@ -732,8 +741,10 @@ gate(s) land + all gates stay green. Detailed exit criteria are written at the
 
 ### F12 — Later (specced now so seams stay open; NOT v1)
 
-- Multiple students share an instance (`owner_scoped` becomes blocking; per-student
-  graph/courses/sessions; library stays shared/read-only).
+- An **admin/tutor (parent) role** with added privileges — e.g. view progress,
+  curate the library, adjust dials/policies (scope: O15). A second *role* on the
+  same instance, **never a second student** (§2): the graph, courses, and
+  sessions remain one student's.
 - Video sources (transcript chunks, time locators, timestamp-deep-linked
   citations).
 - Mobile PWA (dashboard + review + mini-chat installable; full workspace stays
@@ -753,7 +764,12 @@ gate(s) land + all gates stay green. Detailed exit criteria are written at the
   *UI/UX shell*, not its feature breadth.
 - **No voice.** No TTS/STT, ever.
 - **No gamification.** No streaks/XP/leaderboards.
-- **No multi-student in v1** (seam only).
+- **No multi-student, ever.** One student per instance is a product decision
+  (§2), not deferred scope. A privileged admin/tutor role may come later (F12/O15).
+- **Practice depth is STEM-first.** Humanities/lit courses get grounded chat,
+  close-reading discussion, notes, and explain-it-back; the practice engine
+  (worksheets, Gym, exam sim, the BKT-heavy loops) is exercised mainly by STEM
+  content. Deliberate, not hidden.
 - **No cross-OS support.** Linux only.
 - **No Alembic in v1** — idempotent startup migrations on SQLite (revisit if
   schema logic gets complex).
@@ -790,7 +806,7 @@ do differently:
 5. **Make confirm-first flows visible/sync, not silent async.** If extraction or
    grading fails, the student must know — it can't fail into nothing.
 6. **Ship a small curated corpus first** (a few textbooks), not "all of arXiv".
-7. **Prove single-student before wiring multi-student.**
+7. **Single-student is the product, not a phase** — no multi-student plumbing.
 
 What we **keep** from OLD-REF: the vision, the verifiability-as-mechanical-gates
 discipline, the two-store corpus design, the typed OpenAPI contract, the one-door
@@ -858,8 +874,38 @@ invariants, and the design identity.
   concepts. Decide the dedup/aliasing rule (candidate: embedding-cluster + confirm).
 - **O9 (M3):** **BKT parameters in a single-student world.** Per-skill BKT params
   can't be *fitted* with one student's sparse data. v1 uses **seeded default
-  params** (e.g. L0≈0.3, T≈0.1, G≈0.2, S≈0.1, clamped) — confirm; per-skill
-  fitting waits for cross-student data (multi-student / later).
+  params** (e.g. L0≈0.3, T≈0.1, G≈0.2, S≈0.1, clamped) — confirm at M3.
+  **Permanently single-student (§2) means per-skill fitting is off the table for
+  good:** defaults + clamps are the design, not a stopgap. (Gate-7 scoping: O10.)
+- **O10 (M3, with ADR-0005):** **Gate-7 scope for a permanently single-student
+  product.** Student-level CV splits and AUC/RMSE on mastery predictions presume
+  cross-student data this product will never have (§2). v1 Gate 7 =
+  **behavioral pass/fail golden scenarios** (grounding honesty, no-spoiler,
+  injection resistance, calm tone) + **Cohen's κ on worksheet-grading agreement**
+  against owner-graded samples. The fuller metric bundle applies only where
+  labeled data actually exists. Freeze the final v1 metric set in ADR-0005.
+- **O11 (M3 entry, before ADR-0005):** **the KC-tagging spike.** The Q-matrix is
+  load-bearing for BKT/Gym/review, and KC definition is the deepest failure mode
+  (`docs/LEARNING-SCIENCE.md` §1). Spike: LLM-tag one chapter's exercises on the
+  light tier; owner reviews precision; decide the tagging method + quality bar.
+  Same standing as the Graphiti spike (§13.1).
+- **O12 (M0.3 entry):** **the Odysseus-fidelity checklist.** Before building the
+  shell, extract a concrete behavior checklist from `ODYSSEUS-REF/` (window
+  drag/dock/z-order rules, palette keybindings, composer/slash behaviors,
+  streaming feel) and sub-chunk M0.3 against it — turn the subjective DoD into a
+  mechanical one.
+- **O13 (M1):** **prod serving lands at M1.** `bun run build` → FastAPI
+  `StaticFiles` + SPA fallback + the single-container compose (ADR-0001) become
+  an M1 exit criterion — currently specced (M0-PLAN §1) but assigned to no
+  milestone.
+- **O14 (M1):** **honesty-marker semantics.** `grounded` means "cites your
+  library," not "verified against it" — a real `[S#]` can still be misattributed
+  (the classic RAG failure). Word the UI accordingly; add an entailment
+  spot-check eval to the Gate-7 roadmap.
+- **O15 (later, F12):** **admin/tutor (parent) role scope.** Which privileges
+  (progress visibility, library curation, dial/policy control), how it
+  authenticates, and what stays student-private. An added role, never a second
+  student (§2).
 
 ### 13.1 Memory engine: SQLite-native now, Graphiti as flip-target
 
@@ -908,11 +954,10 @@ tier, (2) operational cost of a graph DB on a single-user box, (3) retrieval
 quality vs. our SQLite + Chroma hybrid. Record the outcome and the flip condition
 in ADR-0005.
 
-**Flip condition — adopt Graphiti when any holds:** we move to multi-student or a
-large shared corpus (its hybrid retrieval + maintained engine earn their keep at
-scale); the embedded `falkordblite` backend stabilizes (removes the server cost);
-or our custom temporal layer becomes a maintenance burden. The flip touches only
-`engines/graph/` internals.
+**Flip condition — adopt Graphiti when any holds:** the memory/corpus grows past
+what our SQLite + Chroma hybrid retrieves well; the embedded `falkordblite`
+backend stabilizes (removes the server cost); or our custom temporal layer
+becomes a maintenance burden. The flip touches only `engines/graph/` internals.
 
 ---
 

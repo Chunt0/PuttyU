@@ -4,7 +4,7 @@
 > workspace**: a curated textbook/classics **library** as a grounded source of
 > truth (answers cite the page), a per-student **memory graph** that tracks what
 > you know over time, course-scoped study, practice, and an Odysseus-grade,
-> typesafe UI. Single-student in v1.
+> typesafe UI. Permanently single-student — built deep for one learner.
 
 ## Status
 
