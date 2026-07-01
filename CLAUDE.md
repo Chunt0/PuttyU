@@ -124,8 +124,8 @@ streaming, or any workspace surface, **grep `ODYSSEUS-REF/` first** (and
 
 ## Running / testing (once M0 scaffolds — none of this exists yet)
 
-- Backend: `cd backend && uvicorn app:app --reload` (needs `PUTTYU_DATA_DIR` and a
-  provider configured).
+- Backend: `cd backend && uv run python app.py` (binds `PUTTYU_HOST`/`PUTTYU_PORT`,
+  default `127.0.0.1:7000`; needs `PUTTYU_DATA_DIR` and a provider configured).
 - Web: `cd web && bun install && bun run dev` (Vite proxies `/api`).
 - Contract: `python scripts/openapi-export.py && cd web && bun run gen:api` after
   any UI-consumed route change.

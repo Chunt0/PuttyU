@@ -1,7 +1,7 @@
 """PuttyU backend — slim FastAPI orchestrator (SPEC §5.3).
 
 Middleware → routers → lifespan. No business logic here.
-Run from `backend/`:  uv run uvicorn app:app --reload
+Run from `backend/`:  uv run python app.py   (host/port from PUTTYU_* config)
 """
 
 from contextlib import asynccontextmanager
@@ -39,3 +39,13 @@ def create_app() -> FastAPI:
 
 
 app = create_app()
+
+
+if __name__ == "__main__":
+    import uvicorn
+
+    settings = get_settings()
+    # Bind to the configured host/port (default 127.0.0.1:7000) so no CLI flag
+    # is needed and PUTTYU_HOST/PUTTYU_PORT actually take effect. Import string
+    # form keeps --reload working.
+    uvicorn.run("app:app", host=settings.host, port=settings.port, reload=True)
