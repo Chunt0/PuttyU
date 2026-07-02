@@ -11,7 +11,10 @@ const E2E_DATA_DIR = path.join(import.meta.dirname, "test-results", "puttyu-data
 
 export default defineConfig({
   testDir: "e2e",
-  fullyParallel: true,
+  // One worker, in order: the specs share one backend and walk stateful flows
+  // (first-run setup exists exactly once per run).
+  fullyParallel: false,
+  workers: 1,
   forbidOnly: !!process.env.CI,
   retries: 0,
   reporter: process.env.CI ? "github" : "list",
@@ -22,7 +25,9 @@ export default defineConfig({
   projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
   webServer: [
     {
-      command: "uv run python app.py",
+      // Wipe the e2e data dir first: every run starts as a fresh box (the
+      // flow specs assume first-run setup).
+      command: `rm -rf "${E2E_DATA_DIR}" && uv run python app.py`,
       cwd: "../backend",
       url: `http://127.0.0.1:${API_PORT}/api/health`,
       reuseExistingServer: false,

@@ -36,6 +36,8 @@ SessionLocal = sessionmaker(bind=engine, autoflush=False, expire_on_commit=False
 
 def init_db() -> None:
     """Create the data dir and all tables. Safe to call repeatedly."""
+    from . import models  # noqa: F401  — register tables on Base.metadata
+
     _settings.data_dir.mkdir(parents=True, exist_ok=True)
     Base.metadata.create_all(engine)
 

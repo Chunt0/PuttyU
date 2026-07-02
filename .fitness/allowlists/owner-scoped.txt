@@ -1,0 +1,2 @@
+# Gate 5 — legacy ad-hoc owner-filter sites (ADR-0002).
+# Frozen: this list may only SHRINK. Currently empty — keep it that way.

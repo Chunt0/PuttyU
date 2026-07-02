@@ -9,6 +9,7 @@ dependencies = [
     "pydantic>=2.7",
     "pydantic-settings>=2.3",
     "sqlalchemy>=2.0",
+    "bcrypt>=5.0.0",
 ]
 
 # Dev/test deps (installed by `uv sync` by default).

@@ -1,18 +1,34 @@
 #!/usr/bin/env bash
-# Gate 5 — owner_scoped one-door (ADR-0002). Blocking from M1.
+# Gate 5 — owner_scoped one-door (ADR-0002). ACTIVE since M0.1.
 #
-# Only owner_scoped(query, Model, user) may scope user data. Until the first
-# user-data tables land (M1), this gate self-arms: if owner-style filters
-# appear in the backend before the one-door exists, it fails loudly so the
-# real gate gets built the same milestone.
+# core/scoping.py::owner_scoped() is the ONLY place user data may be scoped by
+# owner. Any other `.filter(...owner...)` / `.where(...owner...)` in production
+# code fails here. allowlists/owner-scoped.txt freezes legacy sites (shrink-only;
+# currently empty — keep it that way).
 set -euo pipefail
 source "$(dirname "${BASH_SOURCE[0]}")/lib.sh"
+
+ALLOWLIST="$ROOT/.fitness/allowlists/owner-scoped.txt"
+ONE_DOOR="backend/core/scoping.py"
 
 BACKEND_DIRS=("$ROOT/backend/app.py" "$ROOT/backend/core" "$ROOT/backend/routes")
 [ -d "$ROOT/backend/engines" ] && BACKEND_DIRS+=("$ROOT/backend/engines")
 
-if grep -rnE '\.(filter|where)\([^)]*\bowner' "${BACKEND_DIRS[@]}" --include='*.py' 2>/dev/null; then
-  fail "owner-scoped: owner filters found but the one-door gate is still a stub — implement owner_scoped() and this gate (ADR-0002 Gate 5)"
+hits=$(
+  grep -rnE '\.(filter|where)\([^)]*\bowner\b' "${BACKEND_DIRS[@]}" \
+    --include='*.py' 2>/dev/null |
+    grep -v "$ONE_DOOR" || true
+)
+
+# Drop allowlisted lines (path prefix match), if any ever exist.
+while IFS= read -r allowed; do
+  [ -n "$allowed" ] || continue
+  hits=$(echo "$hits" | grep -v "^$ROOT/$allowed" || true)
+done < <(read_allowlist "$ALLOWLIST")
+
+if [ -n "$hits" ]; then
+  echo "$hits" >&2
+  fail "owner-scoped: ad-hoc owner filter outside core/scoping.py — use owner_scoped(stmt, Model, user)"
 fi
 
-pass "owner-scoped: no user-data scoping yet (one-door lands M1) — informational"
+pass "owner-scoped: owner filters only via the one-door (core/scoping.py)"

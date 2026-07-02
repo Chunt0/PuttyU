@@ -66,6 +66,30 @@
   font-size: 12px;
 }
 
+.pa-topbar-spacer {
+  flex: 1;
+}
+
+.pa-user {
+  margin-right: 12px;
+  color: var(--fg);
+}
+
+.pa-logout {
+  padding: 4px 10px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+}
+
+.pa-logout:hover {
+  color: var(--fg);
+  border-color: var(--accent);
+}
+
 .pa-content {
   flex: 1;
   padding: 24px;

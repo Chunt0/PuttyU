@@ -1,0 +1,92 @@
+/* Setup/login cards — kit-shaped on tokens; the full kit Login ports at M0.3. */
+
+.auth-screen {
+  display: grid;
+  place-items: center;
+  height: 100vh;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+}
+
+.auth-card {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 320px;
+  padding: 28px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.auth-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--heading);
+  font-family: var(--font-mono);
+  font-weight: 600;
+}
+
+.auth-brand img {
+  width: 24px;
+  height: 24px;
+}
+
+.auth-card h1 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--heading);
+}
+
+.auth-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.auth-card input {
+  padding: 8px 10px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--fg);
+  font: inherit;
+}
+
+.auth-card input:focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.auth-card button {
+  padding: 9px 12px;
+  background: var(--accent-solid, var(--accent));
+  border: none;
+  border-radius: var(--radius);
+  color: var(--on-accent);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.auth-card button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.auth-error {
+  margin: 0;
+  color: var(--error);
+  font-size: 13px;
+}
+
+.auth-hint {
+  margin: 0;
+  color: var(--faint);
+  font-size: 12px;
+}

@@ -11,6 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import APP_VERSION, get_settings
 from core.database import init_db
+from core.middleware import CSRFMiddleware
+from routes.auth_routes import setup_auth_routes
 from routes.health_routes import setup_health_routes
 
 
@@ -24,6 +26,10 @@ def create_app() -> FastAPI:
     get_settings()  # validate env early
     app = FastAPI(title="PuttyU", version=APP_VERSION, lifespan=lifespan)
 
+    # Middleware, inside-out: CSRF guards mutations; CORS added last so it is
+    # outermost and even 403s carry CORS headers in dev.
+    app.add_middleware(CSRFMiddleware)
+
     # Dev: the Vite dev server is a separate origin. In prod the SPA is served
     # same-origin by FastAPI (M0-PLAN §1), so this is dev-only convenience.
     app.add_middleware(
@@ -35,6 +41,7 @@ def create_app() -> FastAPI:
     )
 
     app.include_router(setup_health_routes())
+    app.include_router(setup_auth_routes())
     return app
 
 
