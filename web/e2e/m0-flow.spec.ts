@@ -25,7 +25,7 @@ test("first-run setup → login → logout", async ({ page }) => {
   // Real login lands in the shell.
   await page.getByLabel("Password").fill("correct-horse-battery");
   await page.getByRole("button", { name: "Log in" }).click();
-  await expect(page.locator(".pa-sidebar .pa-brand")).toContainText("puttyU");
+  await expect(page.locator(".sb-brand .wm")).toContainText("puttyU");
 
   // M0.0 walking skeleton, still true behind auth: /api/health round-trips
   // the typed seam.

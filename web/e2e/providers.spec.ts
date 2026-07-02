@@ -7,7 +7,7 @@ import { ensureLoggedIn } from "./helpers";
 test("add a provider and watch the live resolution table", async ({ page }) => {
   await ensureLoggedIn(page);
 
-  await page.getByRole("link", { name: "Providers" }).click();
+  await page.getByRole("button", { name: "Providers" }).first().click();
   await expect(page).toHaveURL(/\/settings\/providers$/);
 
   // The resolution table renders tiers off the FakeProvider…

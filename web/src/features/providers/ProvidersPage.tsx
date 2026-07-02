@@ -72,7 +72,7 @@ export function ProvidersPage() {
   };
 
   return (
-    <section className="pa-content providers">
+    <section className="page-pane providers">
       <h1>Providers</h1>
       {error ? <p className="providers-error">{error}</p> : null}
 

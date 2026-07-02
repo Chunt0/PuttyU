@@ -1,4 +1,6 @@
-/* Shared tokens for preview cards (font paths relative to /preview). Mirrors colors_and_type.css — monochrome. */
+/* putty-ai design tokens (kit: preview/_tokens.css + kit.css :root, merged).
+   Component CSS reads var(--token) only — themes.css re-skins everything by
+   overriding these under [data-theme="…"]. */
 @font-face { font-family:'Inter'; font-weight:400; font-display:swap; src:url('/fonts/Inter-Regular.woff2') format('woff2'); }
 @font-face { font-family:'Inter'; font-weight:500; font-display:swap; src:url('/fonts/Inter-Medium.woff2') format('woff2'); }
 @font-face { font-family:'Inter'; font-weight:600; font-display:swap; src:url('/fonts/Inter-SemiBold.woff2') format('woff2'); }
@@ -17,17 +19,19 @@
   --chart-1:#e06c75; --chart-2:#5cc28d; --chart-3:#6aa6e0; --chart-4:#e0a95e; --chart-5:#b58be0; --chart-6:#54ccce; --chart-grid:rgba(255,255,255,0.07); --chart-axis:#93969c;
   --radius-sm:4px; --radius:8px; --radius-lg:10px; --radius-xl:18px; --radius-pill:999px;
   --shadow-sm:0 6px 22px rgba(0,0,0,0.45); --shadow-md:0 24px 60px rgba(0,0,0,0.55);
+  --user-bubble:#252629;
   --font-sans:'Inter',system-ui,sans-serif; --font-mono:'Fira Code',ui-monospace,Menlo,monospace;
+  --ease:cubic-bezier(.2,.7,.2,1); /* @kind other */
   --ease-brand:cubic-bezier(.2,.7,.2,1); /* @kind other */
+  /* Workspace layout vars (Odysseus-style): windows/docking math reads these. */
+  --sidebar-w:264px;
+  --left-dock-w:0px; --right-dock-w:0px;
 }
 *{box-sizing:border-box;}
-html,body{margin:0;}
+html,body,#root{height:100%;}
 body{
-  font-family:var(--font-sans); color:var(--fg);
-  background:#0e0e10;
-  background-image:radial-gradient(circle, rgba(255,255,255,0.05) 1px, transparent 1.4px);
-  background-size:22px 22px;
-  -webkit-font-smoothing:antialiased;
+  margin:0;
+  font-family:var(--font-sans); color:var(--fg); background:var(--bg);
+  -webkit-font-smoothing:antialiased; overflow:hidden;
 }
-.card{padding:20px 22px;}
-.lbl{font-family:var(--font-mono);font-size:10px;letter-spacing:.04em;color:var(--muted);text-transform:uppercase;}
+::selection{background:rgba(224,108,117,.22);}

@@ -10,7 +10,10 @@ import { RequireAuth } from "./features/auth/RequireAuth";
 import { SetupPage } from "./features/auth/SetupPage";
 import { ProvidersPage } from "./features/providers/ProvidersPage";
 import "./app/tokens.css";
-import "./app/shell.css";
+import "./app/themes.css";
+import "./styles/shell.css";
+import "./styles/components.css";
+import "./styles/workspace.css";
 import "./features/auth/auth.css";
 import "./features/providers/providers.css";
 

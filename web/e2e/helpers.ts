@@ -9,7 +9,7 @@ export const OWNER = { username: "owner", password: "correct-horse-battery" };
 // "/" while the auth state loads, so URL matching races the redirect.
 export async function ensureLoggedIn(page: Page): Promise<void> {
   await page.goto("/");
-  await page.locator(".auth-card, .pa-shell").first().waitFor();
+  await page.locator(".auth-card, .app").first().waitFor();
 
   const setupButton = page.getByRole("button", { name: "Set up puttyU" });
   if (await setupButton.isVisible()) {
@@ -26,5 +26,5 @@ export async function ensureLoggedIn(page: Page): Promise<void> {
     await loginButton.click();
   }
 
-  await expect(page.locator(".pa-sidebar .pa-brand")).toContainText("puttyU");
+  await expect(page.locator(".sb-brand .wm")).toContainText("puttyU");
 }

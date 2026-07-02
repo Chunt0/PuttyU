@@ -1,50 +1,88 @@
-import { NavLink, Outlet, useNavigate } from "react-router";
+// The workspace shell (docs/M0.3-FIDELITY.md): kit .app layout — sidebar +
+// chat area — plus the window layer, command palette, toasts, and global
+// keyboard shortcuts. Odysseus interaction model, putty-ai skin.
+import { useEffect } from "react";
+import { Outlet, useNavigate } from "react-router";
 
 import { api } from "../api/client";
 import { HealthBadge } from "../components/HealthBadge";
+import { Icons } from "../components/ui/icons";
 import { useAuth } from "../features/auth/auth-context";
+import { COMPOSER_INPUT_ID } from "../features/composer/Composer";
+import { CommandPalette, usePaletteStore } from "./CommandPalette";
+import { Sidebar } from "./Sidebar";
+import { ToastStack } from "./toasts";
+import { useUiStore } from "./uiStore";
+import { WindowLayer } from "./windows/WindowLayer";
+
+function useGlobalShortcuts() {
+  useEffect(() => {
+    const onKeydown = (event: KeyboardEvent) => {
+      const mod = event.ctrlKey || event.metaKey;
+      if (!mod) return;
+      const key = event.key.toLowerCase();
+      if (key === "k") {
+        event.preventDefault();
+        usePaletteStore.getState().toggle();
+      } else if (key === "/" && !event.altKey) {
+        event.preventDefault();
+        document.getElementById(COMPOSER_INPUT_ID)?.focus();
+      } else if (key === "b" && event.altKey) {
+        event.preventDefault();
+        useUiStore.getState().toggleRail();
+      }
+    };
+    window.addEventListener("keydown", onKeydown);
+    return () => window.removeEventListener("keydown", onKeydown);
+  }, []);
+}
 
 export function App() {
-  const { state, refresh } = useAuth();
+  const { refresh } = useAuth();
   const navigate = useNavigate();
-  const username = state.kind === "authenticated" ? state.user.username : "";
+  const railOnly = useUiStore((s) => s.railOnly);
+  const navOpen = useUiStore((s) => s.navOpen);
+  useGlobalShortcuts();
 
   const logout = async () => {
     await api.POST("/api/auth/logout");
-    await refresh(); // -> unauthenticated; guard sends us to /login
+    await refresh();
     void navigate("/login");
   };
 
-  const navClass = ({ isActive }: { isActive: boolean }) =>
-    isActive ? "pa-navitem active" : "pa-navitem";
-
   return (
-    <div className="pa-shell">
-      <aside className="pa-sidebar">
-        <div className="pa-brand">
-          <img src="/putty-blob.svg" alt="" />
-          <span>puttyU</span>
-        </div>
-        <nav className="pa-nav">
-          <NavLink to="/" end className={navClass}>
-            Home
-          </NavLink>
-          <NavLink to="/settings/providers" className={navClass}>
-            Providers
-          </NavLink>
-        </nav>
-      </aside>
-      <main className="pa-main">
-        <header className="pa-topbar">
+    <div
+      className={
+        "app" + (railOnly ? " rail-only" : "") + (navOpen ? " nav-open" : "")
+      }
+    >
+      <div
+        className="nav-scrim"
+        onClick={() => useUiStore.getState().setNavOpen(false)}
+      />
+      <Sidebar />
+      <main className="chat">
+        <header className="topbar">
+          <button
+            className="topbar-burger"
+            aria-label="Open sidebar"
+            onClick={() => useUiStore.getState().setNavOpen(true)}
+          >
+            <Icons.Menu />
+          </button>
+          <span className="topbar-title">puttyU</span>
+          <span style={{ flex: 1 }} />
           <HealthBadge />
-          <span className="pa-topbar-spacer" />
-          <span className="pa-user">{username}</span>
-          <button className="pa-logout" onClick={() => void logout()}>
-            Log out
+          <button className="iconbtn" title="Log out" onClick={() => void logout()}>
+            <Icons.Shell size={14} />
+            <span style={{ marginLeft: 6 }}>Log out</span>
           </button>
         </header>
         <Outlet />
       </main>
+      <WindowLayer />
+      <CommandPalette />
+      <ToastStack />
     </div>
   );
 }
