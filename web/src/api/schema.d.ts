@@ -89,6 +89,94 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/model-endpoints": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List Endpoints */
+        get: operations["list_endpoints_api_model_endpoints_get"];
+        put?: never;
+        /** Create Endpoint */
+        post: operations["create_endpoint_api_model_endpoints_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/model-endpoints/{endpoint_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Update Endpoint */
+        put: operations["update_endpoint_api_model_endpoints__endpoint_id__put"];
+        post?: never;
+        /** Delete Endpoint */
+        delete: operations["delete_endpoint_api_model_endpoints__endpoint_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/router/resolution": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Resolution */
+        get: operations["get_resolution_api_router_resolution_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/router/test": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Test Endpoint */
+        post: operations["test_endpoint_api_router_test_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/settings": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get Settings Values */
+        get: operations["get_settings_values_api_settings_get"];
+        /** Put Settings Values */
+        put: operations["put_settings_values_api_settings_put"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -99,6 +187,66 @@ export interface components {
             password: string;
             /** Username */
             username: string;
+        };
+        /** EndpointCreate */
+        EndpointCreate: {
+            /** Api Key */
+            api_key?: string | null;
+            /** Api Key Env */
+            api_key_env?: string | null;
+            /**
+             * Base Url
+             * @default
+             */
+            base_url: string;
+            /**
+             * Enabled
+             * @default true
+             */
+            enabled: boolean;
+            /** Models */
+            models: components["schemas"]["ModelSpec"][];
+            /** Name */
+            name: string;
+            /**
+             * Provider
+             * @enum {string}
+             */
+            provider: "anthropic" | "openai_compat" | "ollama";
+        };
+        /** EndpointOut */
+        EndpointOut: {
+            /** Api Key Env */
+            api_key_env: string | null;
+            /** Base Url */
+            base_url: string;
+            /** Enabled */
+            enabled: boolean;
+            /** Has Api Key */
+            has_api_key: boolean;
+            /** Id */
+            id: string;
+            /** Models */
+            models: components["schemas"]["ModelSpec"][];
+            /** Name */
+            name: string;
+            /** Provider */
+            provider: string;
+        };
+        /** EndpointUpdate */
+        EndpointUpdate: {
+            /** Api Key */
+            api_key?: string | null;
+            /** Api Key Env */
+            api_key_env?: string | null;
+            /** Base Url */
+            base_url?: string | null;
+            /** Enabled */
+            enabled?: boolean | null;
+            /** Models */
+            models?: components["schemas"]["ModelSpec"][] | null;
+            /** Name */
+            name?: string | null;
         };
         /** HTTPValidationError */
         HTTPValidationError: {
@@ -119,6 +267,36 @@ export interface components {
             /** Username */
             username: string;
         };
+        /** ModelSpec */
+        ModelSpec: {
+            /**
+             * Context Window
+             * @default 8192
+             */
+            context_window: number;
+            /** Cost In */
+            cost_in?: number | null;
+            /** Cost Out */
+            cost_out?: number | null;
+            /** Name */
+            name: string;
+            /**
+             * Reasoning Class
+             * @default standard
+             * @enum {string}
+             */
+            reasoning_class: "micro" | "light" | "standard" | "deep";
+            /**
+             * Structured
+             * @default true
+             */
+            structured: boolean;
+            /**
+             * Vision
+             * @default false
+             */
+            vision: boolean;
+        };
         /** OkResponse */
         OkResponse: {
             /**
@@ -126,6 +304,58 @@ export interface components {
              * @default true
              */
             ok: boolean;
+        };
+        /** ResolutionResponse */
+        ResolutionResponse: {
+            /** Tiers */
+            tiers: components["schemas"]["TierRow"][];
+        };
+        /** RouterTestRequest */
+        RouterTestRequest: {
+            /** Endpoint Id */
+            endpoint_id: string;
+        };
+        /** RouterTestResponse */
+        RouterTestResponse: {
+            /** Detail */
+            detail: string;
+            /** Ok */
+            ok: boolean;
+        };
+        /** SettingsResponse */
+        SettingsResponse: {
+            /** Values */
+            values: {
+                [key: string]: unknown;
+            };
+        };
+        /** SettingsUpdate */
+        SettingsUpdate: {
+            /** Values */
+            values: {
+                [key: string]: unknown;
+            };
+        };
+        /** TierRow */
+        TierRow: {
+            /** Available */
+            available: boolean;
+            /** Below Preferred */
+            below_preferred: boolean;
+            /** Endpoint Id */
+            endpoint_id: string | null;
+            /** Endpoint Name */
+            endpoint_name: string | null;
+            /** Model */
+            model: string | null;
+            /** Pinned */
+            pinned: boolean;
+            /** Reason */
+            reason: string | null;
+            /** Tier */
+            tier: string;
+            /** Token Budget */
+            token_budget: number | null;
         };
         /** ValidationError */
         ValidationError: {
@@ -271,6 +501,231 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HealthResponse"];
+                };
+            };
+        };
+    };
+    list_endpoints_api_model_endpoints_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EndpointOut"][];
+                };
+            };
+        };
+    };
+    create_endpoint_api_model_endpoints_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EndpointCreate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EndpointOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    update_endpoint_api_model_endpoints__endpoint_id__put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                endpoint_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["EndpointUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["EndpointOut"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    delete_endpoint_api_model_endpoints__endpoint_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                endpoint_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OkResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_resolution_api_router_resolution_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ResolutionResponse"];
+                };
+            };
+        };
+    };
+    test_endpoint_api_router_test_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["RouterTestRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RouterTestResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    get_settings_values_api_settings_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsResponse"];
+                };
+            };
+        };
+    };
+    put_settings_values_api_settings_put: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SettingsUpdate"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SettingsResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

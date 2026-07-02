@@ -14,6 +14,9 @@ from core.database import init_db
 from core.middleware import CSRFMiddleware
 from routes.auth_routes import setup_auth_routes
 from routes.health_routes import setup_health_routes
+from routes.provider_routes import setup_provider_routes
+from routes.router_routes import setup_router_routes
+from routes.settings_routes import setup_settings_routes
 
 
 @asynccontextmanager
@@ -42,6 +45,9 @@ def create_app() -> FastAPI:
 
     app.include_router(setup_health_routes())
     app.include_router(setup_auth_routes())
+    app.include_router(setup_settings_routes())
+    app.include_router(setup_provider_routes())
+    app.include_router(setup_router_routes())
     return app
 
 

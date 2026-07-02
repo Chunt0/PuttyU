@@ -1,0 +1,108 @@
+/* Providers screen (M0.2) — functional-minimal on tokens; kit port at M0.3. */
+
+.providers h2 {
+  margin: 24px 0 8px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--heading);
+}
+
+.providers-policy label,
+.providers-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.providers-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.providers-table th,
+.providers-table td {
+  padding: 6px 10px;
+  border: 1px solid var(--border);
+  text-align: left;
+  color: var(--fg);
+}
+
+.providers-table th {
+  color: var(--muted);
+  font-weight: 500;
+  background: var(--panel);
+}
+
+.providers-actions {
+  white-space: nowrap;
+}
+
+.providers-actions button,
+.providers-form button,
+.providers-policy select,
+.providers-form input,
+.providers-form select {
+  padding: 5px 9px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--fg);
+  font: inherit;
+  font-size: 13px;
+}
+
+.providers-actions button,
+.providers-form button {
+  cursor: pointer;
+}
+
+.providers-actions button:hover,
+.providers-form button:hover {
+  border-color: var(--accent);
+}
+
+.providers-actions button + button {
+  margin-left: 6px;
+}
+
+.providers-probe {
+  margin-left: 8px;
+  color: var(--muted);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+.providers-form-row {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.providers-check {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 6px !important;
+}
+
+.providers-bad {
+  color: var(--error);
+}
+
+.providers-warn {
+  color: var(--gold, #b58a3e);
+}
+
+.providers-empty,
+.providers-error {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.providers-error {
+  color: var(--error);
+}

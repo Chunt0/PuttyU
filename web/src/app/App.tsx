@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router";
+import { NavLink, Outlet, useNavigate } from "react-router";
 
 import { api } from "../api/client";
 import { HealthBadge } from "../components/HealthBadge";
@@ -15,6 +15,9 @@ export function App() {
     void navigate("/login");
   };
 
+  const navClass = ({ isActive }: { isActive: boolean }) =>
+    isActive ? "pa-navitem active" : "pa-navitem";
+
   return (
     <div className="pa-shell">
       <aside className="pa-sidebar">
@@ -23,8 +26,12 @@ export function App() {
           <span>puttyU</span>
         </div>
         <nav className="pa-nav">
-          <div className="pa-navitem">Home</div>
-          <div className="pa-navitem">Chat</div>
+          <NavLink to="/" end className={navClass}>
+            Home
+          </NavLink>
+          <NavLink to="/settings/providers" className={navClass}>
+            Providers
+          </NavLink>
         </nav>
       </aside>
       <main className="pa-main">
@@ -36,10 +43,7 @@ export function App() {
             Log out
           </button>
         </header>
-        <section className="pa-content">
-          <h1>puttyU</h1>
-          <p>Foundation skeleton — the workspace shell grows here (M0.3).</p>
-        </section>
+        <Outlet />
       </main>
     </div>
   );

@@ -11,7 +11,7 @@ import uuid
 from datetime import datetime, timezone
 from typing import Any
 
-from sqlalchemy import JSON, Boolean, DateTime, String, Text
+from sqlalchemy import JSON, Boolean, DateTime, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column
 
 from .database import Base
@@ -50,3 +50,38 @@ class AuthSession(Base):
     owner: Mapped[str] = mapped_column(String(32), index=True)  # FK -> user.id
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
     expires_at: Mapped[datetime] = mapped_column(DateTime)
+
+
+class Setting(Base):
+    """Server-side prefs (router policy, etc. — ADR-0004). owner is nullable
+    for future global rows; v1 writes owner-scoped rows only."""
+
+    __tablename__ = "setting"
+    __table_args__ = (UniqueConstraint("owner", "key"),)
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    owner: Mapped[str | None] = mapped_column(String(32), index=True)
+    key: Mapped[str] = mapped_column(String(64))
+    value: Mapped[Any] = mapped_column(JSON)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+
+
+class ModelEndpoint(Base):
+    """A configured LLM provider + its models with capability tags (ADR-0004).
+    API keys live Fernet-encrypted in api_key_enc, or by env-var name in
+    api_key_env — never in plaintext, never returned to the client."""
+
+    __tablename__ = "model_endpoint"
+
+    id: Mapped[str] = mapped_column(String(32), primary_key=True, default=new_id)
+    owner: Mapped[str] = mapped_column(String(32), index=True)
+    name: Mapped[str] = mapped_column(String(64))
+    provider: Mapped[str] = mapped_column(String(32))  # anthropic|openai_compat|ollama
+    base_url: Mapped[str] = mapped_column(Text, default="")
+    api_key_enc: Mapped[str | None] = mapped_column(Text)
+    api_key_env: Mapped[str | None] = mapped_column(String(64))
+    # [{name, context_window, vision, reasoning_class, structured, cost_in, cost_out}]
+    models: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    enabled: Mapped[bool] = mapped_column(Boolean, default=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
